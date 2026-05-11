@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 
 const links = [
@@ -15,25 +14,11 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-cream/10 bg-dark/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/logos/logo-main.png"
-            alt="Gimme Golf"
-            width={44}
-            height={44}
-            className="h-11 w-auto"
-            priority
-          />
-          <span
-            className="text-xl font-bold uppercase tracking-widest text-cream"
-            style={{ fontFamily: "var(--font-barlow-condensed)" }}
-          >
-            Gimme Golf
-          </span>
+    <nav className="fixed top-0 z-50 w-full border-b border-[#F0E8D2]/10 bg-[#060A07] backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <Link href="/" className="flex items-center">
+          <img src="/logos/logo-trimmed.png" alt="Gimme Golf" style={{height: '44px', width: 'auto'}} />
         </Link>
 
         {/* Desktop nav */}
@@ -42,7 +27,7 @@ export default function Navbar() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="text-sm font-medium uppercase tracking-wider text-cream/70 transition-colors hover:text-green-accent"
+                className="text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/70 transition-colors hover:text-[#2D6A47]"
               >
                 {link.label}
               </Link>
@@ -52,7 +37,7 @@ export default function Navbar() {
 
         <Link
           href="/book"
-          className="hidden rounded bg-green-accent px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-dark transition-colors hover:bg-green-accent/90 md:block"
+          className="hidden rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 md:block"
         >
           Book Now
         </Link>
@@ -64,27 +49,27 @@ export default function Navbar() {
           aria-label="Toggle menu"
         >
           <span
-            className={`h-0.5 w-6 bg-cream transition-all ${open ? "translate-y-2 rotate-45" : ""}`}
+            className={`h-0.5 w-6 bg-[#F0E8D2] transition-all ${open ? "translate-y-2 rotate-45" : ""}`}
           />
           <span
-            className={`h-0.5 w-6 bg-cream transition-all ${open ? "opacity-0" : ""}`}
+            className={`h-0.5 w-6 bg-[#F0E8D2] transition-all ${open ? "opacity-0" : ""}`}
           />
           <span
-            className={`h-0.5 w-6 bg-cream transition-all ${open ? "-translate-y-2 -rotate-45" : ""}`}
+            className={`h-0.5 w-6 bg-[#F0E8D2] transition-all ${open ? "-translate-y-2 -rotate-45" : ""}`}
           />
         </button>
       </div>
 
       {/* Mobile menu */}
       {open && (
-        <div className="border-t border-cream/10 bg-dark px-6 pb-6 md:hidden">
+        <div className="border-t border-[#F0E8D2]/10 bg-[#060A07] px-6 pb-6 md:hidden">
           <ul className="flex flex-col gap-4 pt-4">
             {links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="text-sm font-medium uppercase tracking-wider text-cream/70 transition-colors hover:text-green-accent"
+                  className="text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/70 transition-colors hover:text-[#2D6A47]"
                 >
                   {link.label}
                 </Link>
@@ -94,7 +79,7 @@ export default function Navbar() {
           <Link
             href="/book"
             onClick={() => setOpen(false)}
-            className="mt-4 block rounded bg-green-accent px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider text-dark"
+            className="mt-4 block rounded bg-[#2D6A47] px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider text-[#F0E8D2]"
           >
             Book Now
           </Link>

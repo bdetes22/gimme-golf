@@ -1,22 +1,5 @@
 import Link from "next/link";
 
-const locations = [
-  {
-    name: "Kaysville",
-    href: "/locations/kaysville",
-    address: "Kaysville, UT",
-    description:
-      "Our flagship location featuring premium simulator bays, lounge seating, and a fully stocked pro shop.",
-  },
-  {
-    name: "Clearfield",
-    href: "/locations/clearfield",
-    address: "Clearfield, UT",
-    description:
-      "Our newest location with state-of-the-art simulators, event space, and a laid-back atmosphere.",
-  },
-];
-
 const features = [
   {
     title: "Premium Simulators",
@@ -75,61 +58,88 @@ const features = [
   },
 ];
 
+const pricingOptions = [
+  {
+    name: "Walk-In",
+    price: "$35",
+    period: "/hr",
+    features: ["No commitment", "Book online or walk in", "Play any time 24/7"],
+    cta: "Book a Bay",
+    href: "/book",
+    highlight: false,
+  },
+  {
+    name: "Punch Pass",
+    price: "$299",
+    period: " / 10 sessions",
+    features: ["Save 15% vs. walk-in", "Never expires", "Transferable"],
+    cta: "Buy a Pass",
+    href: "/book",
+    highlight: false,
+  },
+  {
+    name: "Monthly Member",
+    price: "$199",
+    period: "/mo",
+    features: ["Unlimited bookings", "Priority access", "Member discounts"],
+    cta: "Join Now",
+    href: "/book",
+    highlight: true,
+  },
+];
+
 export default function HomePage() {
   return (
     <>
       {/* ── Hero ── */}
       <section className="relative flex min-h-[90vh] items-center justify-center overflow-hidden pt-20">
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-dark via-dark/95 to-dark" />
-        {/* Subtle radial glow */}
-        <div className="absolute left-1/2 top-1/3 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-accent/5 blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#060A07] via-[#060A07]/95 to-[#060A07]" />
+        <div className="absolute left-1/2 top-1/3 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2D6A47]/5 blur-3xl" />
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-green-accent">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-[#2D6A47]">
             Utah&apos;s Premier Golf Simulator Experience
           </p>
           <h1
-            className="mb-6 text-5xl font-bold uppercase leading-[1.1] tracking-tight text-cream sm:text-7xl lg:text-8xl"
+            className="mb-6 text-5xl font-bold uppercase leading-[1.1] tracking-tight text-[#F0E8D2] sm:text-7xl lg:text-8xl"
             style={{ fontFamily: "var(--font-barlow-condensed)" }}
           >
             Play Golf
             <br />
-            <span className="text-green-accent">Year Round</span>
+            <span className="text-[#2D6A47]">Year Round</span>
           </h1>
-          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-cream/60">
+          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-[#F0E8D2]/60">
             Premium indoor golf simulators in Kaysville and Clearfield.
             Book a bay, host an event, or build your dream setup at home.
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/book"
-              className="rounded bg-green-accent px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-dark transition-colors hover:bg-green-accent/90"
+              className="rounded bg-[#2D6A47] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
             >
               Book a Bay
             </Link>
             <Link
               href="/build"
-              className="rounded border border-cream/20 px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-cream transition-colors hover:border-cream/40"
+              className="rounded border border-[#F0E8D2]/20 px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:border-[#F0E8D2]/40"
             >
               Build Your Own
             </Link>
           </div>
         </div>
 
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-dark to-transparent" />
+        <div className="absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-[#060A07] to-transparent" />
       </section>
 
       {/* ── Locations ── */}
       <section className="relative py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-14 text-center">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-gold">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
               Two Locations
             </p>
             <h2
-              className="text-4xl font-bold uppercase tracking-tight text-cream sm:text-5xl"
+              className="text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
               style={{ fontFamily: "var(--font-barlow-condensed)" }}
             >
               Find Us in Utah
@@ -137,31 +147,112 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            {locations.map((loc) => (
-              <Link
-                key={loc.name}
-                href={loc.href}
-                className="group relative overflow-hidden rounded-lg border border-cream/10 bg-cream/[0.03] p-8 transition-all hover:border-green-accent/30 hover:bg-cream/[0.06]"
+            {/* ── Kaysville ── */}
+            <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
+              {/* 24/7 Badge */}
+              <div className="absolute right-6 top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
+              </div>
+
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">
+                From $35/hr
+              </p>
+              <h3
+                className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]"
+                style={{ fontFamily: "var(--font-barlow-condensed)" }}
               >
-                <div className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full border border-cream/10 text-cream/30 transition-colors group-hover:border-green-accent/40 group-hover:text-green-accent">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
-                  </svg>
-                </div>
-                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-gold">
-                  {loc.address}
-                </p>
-                <h3
-                  className="mb-3 text-3xl font-bold uppercase text-cream"
-                  style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                Kaysville
+              </h3>
+              <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">
+                Our flagship location featuring premium simulator bays, lounge seating, and a fully stocked pro shop.
+              </p>
+
+              {/* Address */}
+              <div className="mb-4 flex items-start gap-2.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                </svg>
+                <span className="text-sm text-[#F0E8D2]/70">175 W 100 N, Kaysville, UT 84037</span>
+              </div>
+
+              {/* Hours */}
+              <div className="mb-6 flex items-center gap-2.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                <span className="text-sm font-medium text-[#F0E8D2]/70">24/7 Self-Serve Access</span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/book"
+                  className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
                 >
-                  {loc.name}
-                </h3>
-                <p className="max-w-md text-sm leading-relaxed text-cream/50">
-                  {loc.description}
-                </p>
-              </Link>
-            ))}
+                  Book Now
+                </Link>
+                <a
+                  href="https://maps.google.com/?q=175+W+100+N+Kaysville+UT+84037"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                  Directions
+                </a>
+              </div>
+            </div>
+
+            {/* ── Clearfield ── */}
+            <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
+              {/* 24/7 Badge */}
+              <div className="absolute right-6 top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
+              </div>
+
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">
+                From $35/hr
+              </p>
+              <h3
+                className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]"
+                style={{ fontFamily: "var(--font-barlow-condensed)" }}
+              >
+                Clearfield
+              </h3>
+              <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">
+                Our newest location with state-of-the-art simulators, event space, and a laid-back atmosphere.
+              </p>
+
+              {/* Address */}
+              <div className="mb-4 flex items-start gap-2.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                </svg>
+                <span className="text-sm text-[#F0E8D2]/70">Address Coming Soon</span>
+              </div>
+
+              {/* Hours */}
+              <div className="mb-6 flex items-center gap-2.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                <span className="text-sm font-medium text-[#F0E8D2]/70">24/7 Self-Serve Access</span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/contact"
+                  className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+                >
+                  Get Notified
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -170,11 +261,11 @@ export default function HomePage() {
       <section className="relative py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-14 text-center">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-gold">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
               What We Offer
             </p>
             <h2
-              className="text-4xl font-bold uppercase tracking-tight text-cream sm:text-5xl"
+              className="text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
               style={{ fontFamily: "var(--font-barlow-condensed)" }}
             >
               The Gimme Golf Experience
@@ -185,17 +276,95 @@ export default function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-lg border border-cream/10 bg-cream/[0.03] p-7 transition-colors hover:border-cream/20"
+                className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-7 transition-colors hover:border-[#F0E8D2]/20"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-accent/10 text-green-accent">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[#2D6A47]/10 text-[#2D6A47]">
                   {feature.icon}
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-cream">
+                <h3 className="mb-2 text-lg font-semibold text-[#F0E8D2]">
                   {feature.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-cream/50">
+                <p className="text-sm leading-relaxed text-[#F0E8D2]/50">
                   {feature.description}
                 </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Membership / Pricing ── */}
+      <section className="relative py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-14 text-center">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
+              Pricing Options
+            </p>
+            <h2
+              className="text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              Play Your Way
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-[#F0E8D2]/50">
+              Whether you&apos;re a regular or just dropping in, we&apos;ve got a plan that fits.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {pricingOptions.map((option) => (
+              <div
+                key={option.name}
+                className={`relative flex flex-col rounded-lg border p-8 transition-colors ${
+                  option.highlight
+                    ? "border-[#2D6A47] bg-[#2D6A47]/[0.06]"
+                    : "border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] hover:border-[#F0E8D2]/20"
+                }`}
+              >
+                {option.highlight && (
+                  <div className="absolute -top-3 left-6 rounded-full bg-[#2D6A47] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#F0E8D2]">
+                    Most Popular
+                  </div>
+                )}
+
+                <h3
+                  className="mb-1 text-xl font-bold uppercase text-[#F0E8D2]"
+                  style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                >
+                  {option.name}
+                </h3>
+
+                <div className="mb-6 flex items-baseline gap-1">
+                  <span
+                    className="text-4xl font-bold text-[#F0E8D2]"
+                    style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                  >
+                    {option.price}
+                  </span>
+                  <span className="text-sm text-[#F0E8D2]/40">{option.period}</span>
+                </div>
+
+                <ul className="mb-8 flex flex-col gap-2.5">
+                  {option.features.map((feat) => (
+                    <li key={feat} className="flex items-center gap-2 text-sm text-[#F0E8D2]/70">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4 shrink-0 text-[#2D6A47]">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                      </svg>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href={option.href}
+                  className={`mt-auto block rounded px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider transition-colors ${
+                    option.highlight
+                      ? "bg-[#2D6A47] text-[#F0E8D2] hover:bg-[#2D6A47]/90"
+                      : "border border-[#F0E8D2]/20 text-[#F0E8D2] hover:border-[#F0E8D2]/40"
+                  }`}
+                >
+                  {option.cta}
+                </Link>
               </div>
             ))}
           </div>
@@ -205,29 +374,28 @@ export default function HomePage() {
       {/* ── Quote Builder CTA ── */}
       <section className="relative py-24">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="relative overflow-hidden rounded-2xl border border-cream/10 bg-gradient-to-br from-green-accent/10 via-dark to-gold/5 px-8 py-16 text-center sm:px-16">
-            {/* Decorative glow */}
-            <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-green-accent/10 blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-gold/10 blur-3xl" />
+          <div className="relative overflow-hidden rounded-2xl border border-[#F0E8D2]/10 bg-gradient-to-br from-[#2D6A47]/10 via-[#060A07] to-[#C8973A]/5 px-8 py-16 text-center sm:px-16">
+            <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#2D6A47]/10 blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-[#C8973A]/10 blur-3xl" />
 
             <div className="relative z-10">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-gold">
+              <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
                 Home Simulator Builds
               </p>
               <h2
-                className="mb-4 text-4xl font-bold uppercase tracking-tight text-cream sm:text-5xl"
+                className="mb-4 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
                 style={{ fontFamily: "var(--font-barlow-condensed)" }}
               >
                 Build Your Dream Setup
               </h2>
-              <p className="mx-auto mb-8 max-w-xl text-lg leading-relaxed text-cream/50">
+              <p className="mx-auto mb-8 max-w-xl text-lg leading-relaxed text-[#F0E8D2]/50">
                 Use our interactive quote builder to configure a custom golf
                 simulator for your home or business. Choose your launch monitor,
                 screen, enclosure, and more.
               </p>
               <Link
                 href="/build"
-                className="inline-block rounded bg-gold px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-dark transition-colors hover:bg-gold/90"
+                className="inline-block rounded bg-[#C8973A] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
               >
                 Start Your Build
               </Link>

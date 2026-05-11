@@ -2,8 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --green: #2D6A47;
+  --cream: #F0E8D2;
+}
+
 @layer base {
   body {
-    @apply bg-dark text-cream;
+    background-color: #060A07;
+    color: #F0E8D2;
   }
 }
