@@ -67,6 +67,7 @@ const pricingOptions = [
     cta: "Book a Bay",
     href: "/book",
     highlight: false,
+    border: "",
   },
   {
     name: "Punch Pass",
@@ -76,6 +77,7 @@ const pricingOptions = [
     cta: "Buy a Pass",
     href: "/book",
     highlight: false,
+    border: "",
   },
   {
     name: "Monthly Member",
@@ -85,6 +87,17 @@ const pricingOptions = [
     cta: "Join Now",
     href: "/book",
     highlight: true,
+    border: "",
+  },
+  {
+    name: "Annual Member",
+    price: "$1,200",
+    period: "/yr",
+    features: ["Best value", "Save $1,188 vs. monthly", "One payment, full year"],
+    cta: "Go Annual",
+    href: "/book",
+    highlight: false,
+    border: "gold",
   },
 ];
 
@@ -173,7 +186,7 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                 </svg>
-                <span className="text-sm text-[#F0E8D2]/70">175 W 100 N, Kaysville, UT 84037</span>
+                <span className="text-sm text-[#F0E8D2]/70">140 N Main Street, Kaysville, UT 84037</span>
               </div>
 
               {/* Hours */}
@@ -193,7 +206,7 @@ export default function HomePage() {
                   Book Now
                 </Link>
                 <a
-                  href="https://maps.google.com/?q=175+W+100+N+Kaysville+UT+84037"
+                  href="https://maps.google.com/?q=140+N+Main+Street+Kaysville+UT+84037"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
@@ -232,7 +245,7 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                 </svg>
-                <span className="text-sm text-[#F0E8D2]/70">Address Coming Soon</span>
+                <span className="text-sm text-[#F0E8D2]/70">293 State St, Clearfield, UT 84015</span>
               </div>
 
               {/* Hours */}
@@ -246,11 +259,22 @@ export default function HomePage() {
               {/* Actions */}
               <div className="flex items-center gap-3">
                 <Link
-                  href="/contact"
+                  href="/book"
                   className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
                 >
-                  Get Notified
+                  Book Now
                 </Link>
+                <a
+                  href="https://maps.google.com/?q=293+State+St+Clearfield+UT+84015"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                  Directions
+                </a>
               </div>
             </div>
           </div>
@@ -311,19 +335,26 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {pricingOptions.map((option) => (
               <div
                 key={option.name}
                 className={`relative flex flex-col rounded-lg border p-8 transition-colors ${
                   option.highlight
                     ? "border-[#2D6A47] bg-[#2D6A47]/[0.06]"
-                    : "border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] hover:border-[#F0E8D2]/20"
+                    : option.border === "gold"
+                      ? "border-[#F0E8D2] bg-[#F0E8D2]/[0.06]"
+                      : "border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] hover:border-[#F0E8D2]/20"
                 }`}
               >
                 {option.highlight && (
                   <div className="absolute -top-3 left-6 rounded-full bg-[#2D6A47] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#F0E8D2]">
                     Most Popular
+                  </div>
+                )}
+                {option.border === "gold" && (
+                  <div className="absolute -top-3 left-6 rounded-full bg-[#F0E8D2] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#060A07]">
+                    Best Deal
                   </div>
                 )}
 
