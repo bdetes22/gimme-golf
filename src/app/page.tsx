@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 const features = [
@@ -40,7 +42,7 @@ const features = [
   },
   {
     title: "Pro Shop",
-    description: "Browse clubs, accessories, and simulator packages — online or in-store.",
+    description: "Merch, accessories, and simulator packages — coming soon.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -186,7 +188,7 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                 </svg>
-                <span className="text-sm text-[#F0E8D2]/70">140 N Main Street, Kaysville, UT 84037</span>
+                <span className="text-sm text-[#F0E8D2]/70">140 Main Street, Kaysville, UT 84037</span>
               </div>
 
               {/* Hours */}
@@ -206,7 +208,7 @@ export default function HomePage() {
                   Book Now
                 </Link>
                 <a
-                  href="https://maps.google.com/?q=140+N+Main+Street+Kaysville+UT+84037"
+                  href="https://maps.google.com/?q=140+Main+Street+Kaysville+UT+84037"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
@@ -314,6 +316,40 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── Pro Shop Coming Soon ── */}
+      <section className="relative py-24">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
+            Coming Soon
+          </p>
+          <h2
+            className="mb-4 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
+            style={{ fontFamily: "var(--font-barlow-condensed)" }}
+          >
+            The Pro Shop
+          </h2>
+          <p className="mx-auto mb-8 text-lg leading-relaxed text-[#F0E8D2]/50">
+            Merch, accessories, and more — coming soon.
+          </p>
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+          >
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-1 rounded border border-[#F0E8D2]/20 bg-[#F0E8D2]/[0.05] px-4 py-3 text-sm text-[#F0E8D2] placeholder-[#F0E8D2]/30 outline-none transition-colors focus:border-[#2D6A47]"
+            />
+            <button
+              type="submit"
+              className="rounded bg-[#2D6A47] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+            >
+              Notify Me
+            </button>
+          </form>
         </div>
       </section>
 
