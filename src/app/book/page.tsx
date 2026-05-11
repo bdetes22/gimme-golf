@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 
 // ── helpers ──
 function daysInMonth(year: number, month: number) {
@@ -60,6 +60,26 @@ export default function BookPage() {
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [loading, setLoading] = useState(false);
+  const [bookedHours, setBookedHours] = useState<number[]>([]);
+
+  // Fetch booked slots when location + date are set
+  const fetchBookedSlots = useCallback(async () => {
+    if (!location || !selectedDate) return;
+    const dateISO = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+    try {
+      const res = await fetch(`/api/bookings?location=${location}&date=${dateISO}`);
+      const data = await res.json();
+      setBookedHours(data.bookedHours || []);
+    } catch {
+      setBookedHours([]);
+    }
+  }, [location, selectedDate]);
+
+  useEffect(() => {
+    if (step === 2) {
+      fetchBookedSlots();
+    }
+  }, [step, fetchBookedSlots]);
 
   const monthName = new Date(calYear, calMonth).toLocaleString("en-US", {
     month: "long",
@@ -261,19 +281,26 @@ export default function BookPage() {
               {selectedDate && fmt(selectedDate)}
             </p>
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
-              {SLOTS.map((slot) => (
-                <button
-                  key={slot.hour}
-                  onClick={() => setSelectedHour(slot.hour)}
-                  className={`rounded-lg border px-3 py-3 text-center text-sm font-medium transition-colors ${
-                    selectedHour === slot.hour
-                      ? "border-[#2D6A47] bg-[#2D6A47]/[0.15] text-[#F0E8D2]"
-                      : "border-[#F0E8D2]/10 text-[#F0E8D2]/60 hover:border-[#F0E8D2]/20"
-                  }`}
-                >
-                  {slot.label}
-                </button>
-              ))}
+              {SLOTS.map((slot) => {
+                const isBooked = bookedHours.includes(slot.hour);
+                return (
+                  <button
+                    key={slot.hour}
+                    disabled={isBooked}
+                    onClick={() => setSelectedHour(slot.hour)}
+                    className={`rounded-lg border px-3 py-3 text-center text-sm font-medium transition-colors ${
+                      isBooked
+                        ? "cursor-not-allowed border-[#F0E8D2]/5 bg-[#F0E8D2]/[0.02] text-[#F0E8D2]/20 line-through"
+                        : selectedHour === slot.hour
+                          ? "border-[#2D6A47] bg-[#2D6A47]/[0.15] text-[#F0E8D2]"
+                          : "border-[#F0E8D2]/10 text-[#F0E8D2]/60 hover:border-[#F0E8D2]/20"
+                    }`}
+                  >
+                    {slot.label}
+                    {isBooked && <span className="block text-[10px] uppercase tracking-wider">Booked</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -415,8 +442,13 @@ export default function BookPage() {
                       location: locObj?.name,
                       date: selectedDate ? fmt(selectedDate) : "",
                       time: slotObj ? `${slotObj.label} – ${slotObj.endLabel}` : "",
+                      dateISO: selectedDate
+                        ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`
+                        : "",
+                      hour: selectedHour,
                       customerName: name,
                       customerEmail: email,
+                      customerPhone: phone,
                       amount: 3500,
                     }),
                   });

@@ -8,7 +8,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { location, date, time, customerName, customerEmail, amount } = body;
+    const {
+      location,
+      date,
+      time,
+      customerName,
+      customerEmail,
+      customerPhone,
+      amount,
+      dateISO,
+      hour,
+    } = body;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -31,8 +41,11 @@ export async function POST(req: NextRequest) {
         location,
         date,
         time,
+        dateISO,
+        hour: String(hour),
         customerName,
         customerEmail,
+        customerPhone: customerPhone || "",
       },
       success_url: `${req.nextUrl.origin}/book/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.nextUrl.origin}/book`,
