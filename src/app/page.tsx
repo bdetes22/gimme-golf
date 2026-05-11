@@ -138,7 +138,7 @@ export default function HomePage() {
               href="/build"
               className="rounded border border-[#F0E8D2]/20 px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:border-[#F0E8D2]/40"
             >
-              Build Your Own
+              Get a Quote
             </Link>
           </div>
         </div>
@@ -453,18 +453,18 @@ export default function HomePage() {
                 className="mb-4 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
                 style={{ fontFamily: "var(--font-barlow-condensed)" }}
               >
-                Build Your Dream Setup
+                We Build Your Dream Setup
               </h2>
               <p className="mx-auto mb-8 max-w-xl text-lg leading-relaxed text-[#F0E8D2]/50">
-                Use our interactive quote builder to configure a custom golf
-                simulator for your home or business. Choose your launch monitor,
-                screen, enclosure, and more.
+                We handle everything — from room design and equipment selection
+                to full installation. Schedule a free consultation and
+                we&apos;ll build you a custom quote.
               </p>
               <Link
                 href="/build"
                 className="inline-block rounded bg-[#C8973A] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
               >
-                Start Your Build
+                Schedule a Free Consultation
               </Link>
             </div>
           </div>
