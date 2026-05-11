@@ -188,7 +188,7 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                 </svg>
-                <span className="text-sm text-[#F0E8D2]/70">140 Main Street, Kaysville, UT 84037</span>
+                <span className="text-sm text-[#F0E8D2]/70">140 N Main Street, Kaysville, UT 84037</span>
               </div>
 
               {/* Hours */}
@@ -208,7 +208,7 @@ export default function HomePage() {
                   Book Now
                 </Link>
                 <a
-                  href="https://maps.google.com/?q=140+Main+Street+Kaysville+UT+84037"
+                  href="https://maps.google.com/?q=140+N+Main+Street+Kaysville+UT+84037"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
