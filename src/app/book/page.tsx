@@ -59,6 +59,7 @@ export default function BookPage() {
   }, []);
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
+  const [loading, setLoading] = useState(false);
 
   const monthName = new Date(calYear, calMonth).toLocaleString("en-US", {
     month: "long",
@@ -403,9 +404,37 @@ export default function BookPage() {
             </div>
 
             <button
-              className="w-full rounded bg-[#2D6A47] px-8 py-4 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+              disabled={loading}
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  const res = await fetch("/api/checkout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      location: locObj?.name,
+                      date: selectedDate ? fmt(selectedDate) : "",
+                      time: slotObj ? `${slotObj.label} – ${slotObj.endLabel}` : "",
+                      customerName: name,
+                      customerEmail: email,
+                      amount: 3500,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (data.url) {
+                    window.location.href = data.url;
+                  } else {
+                    alert(data.error || "Something went wrong");
+                    setLoading(false);
+                  }
+                } catch {
+                  alert("Failed to create checkout session");
+                  setLoading(false);
+                }
+              }}
+              className="w-full rounded bg-[#2D6A47] px-8 py-4 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:opacity-50"
             >
-              Pay with Stripe — $35.00
+              {loading ? "Redirecting to Stripe..." : "Pay with Stripe — $35.00"}
             </button>
             <p className="mt-3 text-center text-xs text-[#F0E8D2]/30">
               You&apos;ll be redirected to Stripe to complete your payment.
