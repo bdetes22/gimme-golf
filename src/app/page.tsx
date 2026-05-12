@@ -60,6 +60,38 @@ const features = [
   },
 ];
 
+const buildSteps = [
+  {
+    step: "01",
+    title: "Free Consultation",
+    description: "We assess your space, budget, and goals to design the perfect simulator setup.",
+  },
+  {
+    step: "02",
+    title: "Custom Design",
+    description: "Our team creates a tailored plan — from launch monitors and screens to enclosures and turf.",
+  },
+  {
+    step: "03",
+    title: "Professional Install",
+    description: "We handle everything — wiring, mounting, calibration, and testing. Turnkey delivery.",
+  },
+  {
+    step: "04",
+    title: "Play at Home",
+    description: "Step into your own private simulator and play 200+ courses whenever you want.",
+  },
+];
+
+const buildBenefits = [
+  "Full-service design & installation",
+  "Premium launch monitors & software",
+  "Custom enclosures & impact screens",
+  "Residential & commercial builds",
+  "Financing options available",
+  "Ongoing support & maintenance",
+];
+
 const pricingOptions = [
   {
     name: "Walk-In",
@@ -113,7 +145,7 @@ export default function HomePage() {
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-[#2D6A47]">
-            Utah&apos;s Premier Golf Simulator Experience
+            Play at Our Locations &nbsp;·&nbsp; Build Your Own at Home
           </p>
           <h1
             className="mb-6 text-5xl font-bold uppercase leading-[1.1] tracking-tight text-[#F0E8D2] sm:text-7xl lg:text-8xl"
@@ -124,8 +156,8 @@ export default function HomePage() {
             <span className="text-[#2D6A47]">Year Round</span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-[#F0E8D2]/60">
-            Premium indoor golf simulators in Kaysville and Clearfield.
-            Book a bay, host an event, or build your dream setup at home.
+            Book a bay at our 24/7 simulator locations in Kaysville and
+            Clearfield — or let us build a custom setup in your home.
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
@@ -136,9 +168,9 @@ export default function HomePage() {
             </Link>
             <Link
               href="/build"
-              className="rounded border border-[#F0E8D2]/20 px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:border-[#F0E8D2]/40"
+              className="rounded bg-[#C8973A] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
             >
-              Get a Quote
+              Get a Home Build Quote
             </Link>
           </div>
         </div>
@@ -164,58 +196,24 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-2">
             {/* ── Kaysville ── */}
             <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
-              {/* 24/7 Badge */}
               <div className="absolute right-6 top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
               </div>
-
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">
-                From $35/hr
-              </p>
-              <h3
-                className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]"
-                style={{ fontFamily: "var(--font-barlow-condensed)" }}
-              >
-                Kaysville
-              </h3>
-              <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">
-                Our flagship location featuring premium simulator bays, lounge seating, and a fully stocked pro shop.
-              </p>
-
-              {/* Address */}
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
+              <h3 className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>Kaysville</h3>
+              <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our flagship location featuring premium simulator bays, lounge seating, and a fully stocked pro shop.</p>
               <div className="mb-4 flex items-start gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
                 <span className="text-sm text-[#F0E8D2]/70">140 N Main Street, Kaysville, UT 84037</span>
               </div>
-
-              {/* Hours */}
               <div className="mb-6 flex items-center gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 <span className="text-sm font-medium text-[#F0E8D2]/70">24/7 Self-Serve Access</span>
               </div>
-
-              {/* Actions */}
               <div className="flex items-center gap-3">
-                <Link
-                  href="/book"
-                  className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
-                >
-                  Book Now
-                </Link>
-                <a
-                  href="https://maps.google.com/?q=140+N+Main+Street+Kaysville+UT+84037"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                  </svg>
+                <Link href="/book" className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90">Book Now</Link>
+                <a href="https://maps.google.com/?q=140+N+Main+Street+Kaysville+UT+84037" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
                   Directions
                 </a>
               </div>
@@ -223,60 +221,110 @@ export default function HomePage() {
 
             {/* ── Clearfield ── */}
             <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
-              {/* 24/7 Badge */}
               <div className="absolute right-6 top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
               </div>
-
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">
-                From $35/hr
-              </p>
-              <h3
-                className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]"
-                style={{ fontFamily: "var(--font-barlow-condensed)" }}
-              >
-                Clearfield
-              </h3>
-              <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">
-                Our newest location with state-of-the-art simulators, event space, and a laid-back atmosphere.
-              </p>
-
-              {/* Address */}
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
+              <h3 className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>Clearfield</h3>
+              <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our newest location with state-of-the-art simulators, event space, and a laid-back atmosphere.</p>
               <div className="mb-4 flex items-start gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
                 <span className="text-sm text-[#F0E8D2]/70">293 State St, Clearfield, UT 84015</span>
               </div>
-
-              {/* Hours */}
               <div className="mb-6 flex items-center gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 <span className="text-sm font-medium text-[#F0E8D2]/70">24/7 Self-Serve Access</span>
               </div>
-
-              {/* Actions */}
               <div className="flex items-center gap-3">
-                <Link
-                  href="/book"
-                  className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
-                >
-                  Book Now
-                </Link>
-                <a
-                  href="https://maps.google.com/?q=293+State+St+Clearfield+UT+84015"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                  </svg>
+                <Link href="/book" className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90">Book Now</Link>
+                <a href="https://maps.google.com/?q=293+State+St+Clearfield+UT+84015" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
                   Directions
                 </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Home Builds — Primary CTA ── */}
+      <section className="relative py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            {/* Left — Copy */}
+            <div>
+              <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
+                Home Simulator Builds
+              </p>
+              <h2
+                className="mb-6 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
+                style={{ fontFamily: "var(--font-barlow-condensed)" }}
+              >
+                We Build Your
+                <br />
+                Dream Setup
+              </h2>
+              <p className="mb-8 max-w-lg text-lg leading-relaxed text-[#F0E8D2]/60">
+                Want a golf simulator in your home, garage, or office? We handle
+                everything — from room design and equipment selection to full
+                installation. Turnkey builds starting at $5,000.
+              </p>
+
+              {/* Benefits grid */}
+              <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {buildBenefits.map((benefit) => (
+                  <div key={benefit} className="flex items-center gap-2.5">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4 shrink-0 text-[#2D6A47]">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                    <span className="text-sm text-[#F0E8D2]/70">{benefit}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/build"
+                  className="rounded bg-[#C8973A] px-8 py-3.5 text-center text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
+                >
+                  Schedule a Free Consultation
+                </Link>
+                <Link
+                  href="/build"
+                  className="rounded border border-[#F0E8D2]/20 px-8 py-3.5 text-center text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:border-[#F0E8D2]/40"
+                >
+                  View Past Builds
+                </Link>
+              </div>
+            </div>
+
+            {/* Right — Build Process Steps */}
+            <div className="relative">
+              <div className="absolute left-[23px] top-8 bottom-8 w-px bg-gradient-to-b from-[#C8973A]/40 via-[#2D6A47]/40 to-[#C8973A]/40 lg:block hidden" />
+              <div className="flex flex-col gap-6">
+                {buildSteps.map((item, i) => (
+                  <div key={item.step} className="flex gap-5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#C8973A]/30 bg-[#C8973A]/10">
+                      <span
+                        className="text-sm font-bold text-[#C8973A]"
+                        style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                      >
+                        {item.step}
+                      </span>
+                    </div>
+                    <div className={`rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-5 flex-1 ${i === 0 ? "border-[#C8973A]/20 bg-[#C8973A]/[0.04]" : ""}`}>
+                      <h4
+                        className="mb-1 text-lg font-bold uppercase text-[#F0E8D2]"
+                        style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                      >
+                        {item.title}
+                      </h4>
+                      <p className="text-sm leading-relaxed text-[#F0E8D2]/50">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -316,40 +364,6 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── Pro Shop Coming Soon ── */}
-      <section className="relative py-24">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
-            Coming Soon
-          </p>
-          <h2
-            className="mb-4 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
-            style={{ fontFamily: "var(--font-barlow-condensed)" }}
-          >
-            The Pro Shop
-          </h2>
-          <p className="mx-auto mb-8 text-lg leading-relaxed text-[#F0E8D2]/50">
-            Merch, accessories, and more — coming soon.
-          </p>
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-          >
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 rounded border border-[#F0E8D2]/20 bg-[#F0E8D2]/[0.05] px-4 py-3 text-sm text-[#F0E8D2] placeholder-[#F0E8D2]/30 outline-none transition-colors focus:border-[#2D6A47]"
-            />
-            <button
-              type="submit"
-              className="rounded bg-[#2D6A47] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
-            >
-              Notify Me
-            </button>
-          </form>
         </div>
       </section>
 
@@ -438,35 +452,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Quote Builder CTA ── */}
+      {/* ── Pro Shop Coming Soon ── */}
       <section className="relative py-24">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="relative overflow-hidden rounded-2xl border border-[#F0E8D2]/10 bg-gradient-to-br from-[#2D6A47]/10 via-[#060A07] to-[#C8973A]/5 px-8 py-16 text-center sm:px-16">
-            <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#2D6A47]/10 blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-[#C8973A]/10 blur-3xl" />
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
+            Coming Soon
+          </p>
+          <h2
+            className="mb-4 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
+            style={{ fontFamily: "var(--font-barlow-condensed)" }}
+          >
+            The Pro Shop
+          </h2>
+          <p className="mx-auto mb-8 text-lg leading-relaxed text-[#F0E8D2]/50">
+            Merch, accessories, and more — coming soon.
+          </p>
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+          >
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-1 rounded border border-[#F0E8D2]/20 bg-[#F0E8D2]/[0.05] px-4 py-3 text-sm text-[#F0E8D2] placeholder-[#F0E8D2]/30 outline-none transition-colors focus:border-[#2D6A47]"
+            />
+            <button
+              type="submit"
+              className="rounded bg-[#2D6A47] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+            >
+              Notify Me
+            </button>
+          </form>
+        </div>
+      </section>
 
-            <div className="relative z-10">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
-                Home Simulator Builds
-              </p>
-              <h2
-                className="mb-4 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
+      {/* ── Bottom Build CTA Strip ── */}
+      <section className="relative py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col items-center justify-between gap-6 rounded-lg border border-[#C8973A]/20 bg-[#C8973A]/[0.04] px-8 py-10 sm:flex-row sm:py-8">
+            <div>
+              <h3
+                className="text-2xl font-bold uppercase text-[#F0E8D2] sm:text-3xl"
                 style={{ fontFamily: "var(--font-barlow-condensed)" }}
               >
-                We Build Your Dream Setup
-              </h2>
-              <p className="mx-auto mb-8 max-w-xl text-lg leading-relaxed text-[#F0E8D2]/50">
-                We handle everything — from room design and equipment selection
-                to full installation. Schedule a free consultation and
-                we&apos;ll build you a custom quote.
+                Ready to Build Your Own Simulator?
+              </h3>
+              <p className="mt-1 text-sm text-[#F0E8D2]/50">
+                Free consultation · Custom design · Professional installation
               </p>
-              <Link
-                href="/build"
-                className="inline-block rounded bg-[#C8973A] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
-              >
-                Schedule a Free Consultation
-              </Link>
             </div>
+            <Link
+              href="/build"
+              className="shrink-0 rounded bg-[#C8973A] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
+            >
+              Get a Free Quote
+            </Link>
           </div>
         </div>
       </section>
