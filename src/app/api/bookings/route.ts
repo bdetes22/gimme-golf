@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-server";
+import { getSupabaseAdmin } from "@/lib/supabase-server";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const supabaseAdmin = getSupabaseAdmin();
   const location = req.nextUrl.searchParams.get("location");
   const date = req.nextUrl.searchParams.get("date"); // ISO date string YYYY-MM-DD
 
