@@ -170,7 +170,7 @@ export default function HomePage() {
               href="/build"
               className="rounded bg-[#C8973A] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
             >
-              Get a Home Build Quote
+              Get a Custom Build Quote
             </Link>
           </div>
         </div>
