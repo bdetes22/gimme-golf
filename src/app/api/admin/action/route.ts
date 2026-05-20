@@ -20,6 +20,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (action === "update_notes") {
+    const { customerId, notes } = body;
+    if (!customerId) {
+      return NextResponse.json({ error: "customerId is required" }, { status: 400 });
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    await fetch(`${apiUrl}/rest/v1/customers?id=eq.${customerId}`, {
+      method: "PATCH",
+      headers: {
+        apikey: apiKey,
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ notes: notes || null }),
+    });
+
+    return NextResponse.json({ success: true });
+  }
+
   if (action === "cancel_booking") {
     const { bookingId } = body;
     if (!bookingId) {

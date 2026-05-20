@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
       name: c.name,
       email: c.email,
       phone: c.phone,
+      notes: c.notes || null,
       created_at: c.created_at,
       membership: mem,
     };

@@ -29,6 +29,7 @@ interface Customer {
   name: string;
   email: string;
   phone: string | null;
+  notes: string | null;
   created_at: string;
   membership: Membership | null;
 }
@@ -67,6 +68,10 @@ export default function AdminPage() {
   const [memEndDate, setMemEndDate] = useState("");
   const [memNoExpiry, setMemNoExpiry] = useState(false);
   const [memSessions, setMemSessions] = useState(10);
+
+  // Notes editing state
+  const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
+  const [notesText, setNotesText] = useState("");
 
   const [storedPassword, setStoredPassword] = useState("");
 
@@ -152,6 +157,16 @@ export default function AdminPage() {
   const handleDeleteCustomer = (customerId: string, customerName: string) => {
     if (!confirm(`Delete ${customerName}? This will remove all their bookings, memberships, and auth account.`)) return;
     doAction({ action: "delete_customer", customerId });
+  };
+
+  const startEditNotes = (customer: Customer) => {
+    setEditingNotesId(customer.id);
+    setNotesText(customer.notes || "");
+  };
+
+  const saveNotes = async (customerId: string) => {
+    await doAction({ action: "update_notes", customerId, notes: notesText });
+    setEditingNotesId(null);
   };
 
   const openMemModal = (customer: Customer) => {
@@ -452,7 +467,49 @@ export default function AdminPage() {
                     key={c.id}
                     className="border-b border-[#F0E8D2]/5 hover:bg-[#F0E8D2]/[0.02]"
                   >
-                    <td className="p-3">{c.name}</td>
+                    <td className="p-3">
+                      <div>
+                        <span>{c.name}</span>
+                        {editingNotesId === c.id ? (
+                          <div className="mt-2 flex flex-col gap-1">
+                            <textarea
+                              value={notesText}
+                              onChange={(e) => setNotesText(e.target.value)}
+                              rows={2}
+                              className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-2 py-1 text-xs text-[#F0E8D2] outline-none focus:border-[#2D6A47] resize-none"
+                              placeholder="Add notes..."
+                            />
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => saveNotes(c.id)}
+                                disabled={actionLoading !== null}
+                                className="px-2 py-0.5 bg-[#2D6A47]/40 text-green-300 rounded text-xs hover:bg-[#2D6A47]/60 disabled:opacity-50"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => setEditingNotesId(null)}
+                                className="px-2 py-0.5 text-[#F0E8D2]/40 rounded text-xs hover:text-[#F0E8D2]"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-0.5 flex items-start gap-1">
+                            {c.notes ? (
+                              <p className="text-[10px] leading-tight text-[#C8973A]/70 italic">{c.notes}</p>
+                            ) : null}
+                            <button
+                              onClick={() => startEditNotes(c)}
+                              className="shrink-0 text-[10px] text-[#F0E8D2]/20 hover:text-[#F0E8D2]/50"
+                            >
+                              {c.notes ? "edit" : "+ note"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-3 text-[#F0E8D2]/60">{c.email}</td>
                     <td className="p-3 text-[#F0E8D2]/60">{c.phone || "-"}</td>
                     <td className="p-3">
