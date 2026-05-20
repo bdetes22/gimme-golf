@@ -55,7 +55,8 @@ export default function BookPage() {
   const [step, setStep] = useState(0);
   const [location, setLocation] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedHours, setSelectedHours] = useState<number[]>([]);
+  const [selectedStartHour, setSelectedStartHour] = useState<number | null>(null);
+  const [duration, setDuration] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -144,11 +145,26 @@ export default function BookPage() {
     year: "numeric",
   });
 
+  // Compute selected hours from start + duration
+  const selectedHours = useMemo(() => {
+    if (selectedStartHour === null) return [];
+    return Array.from({ length: duration }, (_, i) => selectedStartHour + i);
+  }, [selectedStartHour, duration]);
+
+  // Check if a start time + duration has any conflicts
+  const isRangeAvailable = useCallback((startHour: number, dur: number) => {
+    for (let i = 0; i < dur; i++) {
+      const h = startHour + i;
+      if (h > 23 || bookedHours.includes(h)) return false;
+    }
+    return true;
+  }, [bookedHours]);
+
   const canGoBack = step > 0;
   const canGoNext = (() => {
     if (step === 0) return !!location;
     if (step === 1) return !!selectedDate;
-    if (step === 2) return selectedHours.length > 0;
+    if (step === 2) return selectedStartHour !== null && isRangeAvailable(selectedStartHour, duration);
     if (step === 3) return name.trim() && email.trim();
     return false;
   })();
@@ -204,7 +220,8 @@ export default function BookPage() {
           date: selectedDate ? fmt(selectedDate) : "",
           time: timeDisplay,
           dateISO,
-          hour: selectedHours[0],
+          hour: selectedStartHour,
+          duration,
           customerName: name,
           customerEmail: email,
           customerPhone: phone,
@@ -389,36 +406,50 @@ export default function BookPage() {
               Choose a Time
             </h2>
             <p className="mb-6 text-sm text-[#F0E8D2]/50">{selectedDate && fmt(selectedDate)}</p>
-            <p className="mb-3 text-xs text-[#F0E8D2]/40">
-              Select 1 or 2 consecutive hours. Click a selected slot to deselect.
-            </p>
+
+            {/* Duration selector */}
+            <div className="mb-6">
+              <label className="mb-2 block text-sm font-medium text-[#F0E8D2]/70">Duration</label>
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => {
+                      setDuration(d);
+                      // Reset start if current selection doesn't fit new duration
+                      if (selectedStartHour !== null && !isRangeAvailable(selectedStartHour, d)) {
+                        setSelectedStartHour(null);
+                      }
+                    }}
+                    className={`rounded-lg border py-3 text-center text-sm font-medium transition-colors ${
+                      duration === d
+                        ? "border-[#2D6A47] bg-[#2D6A47]/[0.15] text-[#F0E8D2]"
+                        : "border-[#F0E8D2]/10 text-[#F0E8D2]/60 hover:border-[#F0E8D2]/20"
+                    }`}
+                  >
+                    <span className="block font-bold">{d} hr{d > 1 ? "s" : ""}</span>
+                    <span className="block text-xs text-[#F0E8D2]/40">${d * 35}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Start time picker */}
+            <label className="mb-2 block text-sm font-medium text-[#F0E8D2]/70">Start Time</label>
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
               {SLOTS.map((slot) => {
                 const isBooked = bookedHours.includes(slot.hour);
-                const isSelected = selectedHours.includes(slot.hour);
+                const canFit = isRangeAvailable(slot.hour, duration);
+                const isUnavailable = isBooked || !canFit;
+                const isSelected = selectedStartHour === slot.hour;
                 return (
                   <button
                     key={slot.hour}
-                    disabled={isBooked}
-                    onClick={() => {
-                      if (isSelected) {
-                        setSelectedHours((prev) => prev.filter((h) => h !== slot.hour));
-                      } else if (selectedHours.length === 0) {
-                        setSelectedHours([slot.hour]);
-                      } else if (selectedHours.length === 1) {
-                        const existing = selectedHours[0];
-                        if (Math.abs(slot.hour - existing) === 1 && !bookedHours.includes(slot.hour)) {
-                          setSelectedHours([Math.min(existing, slot.hour), Math.max(existing, slot.hour)]);
-                        } else {
-                          setSelectedHours([slot.hour]);
-                        }
-                      } else {
-                        setSelectedHours([slot.hour]);
-                      }
-                    }}
+                    disabled={isUnavailable}
+                    onClick={() => setSelectedStartHour(isSelected ? null : slot.hour)}
                     className={`rounded-lg border px-3 py-3 text-center text-sm font-medium transition-colors ${
-                      isBooked
-                        ? "cursor-not-allowed border-[#F0E8D2]/5 bg-[#F0E8D2]/[0.02] text-[#F0E8D2]/20 line-through"
+                      isUnavailable
+                        ? "cursor-not-allowed border-[#F0E8D2]/5 bg-[#F0E8D2]/[0.02] text-[#F0E8D2]/20"
                         : isSelected
                           ? "border-[#2D6A47] bg-[#2D6A47]/[0.15] text-[#F0E8D2]"
                           : "border-[#F0E8D2]/10 text-[#F0E8D2]/60 hover:border-[#F0E8D2]/20"
@@ -426,13 +457,14 @@ export default function BookPage() {
                   >
                     {slot.label}
                     {isBooked && <span className="block text-[10px] uppercase tracking-wider">Booked</span>}
+                    {!isBooked && !canFit && <span className="block text-[10px] uppercase tracking-wider">N/A</span>}
                   </button>
                 );
               })}
             </div>
-            {selectedHours.length > 0 && (
+            {selectedStartHour !== null && (
               <p className="mt-3 text-sm text-[#F0E8D2]/50">
-                Selected: {timeDisplay} ({totalHours} hour{totalHours > 1 ? "s" : ""})
+                Selected: {timeDisplay} ({totalHours} hour{totalHours > 1 ? "s" : ""} — {canBookFree ? "included" : `$${totalPrice}`})
               </p>
             )}
           </div>

@@ -243,15 +243,16 @@ export async function POST(req: NextRequest) {
     const locationName = meta.location || "";
     const dateISO = meta.dateISO || "";
     const hour = parseInt(meta.hour || "0", 10);
+    const dur = parseInt(meta.duration || "1", 10);
     const customerName = meta.customerName || "";
     const customerEmail = meta.customerEmail || "";
     const customerPhone = meta.customerPhone || "";
     const dateDisplay = meta.date || dateISO;
-    const timeDisplay = meta.time || `${formatTime(hour)} – ${formatTime(hour + 1)}`;
+    const timeDisplay = meta.time || `${formatTime(hour)} – ${formatTime(hour + dur)}`;
 
-    // Build start/end timestamps
+    // Build start/end timestamps for the full duration
     const startTime = new Date(`${dateISO}T${String(hour).padStart(2, "0")}:00:00`);
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    const endTime = new Date(startTime.getTime() + dur * 60 * 60 * 1000);
 
     // Upsert customer
     const { data: existingCustomer } = await supabaseAdmin
@@ -287,17 +288,23 @@ export async function POST(req: NextRequest) {
 
     console.log("[WEBHOOK] Customer ID:", customerId);
 
-    // Create booking
-    const { error: bookErr } = await supabaseAdmin.from("bookings").insert({
-      customer_id: customerId,
-      location: locationName.toLowerCase(),
-      start_time: startTime.toISOString(),
-      end_time: endTime.toISOString(),
-      duration_hours: 1,
-      status: "confirmed",
-      payment_status: "paid",
-      stripe_payment_id: session.payment_intent as string,
+    // Create booking(s) — one per hour slot to prevent double-booking
+    const bookingRows = Array.from({ length: dur }, (_, i) => {
+      const slotStart = new Date(`${dateISO}T${String(hour + i).padStart(2, "0")}:00:00`);
+      const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+      return {
+        customer_id: customerId,
+        location: locationName.toLowerCase(),
+        start_time: slotStart.toISOString(),
+        end_time: slotEnd.toISOString(),
+        duration_hours: 1,
+        status: "confirmed",
+        payment_status: "paid",
+        stripe_payment_id: session.payment_intent as string,
+      };
     });
+
+    const { error: bookErr } = await supabaseAdmin.from("bookings").insert(bookingRows);
 
     if (bookErr) {
       console.error("[WEBHOOK] Failed to create booking:", bookErr);

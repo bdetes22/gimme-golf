@@ -19,7 +19,10 @@ export async function POST(req: NextRequest) {
       amount,
       dateISO,
       hour,
+      duration,
     } = body;
+
+    const dur = duration || 1;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
             currency: "usd",
             product_data: {
               name: `Golf Simulator — ${location}`,
-              description: `${date} at ${time} (1 hour)`,
+              description: `${date} at ${time} (${dur} hour${dur > 1 ? "s" : ""})`,
             },
             unit_amount: amount,
           },
@@ -44,6 +47,7 @@ export async function POST(req: NextRequest) {
         time,
         dateISO,
         hour: String(hour),
+        duration: String(dur),
         customerName,
         customerEmail,
         customerPhone: customerPhone || "",
