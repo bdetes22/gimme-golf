@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { dbSelect } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
 
@@ -10,47 +10,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+  // Fetch all customers
+  const customers = await dbSelect("customers", "order=created_at.desc");
+
+  // Fetch all active memberships
+  const memberships = await dbSelect("memberships", "active=eq.true");
 
   // Fetch bookings with customer info
-  const { data: bookings, error: bookingsError } = await supabase
-    .from("bookings")
-    .select("*, customers(name, email)")
-    .order("start_time", { ascending: false })
-    .limit(100);
+  const bookings = await dbSelect(
+    "bookings",
+    "select=*,customers(name,email)&order=start_time.desc&limit=100"
+  );
 
-  if (bookingsError) {
-    console.error("Failed to fetch bookings:", bookingsError);
-    return NextResponse.json({ error: "Failed to fetch bookings" }, { status: 500 });
-  }
-
-  // Fetch customers - simple query first, then memberships separately
-  const { data: customers, error: customersError } = await supabase
-    .from("customers")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  console.log("[ADMIN] Service key starts with:", process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20));
-  console.log("[ADMIN] Customers found:", customers?.length, "Error:", customersError);
-
-  if (customersError) {
-    console.error("Failed to fetch customers:", customersError);
-    return NextResponse.json({ error: "Failed to fetch customers" }, { status: 500 });
-  }
-
-  // Fetch memberships separately
-  const { data: allMemberships } = await supabase
-    .from("memberships")
-    .select("*")
-    .eq("active", true);
-
-  // Map customers to include their active membership
-  const customersWithMembership = (customers || []).map((c) => {
-    const mem = (allMemberships || []).find((m) => m.customer_id === c.id) || null;
+  // Map customers with memberships
+  const customersWithMembership = (customers || []).map((c: Record<string, unknown>) => {
+    const mem = (memberships || []).find(
+      (m: Record<string, unknown>) => m.customer_id === c.id
+    ) || null;
     return {
       id: c.id,
       name: c.name,
@@ -65,37 +41,27 @@ export async function GET(req: NextRequest) {
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
-
   const dayOfWeek = now.getDay();
-  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
-  const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).toISOString();
+  const weekEnd = new Date(new Date(weekStart).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const { count: bookingsTodayCount } = await supabase
-    .from("bookings")
-    .select("id", { count: "exact", head: true })
-    .gte("start_time", todayStart)
-    .lt("start_time", todayEnd)
-    .neq("status", "cancelled");
-
-  const { count: bookingsWeekCount } = await supabase
-    .from("bookings")
-    .select("id", { count: "exact", head: true })
-    .gte("start_time", weekStart.toISOString())
-    .lt("start_time", weekEnd.toISOString())
-    .neq("status", "cancelled");
-
-  const { count: activeMembersCount } = await supabase
-    .from("memberships")
-    .select("id", { count: "exact", head: true })
-    .eq("active", true);
+  const todayBookings = await dbSelect(
+    "bookings",
+    `select=id&start_time=gte.${todayStart}&start_time=lt.${todayEnd}&status=neq.cancelled`
+  );
+  const weekBookings = await dbSelect(
+    "bookings",
+    `select=id&start_time=gte.${weekStart}&start_time=lt.${weekEnd}&status=neq.cancelled`
+  );
+  const activeMembers = await dbSelect("memberships", "select=id&active=eq.true");
 
   return NextResponse.json({
     bookings: bookings || [],
     customers: customersWithMembership,
     stats: {
-      bookingsToday: bookingsTodayCount || 0,
-      bookingsThisWeek: bookingsWeekCount || 0,
-      activeMembers: activeMembersCount || 0,
+      bookingsToday: Array.isArray(todayBookings) ? todayBookings.length : 0,
+      bookingsThisWeek: Array.isArray(weekBookings) ? weekBookings.length : 0,
+      activeMembers: Array.isArray(activeMembers) ? activeMembers.length : 0,
     },
   });
 }
