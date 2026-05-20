@@ -159,13 +159,13 @@ export default function AccountPage() {
     <div className="min-h-screen pt-24 pb-16">
       <div className="mx-auto max-w-3xl px-6">
         {/* Header */}
-        <div className="mb-10 flex items-center justify-between">
+        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="mb-1 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
               Welcome back
             </p>
             <h1
-              className="text-4xl font-bold uppercase text-[#F0E8D2]"
+              className="text-3xl font-bold uppercase text-[#F0E8D2] sm:text-4xl"
               style={{ fontFamily: "var(--font-barlow-condensed)" }}
             >
               {userName}
@@ -173,7 +173,7 @@ export default function AccountPage() {
           </div>
           <button
             onClick={handleSignOut}
-            className="rounded border border-[#F0E8D2]/20 px-4 py-2 text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50 transition-colors hover:border-red-500/50 hover:text-red-400"
+            className="self-start rounded border border-[#F0E8D2]/20 px-4 py-2 text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50 transition-colors hover:border-red-500/50 hover:text-red-400"
           >
             Sign Out
           </button>
@@ -181,7 +181,7 @@ export default function AccountPage() {
 
         {/* Membership Card */}
         <div className="mb-8 rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-6">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#F0E8D2]/40">
                 Membership
@@ -258,9 +258,9 @@ export default function AccountPage() {
               {upcomingBookings.map((b) => (
                 <div
                   key={b.id}
-                  className="flex items-center justify-between rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-5"
+                  className="flex flex-col gap-3 rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-5 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold capitalize text-[#F0E8D2]">
                       {b.location}
                     </p>
@@ -271,7 +271,7 @@ export default function AccountPage() {
                   <button
                     onClick={() => handleCancel(b.id)}
                     disabled={cancelling === b.id}
-                    className="rounded border border-[#F0E8D2]/10 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/40 transition-colors hover:border-red-500/50 hover:text-red-400 disabled:opacity-50"
+                    className="self-start shrink-0 rounded border border-[#F0E8D2]/10 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/40 transition-colors hover:border-red-500/50 hover:text-red-400 disabled:opacity-50"
                   >
                     {cancelling === b.id ? "..." : "Cancel"}
                   </button>

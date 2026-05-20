@@ -243,7 +243,7 @@ export default function BookPage() {
                     )}
                   </div>
                   <span
-                    className={`mt-1.5 text-xs font-medium ${
+                    className={`mt-1.5 hidden text-xs font-medium sm:block ${
                       i <= step ? "text-[#F0E8D2]/70" : "text-[#F0E8D2]/30"
                     }`}
                   >
@@ -446,36 +446,36 @@ export default function BookPage() {
             </h2>
             <div className="mb-8 rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-6">
               <div className="flex flex-col gap-4">
-                <div className="flex justify-between border-b border-[#F0E8D2]/10 pb-3">
+                <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Location</span>
                   <span className="text-sm font-medium text-[#F0E8D2]">{locObj?.name}</span>
                 </div>
-                <div className="flex justify-between border-b border-[#F0E8D2]/10 pb-3">
+                <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Address</span>
                   <span className="text-sm font-medium text-[#F0E8D2]">{locObj?.address}</span>
                 </div>
-                <div className="flex justify-between border-b border-[#F0E8D2]/10 pb-3">
+                <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Date</span>
                   <span className="text-sm font-medium text-[#F0E8D2]">{selectedDate && fmt(selectedDate)}</span>
                 </div>
-                <div className="flex justify-between border-b border-[#F0E8D2]/10 pb-3">
+                <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Time</span>
                   <span className="text-sm font-medium text-[#F0E8D2]">{slotObj?.label} – {slotObj?.endLabel}</span>
                 </div>
-                <div className="flex justify-between border-b border-[#F0E8D2]/10 pb-3">
+                <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Duration</span>
                   <span className="text-sm font-medium text-[#F0E8D2]">1 hour</span>
                 </div>
-                <div className="flex justify-between border-b border-[#F0E8D2]/10 pb-3">
+                <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Name</span>
                   <span className="text-sm font-medium text-[#F0E8D2]">{name}</span>
                 </div>
-                <div className="flex justify-between border-b border-[#F0E8D2]/10 pb-3">
+                <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Email</span>
-                  <span className="text-sm font-medium text-[#F0E8D2]">{email}</span>
+                  <span className="text-sm font-medium text-[#F0E8D2] break-all">{email}</span>
                 </div>
                 {phone && (
-                  <div className="flex justify-between border-b border-[#F0E8D2]/10 pb-3">
+                  <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                     <span className="text-sm text-[#F0E8D2]/50">Phone</span>
                     <span className="text-sm font-medium text-[#F0E8D2]">{phone}</span>
                   </div>

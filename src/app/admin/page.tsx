@@ -199,7 +199,7 @@ export default function AdminPage() {
   if (!data) return null;
 
   return (
-    <div className="min-h-screen bg-[#060A07] text-[#F0E8D2] px-4 py-8">
+    <div className="min-h-screen bg-[#060A07] text-[#F0E8D2] px-4 py-8 pt-24">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <h1
@@ -327,7 +327,7 @@ export default function AdminPage() {
 
           {/* Bookings Table */}
           <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead>
                 <tr className="border-b border-[#F0E8D2]/10 text-[#F0E8D2]/60 text-xs uppercase">
                   <th className="text-left p-3">Customer</th>
@@ -401,7 +401,7 @@ export default function AdminPage() {
             CUSTOMERS
           </h2>
           <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead>
                 <tr className="border-b border-[#F0E8D2]/10 text-[#F0E8D2]/60 text-xs uppercase">
                   <th className="text-left p-3">Name</th>

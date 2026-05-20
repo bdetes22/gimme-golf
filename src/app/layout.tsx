@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   title: "Gimme Golf | Golf Simulator Rental & Installation in Utah",
   description:
     "Premium golf simulator experiences in Kaysville and Clearfield, Utah. Book a bay, shop gear, or build your own setup.",
+  icons: {
+    icon: "/logos/logo-icon.png",
+    apple: "/logos/logo-icon.png",
+  },
 };
 
 export default function RootLayout({

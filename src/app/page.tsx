@@ -148,7 +148,7 @@ export default function HomePage() {
             Play at Our Locations &nbsp;·&nbsp; Build Your Own at Home
           </p>
           <h1
-            className="mb-6 text-5xl font-bold uppercase leading-[1.1] tracking-tight text-[#F0E8D2] sm:text-7xl lg:text-8xl"
+            className="mb-6 text-4xl font-bold uppercase leading-[1.1] tracking-tight text-[#F0E8D2] sm:text-7xl lg:text-8xl"
             style={{ fontFamily: "var(--font-barlow-condensed)" }}
           >
             Play Golf
@@ -195,8 +195,8 @@ export default function HomePage() {
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* ── Kaysville ── */}
-            <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
-              <div className="absolute right-6 top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
+            <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-6 sm:p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
+              <div className="absolute right-4 top-4 sm:right-6 sm:top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
               </div>
               <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
@@ -220,8 +220,8 @@ export default function HomePage() {
             </div>
 
             {/* ── Clearfield ── */}
-            <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
-              <div className="absolute right-6 top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
+            <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-6 sm:p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
+              <div className="absolute right-4 top-4 sm:right-6 sm:top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
               </div>
               <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
@@ -300,7 +300,7 @@ export default function HomePage() {
 
             {/* Right — Build Process Steps */}
             <div className="relative">
-              <div className="absolute left-[23px] top-8 bottom-8 w-px bg-gradient-to-b from-[#C8973A]/40 via-[#2D6A47]/40 to-[#C8973A]/40 lg:block hidden" />
+              <div className="absolute left-[23px] top-8 bottom-8 w-px bg-gradient-to-b from-[#C8973A]/40 via-[#2D6A47]/40 to-[#C8973A]/40" />
               <div className="flex flex-col gap-6">
                 {buildSteps.map((item, i) => (
                   <div key={item.step} className="flex gap-5">
