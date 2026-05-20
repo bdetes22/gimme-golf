@@ -58,7 +58,7 @@ export async function getUserMembership(customerId: string) {
     .from("memberships")
     .select("*")
     .eq("customer_id", customerId)
-    .eq("status", "active")
+    .eq("active", true)
     .maybeSingle();
 
   if (error) throw error;
