@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 const links = [
   { href: "/", label: "Home" },
@@ -14,6 +16,27 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    setOpen(false);
+  }
+
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-[#F0E8D2]/10 bg-[#060A07] backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -35,12 +58,45 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <Link
-          href="/book"
-          className="hidden rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 md:block"
-        >
-          Book Now
-        </Link>
+        <div className="hidden items-center gap-4 md:flex">
+          {user ? (
+            <>
+              <Link
+                href="/account"
+                className="text-sm font-medium text-[#C8973A] transition-colors hover:text-[#C8973A]/80"
+              >
+                {user.user_metadata?.name || user.email}
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/50 transition-colors hover:text-[#F0E8D2]"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/70 transition-colors hover:text-[#2D6A47]"
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/70 transition-colors hover:text-[#2D6A47]"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
+          <Link
+            href="/book"
+            className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+          >
+            Book Now
+          </Link>
+        </div>
 
         {/* Mobile menu button */}
         <button
@@ -76,6 +132,40 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
+          {user ? (
+            <div className="mt-4 flex flex-col gap-3 border-t border-[#F0E8D2]/10 pt-4">
+              <Link
+                href="/account"
+                onClick={() => setOpen(false)}
+                className="text-sm font-medium text-[#C8973A]"
+              >
+                {user.user_metadata?.name || user.email}
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="text-left text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/50 transition-colors hover:text-[#F0E8D2]"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div className="mt-4 flex flex-col gap-3 border-t border-[#F0E8D2]/10 pt-4">
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/70 transition-colors hover:text-[#2D6A47]"
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setOpen(false)}
+                className="text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/70 transition-colors hover:text-[#2D6A47]"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
           <Link
             href="/book"
             onClick={() => setOpen(false)}
