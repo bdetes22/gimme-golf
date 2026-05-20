@@ -139,6 +139,11 @@ export default function AdminPage() {
     doAction({ action: "remove_sessions", customerId, sessions });
   };
 
+  const handleDeleteCustomer = (customerId: string, customerName: string) => {
+    if (!confirm(`Delete ${customerName}? This will remove all their bookings, memberships, and auth account.`)) return;
+    doAction({ action: "delete_customer", customerId });
+  };
+
   const formatDateTime = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleDateString("en-US", {
@@ -405,6 +410,7 @@ export default function AdminPage() {
                   <th className="text-left p-3">Membership</th>
                   <th className="text-left p-3">Sessions</th>
                   <th className="text-left p-3">Actions</th>
+                  <th className="text-left p-3"></th>
                 </tr>
               </thead>
               <tbody>
@@ -451,11 +457,20 @@ export default function AdminPage() {
                         </button>
                       </div>
                     </td>
+                    <td className="p-3">
+                      <button
+                        onClick={() => handleDeleteCustomer(c.id, c.name)}
+                        disabled={actionLoading !== null}
+                        className="px-2 py-1 border border-red-500/30 text-red-400/60 rounded text-xs hover:bg-red-900/30 hover:text-red-400 disabled:opacity-50 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {data.customers.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-6 text-center text-[#F0E8D2]/40">
+                    <td colSpan={7} className="p-6 text-center text-[#F0E8D2]/40">
                       No customers found
                     </td>
                   </tr>

@@ -147,5 +147,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   }
 
+  if (action === "delete_customer") {
+    const { customerId } = body;
+    if (!customerId) {
+      return NextResponse.json({ error: "customerId is required" }, { status: 400 });
+    }
+
+    // Delete memberships, bookings, then customer (cascade should handle but be explicit)
+    await supabase.from("memberships").delete().eq("customer_id", customerId);
+    await supabase.from("bookings").delete().eq("customer_id", customerId);
+
+    // Delete auth user
+    await supabase.auth.admin.deleteUser(customerId);
+
+    // Delete customer record
+    const { error } = await supabase.from("customers").delete().eq("id", customerId);
+    if (error) {
+      console.error("Failed to delete customer:", error);
+      return NextResponse.json({ error: "Failed to delete customer" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  }
+
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }
