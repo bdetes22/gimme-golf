@@ -1,0 +1,59 @@
+import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
+
+export const dynamic = "force-dynamic";
+
+const PLANS: Record<string, { name: string; amount: number; type: string }> = {
+  punchpass: { name: "Punch Pass — 10 Sessions", amount: 29900, type: "punchpass" },
+  monthly: { name: "Monthly Membership", amount: 19900, type: "monthly" },
+  annual: { name: "Annual Membership", amount: 120000, type: "annual" },
+};
+
+export async function POST(req: NextRequest) {
+  try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2026-04-22.dahlia",
+    });
+
+    const { plan, customerId, customerEmail, customerName } = await req.json();
+
+    const planInfo = PLANS[plan];
+    if (!planInfo) {
+      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    }
+
+    if (!customerId || !customerEmail) {
+      return NextResponse.json({ error: "Must be logged in to purchase a membership" }, { status: 400 });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      customer_email: customerEmail,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: planInfo.name },
+            unit_amount: planInfo.amount,
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        type: "membership",
+        plan: planInfo.type,
+        customerId,
+        customerEmail,
+        customerName: customerName || "",
+      },
+      success_url: `${req.nextUrl.origin}/memberships/success?plan=${plan}`,
+      cancel_url: `${req.nextUrl.origin}/memberships`,
+    });
+
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

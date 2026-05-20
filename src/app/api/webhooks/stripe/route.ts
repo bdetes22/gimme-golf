@@ -130,6 +130,116 @@ export async function POST(req: NextRequest) {
     const meta = session.metadata || {};
     console.log("[WEBHOOK] Metadata:", JSON.stringify(meta));
 
+    // ── Membership purchase ──
+    if (meta.type === "membership") {
+      const plan = meta.plan || "";
+      const customerId = meta.customerId || "";
+      const customerEmail = meta.customerEmail || "";
+      const customerName = meta.customerName || "";
+
+      console.log("[WEBHOOK] Membership purchase:", plan, customerId);
+
+      // Deactivate any existing memberships
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      const restHeaders = {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      };
+
+      await fetch(`${url}/rest/v1/memberships?customer_id=eq.${customerId}&active=eq.true`, {
+        method: "PATCH",
+        headers: restHeaders,
+        body: JSON.stringify({ active: false }),
+      });
+
+      // Calculate dates and sessions
+      const now = new Date();
+      const startDate = now.toISOString().split("T")[0];
+      let endDate: string | null = null;
+      let sessionsRemaining: number | null = null;
+
+      if (plan === "punchpass") {
+        sessionsRemaining = 10;
+      } else if (plan === "monthly") {
+        const end = new Date(now);
+        end.setMonth(end.getMonth() + 1);
+        endDate = end.toISOString().split("T")[0];
+      } else if (plan === "annual") {
+        const end = new Date(now);
+        end.setFullYear(end.getFullYear() + 1);
+        endDate = end.toISOString().split("T")[0];
+      }
+
+      // Create membership
+      await fetch(`${url}/rest/v1/memberships`, {
+        method: "POST",
+        headers: restHeaders,
+        body: JSON.stringify({
+          customer_id: customerId,
+          type: plan,
+          sessions_remaining: sessionsRemaining,
+          start_date: startDate,
+          end_date: endDate,
+          active: true,
+        }),
+      });
+
+      // Send welcome email
+      const planLabels: Record<string, string> = {
+        punchpass: "Punch Pass (10 Sessions)",
+        monthly: "Monthly Membership",
+        annual: "Annual Membership",
+      };
+      const planLabel = planLabels[plan] || plan;
+
+      try {
+        await resend.emails.send({
+          from: "Gimme Golf <onboarding@resend.dev>",
+          to: customerEmail,
+          subject: `Welcome to Gimme Golf — ${planLabel}`,
+          html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#060A07;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+    </div>
+    <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
+      <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Welcome to the Club, ${customerName}!</h2>
+      <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px 0;">
+        Your ${planLabel} is now active. Here's what you get:
+      </p>
+      <div style="background-color:#2D6A47;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
+        <p style="color:#F0E8D2;font-size:24px;font-weight:700;margin:0;">${planLabel}</p>
+        ${sessionsRemaining ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">${sessionsRemaining} sessions ready to use</p>` : ""}
+        ${endDate ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">Valid through ${endDate}</p>` : ""}
+        ${plan === "punchpass" ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">No expiration</p>` : ""}
+      </div>
+      <div style="text-align:center;">
+        <a href="https://gimme-git-main-bridgn.vercel.app/book" style="display:inline-block;background-color:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Book Your First Session</a>
+      </div>
+    </div>
+    <div style="text-align:center;padding:16px 0;">
+      <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+        });
+        console.log("[WEBHOOK] Membership welcome email sent to", customerEmail);
+      } catch (emailErr) {
+        console.error("[WEBHOOK] Failed to send membership email:", emailErr);
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
+    // ── Booking purchase ──
     const locationName = meta.location || "";
     const dateISO = meta.dateISO || "";
     const hour = parseInt(meta.hour || "0", 10);

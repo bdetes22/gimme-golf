@@ -224,7 +224,7 @@ export default function AccountPage() {
               </div>
             ) : !membership ? (
               <Link
-                href="/#pricing"
+                href="/memberships"
                 className="rounded bg-[#2D6A47] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
               >
                 View Plans
