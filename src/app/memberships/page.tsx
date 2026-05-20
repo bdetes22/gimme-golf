@@ -64,6 +64,7 @@ export default function MembershipsPage() {
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string | null>(null);
+  const [agreedToRules, setAgreedToRules] = useState(false);
 
   useEffect(() => {
     async function checkAuth() {
@@ -194,8 +195,8 @@ export default function MembershipsPage() {
               {plan.stripe ? (
                 <button
                   onClick={() => handlePurchase(plan.id)}
-                  disabled={loading === plan.id}
-                  className={`mt-auto block rounded px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 ${
+                  disabled={loading === plan.id || !agreedToRules}
+                  className={`mt-auto block rounded px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                     plan.highlight
                       ? "bg-[#2D6A47] text-[#F0E8D2] hover:bg-[#2D6A47]/90"
                       : plan.border === "gold"
@@ -215,6 +216,56 @@ export default function MembershipsPage() {
               )}
             </div>
           ))}
+        </div>
+
+        {/* Agree to Rules Checkbox */}
+        <div className="mt-10 flex justify-center">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={agreedToRules}
+              onChange={(e) => setAgreedToRules(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-[#F0E8D2]/30 bg-[#060A07] accent-[#2D6A47]"
+            />
+            <span className="text-sm text-[#F0E8D2]/60">
+              I have read and agree to the{" "}
+              <a href="#rules" className="text-[#2D6A47] underline">
+                membership rules
+              </a>
+            </span>
+          </label>
+        </div>
+
+        {/* Membership Rules */}
+        <div id="rules" className="mt-16">
+          <div className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-8">
+            <h3
+              className="mb-6 text-xl font-bold uppercase text-[#F0E8D2]"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              Membership Rules
+            </h3>
+            <ol className="flex flex-col gap-3">
+              {[
+                "Membership is non-transferable — one membership per person.",
+                "Member must be present during all sessions.",
+                "Monthly hours reset on your billing date each month.",
+                "Unused hours do not roll over.",
+                "Punch passes expire 1 year from purchase date.",
+                "Max 2 hours per booking.",
+                "Max 1 booking per day.",
+                "Valid at both Kaysville and Clearfield locations.",
+                "Memberships can be cancelled anytime — access continues until end of billing period.",
+              ].map((rule, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm leading-relaxed text-[#F0E8D2]/60">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#F0E8D2]/10 text-[10px] font-bold text-[#F0E8D2]/40">
+                    {i + 1}
+                  </span>
+                  {rule}
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
 
         {/* FAQ / Info */}
