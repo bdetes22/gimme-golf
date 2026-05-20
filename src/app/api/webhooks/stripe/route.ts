@@ -123,9 +123,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
+  console.log("[WEBHOOK] Event received:", event.type);
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const meta = session.metadata || {};
+    console.log("[WEBHOOK] Metadata:", JSON.stringify(meta));
 
     const locationName = meta.location || "";
     const dateISO = meta.dateISO || "";
@@ -172,6 +175,8 @@ export async function POST(req: NextRequest) {
       customerId = newCustomer.id;
     }
 
+    console.log("[WEBHOOK] Customer ID:", customerId);
+
     // Create booking
     const { error: bookErr } = await supabaseAdmin.from("bookings").insert({
       customer_id: customerId,
@@ -185,24 +190,29 @@ export async function POST(req: NextRequest) {
     });
 
     if (bookErr) {
-      console.error("Failed to create booking:", bookErr);
+      console.error("[WEBHOOK] Failed to create booking:", bookErr);
       return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
     }
+    console.log("[WEBHOOK] Booking saved successfully");
 
     // Fetch location details for keybox code and YouTube URL
-    const { data: locationData } = await supabaseAdmin
+    const { data: locationData, error: locErr } = await supabaseAdmin
       .from("locations")
       .select("address, keybox_code, youtube_url")
       .eq("name", locationName)
       .single();
 
+    console.log("[WEBHOOK] Location lookup:", { locationData, locErr });
+
     const keyboxCode = locationData?.keybox_code || "N/A";
     const youtubeUrl = locationData?.youtube_url || "";
     const address = locationData?.address || "";
 
+    console.log("[WEBHOOK] Sending email to:", customerEmail, "| keybox:", keyboxCode, "| youtube:", youtubeUrl);
+
     // Send confirmation email
     try {
-      await resend.emails.send({
+      const emailResult = await resend.emails.send({
         from: "Gimme Golf <onboarding@resend.dev>",
         to: customerEmail,
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
@@ -216,12 +226,12 @@ export async function POST(req: NextRequest) {
           youtubeUrl,
         }),
       });
-      console.log(`Confirmation email sent to ${customerEmail}`);
+      console.log("[WEBHOOK] Resend response:", JSON.stringify(emailResult));
     } catch (emailErr) {
-      console.error("Failed to send confirmation email:", emailErr);
+      console.error("[WEBHOOK] Resend error:", emailErr);
     }
 
-    console.log(`Booking saved: ${locationName} on ${dateISO} at ${hour}:00`);
+    console.log(`[WEBHOOK] Complete: ${locationName} on ${dateISO} at ${hour}:00`);
   }
 
   return NextResponse.json({ received: true });
