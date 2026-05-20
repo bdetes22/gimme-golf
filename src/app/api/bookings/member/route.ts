@@ -51,8 +51,11 @@ export async function POST(req: NextRequest) {
     const membership = memberships[0];
     const today = new Date().toISOString().split("T")[0];
 
+    // ── Staff/Owner — no limits ──
+    // Skip all limit checks for staff type
+
     // ── Punch Pass limits ──
-    if (membership.type === "punchpass") {
+    if (membership.type !== "staff" && membership.type === "punchpass") {
       const remaining = membership.sessions_remaining || 0;
       if (remaining < slotCount) {
         return NextResponse.json({
@@ -62,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Monthly / Annual limits (20 hours per month) ──
-    if (membership.type === "monthly" || membership.type === "annual") {
+    if (membership.type !== "staff" && (membership.type === "monthly" || membership.type === "annual")) {
       // Check expiry
       if (membership.end_date && today > membership.end_date) {
         await fetch(`${url()}/rest/v1/memberships?id=eq.${membership.id}`, {
@@ -134,7 +137,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Update membership tracking ──
+    // ── Update membership tracking (skip for staff) ──
+    if (membership.type === "staff") {
+      return NextResponse.json({ success: true, slotsBooked: slotCount });
+    }
+
     const updateData: Record<string, unknown> = {
       last_booking_date: dateISO,
     };

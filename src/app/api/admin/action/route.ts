@@ -146,6 +146,55 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   }
 
+  if (action === "set_membership") {
+    const { customerId, type, startDate, endDate, sessionsRemaining } = body;
+    if (!customerId || !type) {
+      return NextResponse.json({ error: "customerId and type are required" }, { status: 400 });
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const headers = {
+      apikey: apiKey,
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    };
+
+    // Deactivate existing memberships
+    await fetch(`${apiUrl}/rest/v1/memberships?customer_id=eq.${customerId}&active=eq.true`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ active: false }),
+    });
+
+    // Create new membership
+    if (type !== "walkin") {
+      const memData: Record<string, unknown> = {
+        customer_id: customerId,
+        type,
+        active: true,
+        start_date: startDate || new Date().toISOString().split("T")[0],
+        end_date: endDate || null,
+        sessions_remaining: type === "punchpass" ? (sessionsRemaining || 10) : null,
+        hours_used_this_month: 0,
+        hours_reset_date: type === "staff" ? null : (() => {
+          const d = new Date();
+          d.setMonth(d.getMonth() + 1);
+          return d.toISOString().split("T")[0];
+        })(),
+      };
+
+      await fetch(`${apiUrl}/rest/v1/memberships`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(memData),
+      });
+    }
+
+    return NextResponse.json({ success: true });
+  }
+
   if (action === "delete_customer") {
     const { customerId } = body;
     if (!customerId) {

@@ -60,6 +60,14 @@ export default function AdminPage() {
   const [newBookingDate, setNewBookingDate] = useState("");
   const [newBookingHour, setNewBookingHour] = useState(9);
 
+  // Membership modal state
+  const [memModalCustomer, setMemModalCustomer] = useState<Customer | null>(null);
+  const [memType, setMemType] = useState("monthly");
+  const [memStartDate, setMemStartDate] = useState("");
+  const [memEndDate, setMemEndDate] = useState("");
+  const [memNoExpiry, setMemNoExpiry] = useState(false);
+  const [memSessions, setMemSessions] = useState(10);
+
   const [storedPassword, setStoredPassword] = useState("");
 
   const fetchData = useCallback(
@@ -144,6 +152,29 @@ export default function AdminPage() {
   const handleDeleteCustomer = (customerId: string, customerName: string) => {
     if (!confirm(`Delete ${customerName}? This will remove all their bookings, memberships, and auth account.`)) return;
     doAction({ action: "delete_customer", customerId });
+  };
+
+  const openMemModal = (customer: Customer) => {
+    setMemModalCustomer(customer);
+    setMemType(customer.membership?.type || "monthly");
+    setMemStartDate(new Date().toISOString().split("T")[0]);
+    setMemEndDate("");
+    setMemNoExpiry(false);
+    setMemSessions(10);
+  };
+
+  const handleSetMembership = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!memModalCustomer) return;
+    await doAction({
+      action: "set_membership",
+      customerId: memModalCustomer.id,
+      type: memType,
+      startDate: memStartDate,
+      endDate: memNoExpiry ? null : memEndDate || null,
+      sessionsRemaining: memType === "punchpass" ? memSessions : null,
+    });
+    setMemModalCustomer(null);
   };
 
   const formatDateTime = (iso: string) => {
@@ -434,11 +465,13 @@ export default function AdminPage() {
                       )}
                     </td>
                     <td className="p-3">
-                      {c.membership?.type === "punchpass" && c.membership.sessions_remaining != null
-                        ? `${c.membership.sessions_remaining} sessions`
-                        : (c.membership?.type === "monthly" || c.membership?.type === "annual")
-                          ? `${20 - (c.membership.hours_used_this_month || 0)}/20 hrs`
-                          : "-"}
+                      {c.membership?.type === "staff"
+                        ? <span className="text-[#C8973A] font-medium">Unlimited</span>
+                        : c.membership?.type === "punchpass" && c.membership.sessions_remaining != null
+                          ? `${c.membership.sessions_remaining} sessions`
+                          : (c.membership?.type === "monthly" || c.membership?.type === "annual")
+                            ? `${20 - (c.membership.hours_used_this_month || 0)}/20 hrs`
+                            : "-"}
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-1 flex-wrap">
@@ -462,13 +495,22 @@ export default function AdminPage() {
                       </div>
                     </td>
                     <td className="p-3">
-                      <button
-                        onClick={() => handleDeleteCustomer(c.id, c.name)}
-                        disabled={actionLoading !== null}
-                        className="px-2 py-1 border border-red-500/30 text-red-400/60 rounded text-xs hover:bg-red-900/30 hover:text-red-400 disabled:opacity-50 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openMemModal(c)}
+                          disabled={actionLoading !== null}
+                          className="px-2 py-1 border border-[#C8973A]/30 text-[#C8973A]/70 rounded text-xs hover:bg-[#C8973A]/10 hover:text-[#C8973A] disabled:opacity-50 transition-colors"
+                        >
+                          Membership
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCustomer(c.id, c.name)}
+                          disabled={actionLoading !== null}
+                          className="px-2 py-1 border border-red-500/30 text-red-400/60 rounded text-xs hover:bg-red-900/30 hover:text-red-400 disabled:opacity-50 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -484,6 +526,107 @@ export default function AdminPage() {
           </div>
         </section>
       </div>
+
+      {/* ── Membership Modal ── */}
+      {memModalCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-lg border border-[#F0E8D2]/10 bg-[#060A07] p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3
+                className="text-lg font-bold uppercase text-[#F0E8D2]"
+                style={{ fontFamily: "var(--font-barlow-condensed)" }}
+              >
+                Set Membership — {memModalCustomer.name}
+              </h3>
+              <button
+                onClick={() => setMemModalCustomer(null)}
+                className="text-[#F0E8D2]/40 hover:text-[#F0E8D2]"
+              >
+                &times;
+              </button>
+            </div>
+            <form onSubmit={handleSetMembership} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Type</label>
+                <select
+                  value={memType}
+                  onChange={(e) => setMemType(e.target.value)}
+                  className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]"
+                >
+                  <option value="walkin">Walk-In</option>
+                  <option value="punchpass">Punch Pass</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="annual">Annual</option>
+                  <option value="staff">Staff / Owner (Unlimited)</option>
+                </select>
+              </div>
+
+              {memType === "punchpass" && (
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Sessions Remaining</label>
+                  <input
+                    type="number"
+                    value={memSessions}
+                    onChange={(e) => setMemSessions(Number(e.target.value))}
+                    min={1}
+                    className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Start Date</label>
+                <input
+                  type="date"
+                  value={memStartDate}
+                  onChange={(e) => setMemStartDate(e.target.value)}
+                  className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]"
+                />
+              </div>
+
+              {memType !== "staff" && (
+                <div>
+                  <label className="mb-1 flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={memNoExpiry}
+                      onChange={(e) => setMemNoExpiry(e.target.checked)}
+                      className="accent-[#2D6A47]"
+                    />
+                    <span className="text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">No Expiry</span>
+                  </label>
+                  {!memNoExpiry && (
+                    <input
+                      type="date"
+                      value={memEndDate}
+                      onChange={(e) => setMemEndDate(e.target.value)}
+                      className="mt-1 w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]"
+                      placeholder="End date"
+                    />
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={actionLoading !== null}
+                  className="flex-1 rounded bg-[#2D6A47] px-4 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:opacity-50"
+                >
+                  Save Membership
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMemModalCustomer(null)}
+                  className="rounded border border-[#F0E8D2]/20 px-4 py-2.5 text-sm text-[#F0E8D2]/50 hover:text-[#F0E8D2]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

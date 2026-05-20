@@ -49,6 +49,7 @@ function membershipLabel(type: string) {
     punchpass: "Punch Pass",
     monthly: "Monthly Member",
     annual: "Annual Member",
+    staff: "Staff / Owner",
   };
   return labels[type] || type;
 }
@@ -233,6 +234,13 @@ export default function AccountPage() {
               </Link>
             ) : null}
           </div>
+
+          {/* Staff unlimited indicator */}
+          {membership && membership.type === "staff" && (
+            <div className="mt-5">
+              <p className="text-sm font-medium text-[#C8973A]">Unlimited hours — no booking limits</p>
+            </div>
+          )}
 
           {/* Monthly/Annual hours progress bar */}
           {membership && (membership.type === "monthly" || membership.type === "annual") && (

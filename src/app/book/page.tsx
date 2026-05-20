@@ -114,6 +114,7 @@ export default function BookPage() {
 
   // Can this member book without paying?
   const canBookFree = membership && membership.active && (
+    membership.type === "staff" ||
     membership.type === "monthly" ||
     membership.type === "annual" ||
     (membership.type === "punchpass" && membership.sessions_remaining !== null && membership.sessions_remaining > 0)
