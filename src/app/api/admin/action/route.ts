@@ -153,20 +153,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "customerId is required" }, { status: 400 });
     }
 
-    // Delete memberships, bookings, then customer (cascade should handle but be explicit)
-    await supabase.from("memberships").delete().eq("customer_id", customerId);
-    await supabase.from("bookings").delete().eq("customer_id", customerId);
+    console.log("[ADMIN] Deleting customer:", customerId);
 
-    // Delete auth user
-    await supabase.auth.admin.deleteUser(customerId);
+    // Delete memberships
+    const { error: memErr } = await supabase.from("memberships").delete().eq("customer_id", customerId);
+    if (memErr) console.error("[ADMIN] Failed to delete memberships:", memErr);
+
+    // Delete bookings
+    const { error: bookErr } = await supabase.from("bookings").delete().eq("customer_id", customerId);
+    if (bookErr) console.error("[ADMIN] Failed to delete bookings:", bookErr);
+
+    // Try to delete auth user (may not exist if created via webhook)
+    try {
+      const { error: authErr } = await supabase.auth.admin.deleteUser(customerId);
+      if (authErr) console.log("[ADMIN] Auth user delete skipped (may not exist):", authErr.message);
+    } catch {
+      console.log("[ADMIN] No auth user found for this customer ID");
+    }
 
     // Delete customer record
     const { error } = await supabase.from("customers").delete().eq("id", customerId);
     if (error) {
-      console.error("Failed to delete customer:", error);
+      console.error("[ADMIN] Failed to delete customer:", error);
       return NextResponse.json({ error: "Failed to delete customer" }, { status: 500 });
     }
 
+    console.log("[ADMIN] Customer deleted successfully:", customerId);
     return NextResponse.json({ success: true });
   }
 
