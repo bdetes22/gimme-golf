@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 const PLANS: Record<string, { name: string; amount: number; type: string }> = {
   punchpass: { name: "Punch Pass — 10 Sessions", amount: 29900, type: "punchpass" },
-  monthly: { name: "Monthly Membership", amount: 19900, type: "monthly" },
+  monthly: { name: "Monthly Membership", amount: 17900, type: "monthly" },
   annual: { name: "Annual Membership", amount: 120000, type: "annual" },
 };
 

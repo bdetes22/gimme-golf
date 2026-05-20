@@ -15,12 +15,6 @@ function restHeaders() {
   };
 }
 
-function getWeekStart() {
-  const now = new Date();
-  const day = now.getDay(); // 0=Sun
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day);
-  return start.toISOString().split("T")[0];
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,7 +50,6 @@ export async function POST(req: NextRequest) {
 
     const membership = memberships[0];
     const today = new Date().toISOString().split("T")[0];
-    const weekStart = getWeekStart();
 
     // ── Punch Pass limits ──
     if (membership.type === "punchpass") {
@@ -68,56 +61,48 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Monthly / Annual limits ──
+    // ── Monthly / Annual limits (20 hours per month) ──
     if (membership.type === "monthly" || membership.type === "annual") {
-      // Check daily limit: 1 booking per day (a booking can be 1-2 hours)
-      if (membership.last_booking_date === dateISO) {
+      // Check expiry
+      if (membership.end_date && today > membership.end_date) {
+        await fetch(`${url()}/rest/v1/memberships?id=eq.${membership.id}`, {
+          method: "PATCH",
+          headers: restHeaders(),
+          body: JSON.stringify({ active: false }),
+        });
         return NextResponse.json({
-          error: "Daily limit reached. Members can book 1 session per day.",
-        }, { status: 400 });
+          error: `Your ${membership.type} membership has expired. Please renew to continue booking as a member.`,
+          expired: true,
+        }, { status: 403 });
       }
 
-      // Reset weekly counter if we're in a new week
-      let weeklyUsed = membership.sessions_used_this_week || 0;
-      if (membership.week_reset_date !== weekStart) {
-        weeklyUsed = 0;
+      // Reset monthly hours if past reset date
+      let hoursUsed = membership.hours_used_this_month || 0;
+      const resetDate = membership.hours_reset_date;
+      if (resetDate && today >= resetDate) {
+        hoursUsed = 0;
+        // Set next reset date (1 month from current reset date)
+        const nextReset = new Date(resetDate);
+        nextReset.setMonth(nextReset.getMonth() + 1);
+        await fetch(`${url()}/rest/v1/memberships?id=eq.${membership.id}`, {
+          method: "PATCH",
+          headers: restHeaders(),
+          body: JSON.stringify({
+            hours_used_this_month: 0,
+            hours_reset_date: nextReset.toISOString().split("T")[0],
+          }),
+        });
       }
 
-      // Check weekly limit: max 4 hours per week
-      if (weeklyUsed + slotCount > 4) {
-        const remaining = 4 - weeklyUsed;
+      // Check monthly hours limit (20 hours)
+      const hoursRemaining = 20 - hoursUsed;
+      if (slotCount > hoursRemaining) {
+        const resetDisplay = membership.hours_reset_date || "your next billing date";
         return NextResponse.json({
-          error: `Weekly limit reached. You've used ${weeklyUsed} of 4 hours this week.${remaining > 0 ? ` You can book up to ${remaining} more hour${remaining === 1 ? "" : "s"}.` : ""}`,
+          error: `You have ${hoursRemaining} hour${hoursRemaining === 1 ? "" : "s"} left this month. Your hours reset on ${resetDisplay}. You can pay the walk-in rate or purchase a punch pass for additional sessions.`,
+          hoursRemaining,
+          resetDate: membership.hours_reset_date,
         }, { status: 400 });
-      }
-
-      // Check monthly expiry
-      if (membership.type === "monthly" && membership.end_date) {
-        if (today > membership.end_date) {
-          // Auto-deactivate expired membership
-          await fetch(`${url()}/rest/v1/memberships?id=eq.${membership.id}`, {
-            method: "PATCH",
-            headers: restHeaders(),
-            body: JSON.stringify({ active: false }),
-          });
-          return NextResponse.json({
-            error: "Your monthly membership has expired. Please renew to continue booking as a member.",
-          }, { status: 403 });
-        }
-      }
-
-      // Check annual expiry
-      if (membership.type === "annual" && membership.end_date) {
-        if (today > membership.end_date) {
-          await fetch(`${url()}/rest/v1/memberships?id=eq.${membership.id}`, {
-            method: "PATCH",
-            headers: restHeaders(),
-            body: JSON.stringify({ active: false }),
-          });
-          return NextResponse.json({
-            error: "Your annual membership has expired. Please renew to continue booking as a member.",
-          }, { status: 403 });
-        }
       }
     }
 
@@ -163,11 +148,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (membership.type === "monthly" || membership.type === "annual") {
-      const currentWeekUsed = membership.week_reset_date === weekStart
-        ? (membership.sessions_used_this_week || 0)
-        : 0;
-      updateData.sessions_used_this_week = currentWeekUsed + slotCount;
-      updateData.week_reset_date = weekStart;
+      const resetDate = membership.hours_reset_date;
+      const currentUsed = (resetDate && today >= resetDate) ? 0 : (membership.hours_used_this_month || 0);
+      updateData.hours_used_this_month = currentUsed + slotCount;
+      if (!resetDate) {
+        // Set initial reset date to 1 month from now
+        const nextReset = new Date();
+        nextReset.setMonth(nextReset.getMonth() + 1);
+        updateData.hours_reset_date = nextReset.toISOString().split("T")[0];
+      }
     }
 
     await fetch(`${url()}/rest/v1/memberships?id=eq.${membership.id}`, {

@@ -19,6 +19,8 @@ interface Membership {
   id: string;
   type: string;
   sessions_remaining: number | null;
+  hours_used_this_month: number | null;
+  hours_reset_date: string | null;
   start_date: string;
   end_date: string | null;
   active: boolean;
@@ -231,6 +233,38 @@ export default function AccountPage() {
               </Link>
             ) : null}
           </div>
+
+          {/* Monthly/Annual hours progress bar */}
+          {membership && (membership.type === "monthly" || membership.type === "annual") && (
+            <div className="mt-5">
+              {(() => {
+                const used = membership.hours_used_this_month || 0;
+                const remaining = 20 - used;
+                const pct = Math.min((remaining / 20) * 100, 100);
+                return (
+                  <>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <span className="text-[#F0E8D2]/50">Hours this month</span>
+                      <span className="font-medium text-[#F0E8D2]">
+                        {remaining} of 20 remaining
+                      </span>
+                    </div>
+                    <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#F0E8D2]/10">
+                      <div
+                        className="h-full rounded-full bg-[#2D6A47] transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    {membership.hours_reset_date && (
+                      <p className="mt-1.5 text-xs text-[#F0E8D2]/30">
+                        Resets on {membership.hours_reset_date}
+                      </p>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          )}
         </div>
 
         {/* Book a Session CTA */}

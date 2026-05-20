@@ -19,6 +19,8 @@ interface Membership {
   id: string;
   type: string;
   sessions_remaining: number | null;
+  hours_used_this_month: number | null;
+  hours_reset_date: string | null;
   active: boolean;
 }
 
@@ -408,7 +410,7 @@ export default function AdminPage() {
                   <th className="text-left p-3">Email</th>
                   <th className="text-left p-3">Phone</th>
                   <th className="text-left p-3">Membership</th>
-                  <th className="text-left p-3">Sessions</th>
+                  <th className="text-left p-3">Remaining</th>
                   <th className="text-left p-3">Actions</th>
                   <th className="text-left p-3"></th>
                 </tr>
@@ -432,9 +434,11 @@ export default function AdminPage() {
                       )}
                     </td>
                     <td className="p-3">
-                      {c.membership?.sessions_remaining != null
-                        ? c.membership.sessions_remaining
-                        : "-"}
+                      {c.membership?.type === "punchpass" && c.membership.sessions_remaining != null
+                        ? `${c.membership.sessions_remaining} sessions`
+                        : (c.membership?.type === "monthly" || c.membership?.type === "annual")
+                          ? `${20 - (c.membership.hours_used_this_month || 0)}/20 hrs`
+                          : "-"}
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-1 flex-wrap">
