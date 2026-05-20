@@ -4,8 +4,8 @@ import { useState } from "react";
 
 const includes = [
   {
-    title: "Launch Monitor Selection",
-    description: "We help you choose the right launch monitor for your space, goals, and budget — from Garmin to Trackman.",
+    title: "Professional Launch Monitors",
+    description: "We work with the best in the industry — Uneekor, Trackman, Foresight, and ProTee VX. We'll match the right system to your space and goals.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
@@ -13,8 +13,8 @@ const includes = [
     ),
   },
   {
-    title: "Screen & Enclosure",
-    description: "Premium impact screens and custom enclosures built to fit your exact room dimensions.",
+    title: "Commercial-Grade Screens",
+    description: "Commercial-grade impact screens with custom-built enclosures designed and fitted to your exact room dimensions.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7">
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6Zm0 9.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6Z" />
@@ -22,8 +22,8 @@ const includes = [
     ),
   },
   {
-    title: "Wall Padding & Turf",
-    description: "Safety padding for walls and ceiling, plus high-quality hitting turf for a realistic feel.",
+    title: "Wall Padding & Premium Turf",
+    description: "Professional-grade safety padding for walls and ceiling, plus tour-quality hitting turf for the most realistic feel.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
@@ -40,8 +40,8 @@ const includes = [
     ),
   },
   {
-    title: "Full Installation",
-    description: "We handle everything — mounting, wiring, calibration, and testing. Completely turnkey.",
+    title: "Professional Installation & Calibration",
+    description: "Our team handles all mounting, wiring, calibration, and testing. Walk in and play — completely turnkey.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7">
         <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.049.58.025 1.193-.14 1.743" />
@@ -50,7 +50,7 @@ const includes = [
   },
 ];
 
-const budgetOptions = ["Under $5,000", "$5,000 – $10,000", "$10,000 – $20,000", "$20,000+"];
+const budgetOptions = ["$10,000 – $20,000", "$20,000 – $30,000", "$30,000 – $50,000", "$50,000+"];
 const timelineOptions = ["ASAP", "1–3 months", "3–6 months", "Just exploring"];
 
 export default function BuildPage() {
@@ -101,20 +101,25 @@ export default function BuildPage() {
       <section className="relative py-16">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
-            Custom Simulator Builds
+            Premium Simulator Installations
           </p>
           <h1
             className="mb-6 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl lg:text-6xl"
             style={{ fontFamily: "var(--font-barlow-condensed)" }}
           >
-            We Build Your
+            World-Class
             <br />
-            <span className="text-[#2D6A47]">Dream Setup</span>
+            <span className="text-[#2D6A47]">Simulator Rooms</span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg leading-relaxed text-[#F0E8D2]/60">
-            From garages and basements to commercial spaces — we design, source,
-            and install complete golf simulator setups. Turnkey builds starting
-            at $5,000.
+            Professional golf simulator installations starting at $20,000.
+            We design and build world-class simulator rooms for serious golfers
+            and commercial spaces.
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#F0E8D2]/35">
+            We specialize in premium builds only — if you&apos;re looking for a budget
+            setup, we recommend checking out Carl&apos;s Place or Rain or Shine Golf
+            for DIY options.
           </p>
         </div>
       </section>
@@ -124,7 +129,7 @@ export default function BuildPage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-12 text-center">
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
-              Full-Service Installation
+              Premium Components & Full-Service Installation
             </p>
             <h2
               className="text-3xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-4xl"
@@ -150,6 +155,26 @@ export default function BuildPage() {
                   {item.description}
                 </p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Trusted Partners ── */}
+      <section className="py-12">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.25em] text-[#F0E8D2]/30">
+            Trusted Launch Monitor Partners
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
+            {["Uneekor", "Trackman", "Foresight", "ProTee VX"].map((brand) => (
+              <span
+                key={brand}
+                className="text-lg font-bold uppercase tracking-wider text-[#F0E8D2]/20"
+                style={{ fontFamily: "var(--font-barlow-condensed)" }}
+              >
+                {brand}
+              </span>
             ))}
           </div>
         </div>
