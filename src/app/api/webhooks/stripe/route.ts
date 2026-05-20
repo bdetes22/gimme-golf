@@ -37,7 +37,7 @@ function buildConfirmationEmail({
 
     <!-- Header -->
     <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="color:#2D6A47;font-size:28px;font-weight:700;margin:0;letter-spacing:2px;">GIMME GOLF</h1>
+      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
     </div>
 
     <!-- Main Card -->
