@@ -162,32 +162,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "customerId is required" }, { status: 400 });
     }
 
-    // Use a fresh client to ensure service role key is used
     const admin = freshAdminClient();
-
     console.log("[ADMIN] Deleting customer:", customerId);
-    console.log("[ADMIN] Service key present:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-    // Call the security definer function
-    const { data: rpcData, error: rpcErr } = await admin.rpc("admin_delete_customer", {
-      cid: customerId,
-    });
-    console.log("[ADMIN] RPC result:", { rpcData, rpcErr });
+    // Step 1: Delete memberships
+    const r1 = await admin.from("memberships").delete().eq("customer_id", customerId);
+    console.log("[ADMIN] Delete memberships:", r1.status, r1.statusText, r1.error);
 
-    if (rpcErr) {
-      console.error("[ADMIN] RPC delete failed:", JSON.stringify(rpcErr));
-      return NextResponse.json({ error: `Delete failed: ${rpcErr.message}` }, { status: 500 });
-    }
+    // Step 2: Delete bookings
+    const r2 = await admin.from("bookings").delete().eq("customer_id", customerId);
+    console.log("[ADMIN] Delete bookings:", r2.status, r2.statusText, r2.error);
 
-    // Try to delete auth user
+    // Step 3: Delete customer
+    const r3 = await admin.from("customers").delete().eq("id", customerId);
+    console.log("[ADMIN] Delete customer:", r3.status, r3.statusText, r3.error);
+
+    // Step 4: Delete auth user
     try {
-      await admin.auth.admin.deleteUser(customerId);
-      console.log("[ADMIN] Auth user deleted");
+      const { error: authErr } = await admin.auth.admin.deleteUser(customerId);
+      console.log("[ADMIN] Delete auth user:", authErr ? authErr.message : "success");
     } catch (e) {
-      console.log("[ADMIN] Auth user delete skipped:", e);
+      console.log("[ADMIN] Auth user not found");
     }
 
-    return NextResponse.json({ success: true });
+    // Verify deletion
+    const { data: check } = await admin.from("customers").select("id").eq("id", customerId);
+    console.log("[ADMIN] Verification - customer still exists:", check && check.length > 0);
+
+    return NextResponse.json({ success: true, verified: !check || check.length === 0 });
   }
 
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
