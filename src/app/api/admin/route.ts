@@ -28,28 +28,36 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch bookings" }, { status: 500 });
   }
 
-  // Fetch customers with active membership
+  // Fetch customers - simple query first, then memberships separately
   const { data: customers, error: customersError } = await supabase
     .from("customers")
-    .select("*, memberships(*)")
+    .select("*")
     .order("created_at", { ascending: false });
+
+  console.log("[ADMIN] Service key starts with:", process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20));
+  console.log("[ADMIN] Customers found:", customers?.length, "Error:", customersError);
 
   if (customersError) {
     console.error("Failed to fetch customers:", customersError);
     return NextResponse.json({ error: "Failed to fetch customers" }, { status: 500 });
   }
 
+  // Fetch memberships separately
+  const { data: allMemberships } = await supabase
+    .from("memberships")
+    .select("*")
+    .eq("active", true);
+
   // Map customers to include their active membership
   const customersWithMembership = (customers || []).map((c) => {
-    const memberships = Array.isArray(c.memberships) ? c.memberships : [];
-    const activeMembership = memberships.find((m: { active: boolean }) => m.active) || null;
+    const mem = (allMemberships || []).find((m) => m.customer_id === c.id) || null;
     return {
       id: c.id,
       name: c.name,
       email: c.email,
       phone: c.phone,
       created_at: c.created_at,
-      membership: activeMembership,
+      membership: mem,
     };
   });
 
