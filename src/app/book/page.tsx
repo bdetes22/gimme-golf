@@ -55,10 +55,11 @@ export default function BookPage() {
   const [step, setStep] = useState(0);
   const [location, setLocation] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedHour, setSelectedHour] = useState<number | null>(null);
+  const [selectedHours, setSelectedHours] = useState<number[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [bookingError, setBookingError] = useState("");
 
   // Auth + membership state
   const [customerId, setCustomerId] = useState<string | null>(null);
@@ -146,13 +147,17 @@ export default function BookPage() {
   const canGoNext = (() => {
     if (step === 0) return !!location;
     if (step === 1) return !!selectedDate;
-    if (step === 2) return selectedHour !== null;
+    if (step === 2) return selectedHours.length > 0;
     if (step === 3) return name.trim() && email.trim();
     return false;
   })();
 
   const locObj = LOCATIONS.find((l) => l.id === location);
-  const slotObj = SLOTS.find((s) => s.hour === selectedHour);
+  const firstSlot = SLOTS.find((s) => s.hour === selectedHours[0]);
+  const lastSlot = SLOTS.find((s) => s.hour === selectedHours[selectedHours.length - 1]);
+  const timeDisplay = firstSlot && lastSlot ? `${firstSlot.label} – ${lastSlot.endLabel}` : "";
+  const totalHours = selectedHours.length;
+  const totalPrice = totalHours * 35;
 
   const dateISO = selectedDate
     ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`
@@ -161,6 +166,7 @@ export default function BookPage() {
   async function handleMemberBooking() {
     if (!customerId || !locObj) return;
     setLoading(true);
+    setBookingError("");
     try {
       const res = await fetch("/api/bookings/member", {
         method: "POST",
@@ -169,24 +175,25 @@ export default function BookPage() {
           customerId,
           location: locObj.name,
           dateISO,
-          hour: selectedHour,
+          hours: selectedHours,
         }),
       });
       const data = await res.json();
       if (data.success) {
         router.push("/book/success");
       } else {
-        alert(data.error || "Booking failed");
+        setBookingError(data.error || "Booking failed");
         setLoading(false);
       }
     } catch {
-      alert("Failed to create booking");
+      setBookingError("Failed to create booking");
       setLoading(false);
     }
   }
 
   async function handleStripeCheckout() {
     setLoading(true);
+    setBookingError("");
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -194,13 +201,13 @@ export default function BookPage() {
         body: JSON.stringify({
           location: locObj?.name,
           date: selectedDate ? fmt(selectedDate) : "",
-          time: slotObj ? `${slotObj.label} – ${slotObj.endLabel}` : "",
+          time: timeDisplay,
           dateISO,
-          hour: selectedHour,
+          hour: selectedHours[0],
           customerName: name,
           customerEmail: email,
           customerPhone: phone,
-          amount: 3500,
+          amount: totalPrice * 100,
         }),
       });
       const data = await res.json();
@@ -381,18 +388,37 @@ export default function BookPage() {
               Choose a Time
             </h2>
             <p className="mb-6 text-sm text-[#F0E8D2]/50">{selectedDate && fmt(selectedDate)}</p>
+            <p className="mb-3 text-xs text-[#F0E8D2]/40">
+              Select 1 or 2 consecutive hours. Click a selected slot to deselect.
+            </p>
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
               {SLOTS.map((slot) => {
                 const isBooked = bookedHours.includes(slot.hour);
+                const isSelected = selectedHours.includes(slot.hour);
                 return (
                   <button
                     key={slot.hour}
                     disabled={isBooked}
-                    onClick={() => setSelectedHour(slot.hour)}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedHours((prev) => prev.filter((h) => h !== slot.hour));
+                      } else if (selectedHours.length === 0) {
+                        setSelectedHours([slot.hour]);
+                      } else if (selectedHours.length === 1) {
+                        const existing = selectedHours[0];
+                        if (Math.abs(slot.hour - existing) === 1 && !bookedHours.includes(slot.hour)) {
+                          setSelectedHours([Math.min(existing, slot.hour), Math.max(existing, slot.hour)]);
+                        } else {
+                          setSelectedHours([slot.hour]);
+                        }
+                      } else {
+                        setSelectedHours([slot.hour]);
+                      }
+                    }}
                     className={`rounded-lg border px-3 py-3 text-center text-sm font-medium transition-colors ${
                       isBooked
                         ? "cursor-not-allowed border-[#F0E8D2]/5 bg-[#F0E8D2]/[0.02] text-[#F0E8D2]/20 line-through"
-                        : selectedHour === slot.hour
+                        : isSelected
                           ? "border-[#2D6A47] bg-[#2D6A47]/[0.15] text-[#F0E8D2]"
                           : "border-[#F0E8D2]/10 text-[#F0E8D2]/60 hover:border-[#F0E8D2]/20"
                     }`}
@@ -403,6 +429,11 @@ export default function BookPage() {
                 );
               })}
             </div>
+            {selectedHours.length > 0 && (
+              <p className="mt-3 text-sm text-[#F0E8D2]/50">
+                Selected: {timeDisplay} ({totalHours} hour{totalHours > 1 ? "s" : ""})
+              </p>
+            )}
           </div>
         )}
 
@@ -460,11 +491,11 @@ export default function BookPage() {
                 </div>
                 <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Time</span>
-                  <span className="text-sm font-medium text-[#F0E8D2]">{slotObj?.label} – {slotObj?.endLabel}</span>
+                  <span className="text-sm font-medium text-[#F0E8D2]">{timeDisplay}</span>
                 </div>
                 <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Duration</span>
-                  <span className="text-sm font-medium text-[#F0E8D2]">1 hour</span>
+                  <span className="text-sm font-medium text-[#F0E8D2]">{totalHours} hour{totalHours > 1 ? "s" : ""}</span>
                 </div>
                 <div className="flex flex-col gap-1 border-b border-[#F0E8D2]/10 pb-3 sm:flex-row sm:justify-between">
                   <span className="text-sm text-[#F0E8D2]/50">Name</span>
@@ -488,17 +519,23 @@ export default function BookPage() {
                         $0.00
                       </span>
                       <p className="text-xs text-[#2D6A47]">
-                        {membership?.type === "punchpass" ? "Punch Pass Session" : "Member Booking"}
+                        {membership?.type === "punchpass" ? `${totalHours} Punch Pass Session${totalHours > 1 ? "s" : ""}` : "Member Booking"}
                       </p>
                     </div>
                   ) : (
                     <span className="text-2xl font-bold text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
-                      $35.00
+                      ${totalPrice}.00
                     </span>
                   )}
                 </div>
               </div>
             </div>
+
+            {bookingError && (
+              <div className="mb-4 rounded border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                {bookingError}
+              </div>
+            )}
 
             {canBookFree ? (
               <>
@@ -511,7 +548,7 @@ export default function BookPage() {
                 </button>
                 <p className="mt-3 text-center text-xs text-[#F0E8D2]/30">
                   {membership?.type === "punchpass"
-                    ? `${membership.sessions_remaining} session${membership.sessions_remaining === 1 ? "" : "s"} remaining after this booking`
+                    ? `${(membership.sessions_remaining || 0) - totalHours} session${((membership.sessions_remaining || 0) - totalHours) === 1 ? "" : "s"} remaining after this booking`
                     : "Included with your membership"}
                 </p>
               </>
@@ -522,7 +559,7 @@ export default function BookPage() {
                   onClick={handleStripeCheckout}
                   className="w-full rounded bg-[#2D6A47] px-8 py-4 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:opacity-50"
                 >
-                  {loading ? "Redirecting to Stripe..." : "Pay with Stripe — $35.00"}
+                  {loading ? "Redirecting to Stripe..." : `Pay with Stripe — $${totalPrice}.00`}
                 </button>
                 <p className="mt-3 text-center text-xs text-[#F0E8D2]/30">
                   You&apos;ll be redirected to Stripe to complete your payment.
