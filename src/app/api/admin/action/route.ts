@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
+
+function freshAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -153,29 +162,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "customerId is required" }, { status: 400 });
     }
 
-    console.log("[ADMIN] Deleting customer:", customerId);
+    // Use a fresh client to ensure service role key is used
+    const admin = freshAdminClient();
 
-    // Use raw SQL via rpc to bypass RLS completely
-    const { error: sqlErr } = await supabase.rpc("admin_delete_customer", {
+    console.log("[ADMIN] Deleting customer:", customerId);
+    console.log("[ADMIN] Service key present:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+    // Call the security definer function
+    const { data: rpcData, error: rpcErr } = await admin.rpc("admin_delete_customer", {
       cid: customerId,
     });
+    console.log("[ADMIN] RPC result:", { rpcData, rpcErr });
 
-    if (sqlErr) {
-      console.error("[ADMIN] SQL delete failed:", sqlErr);
-      // Fallback: try direct deletes
-      await supabase.from("memberships").delete().eq("customer_id", customerId);
-      await supabase.from("bookings").delete().eq("customer_id", customerId);
-      await supabase.from("customers").delete().eq("id", customerId);
+    if (rpcErr) {
+      console.error("[ADMIN] RPC delete failed:", JSON.stringify(rpcErr));
+      return NextResponse.json({ error: `Delete failed: ${rpcErr.message}` }, { status: 500 });
     }
 
     // Try to delete auth user
     try {
-      await supabase.auth.admin.deleteUser(customerId);
-    } catch {
-      console.log("[ADMIN] No auth user for this customer ID");
+      await admin.auth.admin.deleteUser(customerId);
+      console.log("[ADMIN] Auth user deleted");
+    } catch (e) {
+      console.log("[ADMIN] Auth user delete skipped:", e);
     }
 
-    console.log("[ADMIN] Customer delete completed:", customerId);
     return NextResponse.json({ success: true });
   }
 
