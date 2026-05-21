@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -99,56 +100,29 @@ const plans = [
   },
 ];
 
-export default function MembershipsPage() {
+function MembershipsContent() {
+  const searchParams = useSearchParams();
+  const autoPlan = searchParams.get("plan");
+
   const [loading, setLoading] = useState<string | null>(null);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
   const [agreedToRules, setAgreedToRules] = useState(false);
+  const [autoCheckoutDone, setAutoCheckoutDone] = useState(false);
 
-  useEffect(() => {
-    async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      setCustomerEmail(session.user.email || null);
-      setCustomerName(session.user.user_metadata?.name || null);
-
-      const { data: customer } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("email", session.user.email)
-        .single();
-
-      if (customer) setCustomerId(customer.id);
-    }
-    checkAuth();
-  }, []);
-
-  function openPlanModal(plan: typeof plans[0]) {
-    setSelectedPlan(plan);
-    setAgreedToRules(false);
-  }
-
-  async function handleCheckout() {
-    if (!selectedPlan) return;
-
-    if (!customerId || !customerEmail) {
-      window.location.href = "/login?redirect=/memberships";
-      return;
-    }
-
-    setLoading(selectedPlan.id);
+  const goToStripe = useCallback(async (planId: string, custId: string, email: string, name: string | null) => {
+    setLoading(planId);
     try {
       const res = await fetch("/api/checkout/membership", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          plan: selectedPlan.id,
-          customerId,
-          customerEmail,
-          customerName,
+          plan: planId,
+          customerId: custId,
+          customerEmail: email,
+          customerName: name,
         }),
       });
       const data = await res.json();
@@ -162,6 +136,54 @@ export default function MembershipsPage() {
       alert("Failed to start checkout");
       setLoading(null);
     }
+  }, []);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const email = session.user.email || "";
+      const name = session.user.user_metadata?.name || null;
+      setCustomerEmail(email);
+      setCustomerName(name);
+
+      const { data: customer } = await supabase
+        .from("customers")
+        .select("id")
+        .eq("email", email)
+        .single();
+
+      if (customer) {
+        setCustomerId(customer.id);
+
+        // Auto-checkout if coming back from login/signup with a plan
+        if (autoPlan && !autoCheckoutDone) {
+          setAutoCheckoutDone(true);
+          const validPlans = ["punchpass", "monthly", "annual"];
+          if (validPlans.includes(autoPlan)) {
+            goToStripe(autoPlan, customer.id, email, name);
+          }
+        }
+      }
+    }
+    checkAuth();
+  }, [autoPlan, autoCheckoutDone, goToStripe]);
+
+  function openPlanModal(plan: typeof plans[0]) {
+    setSelectedPlan(plan);
+    setAgreedToRules(false);
+  }
+
+  async function handleCheckout() {
+    if (!selectedPlan) return;
+
+    if (!customerId || !customerEmail) {
+      window.location.href = `/login?redirect=/memberships?plan=${selectedPlan.id}`;
+      return;
+    }
+
+    goToStripe(selectedPlan.id, customerId, customerEmail, customerName);
   }
 
   return (
@@ -371,5 +393,13 @@ export default function MembershipsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MembershipsPage() {
+  return (
+    <Suspense>
+      <MembershipsContent />
+    </Suspense>
   );
 }
