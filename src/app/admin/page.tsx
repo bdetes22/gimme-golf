@@ -11,6 +11,7 @@ interface Booking {
   duration_hours: number;
   status: string;
   payment_status: string;
+  stripe_payment_id: string;
   created_at: string;
   customers: { name: string; email: string } | null;
 }
@@ -132,6 +133,11 @@ export default function AdminPage() {
   const handleCancelBooking = (bookingId: string) => {
     if (!confirm("Cancel this booking?")) return;
     doAction({ action: "cancel_booking", bookingId });
+  };
+
+  const handleRefundBooking = (bookingId: string, stripePaymentId: string) => {
+    if (!confirm("Issue a full refund for this booking? This will refund the payment via Stripe and cancel the booking.")) return;
+    doAction({ action: "refund_booking", bookingId, stripePaymentId });
   };
 
   const handleCreateBooking = async (e: React.FormEvent) => {
@@ -416,15 +422,29 @@ export default function AdminPage() {
                     </td>
                     <td className="p-3 text-[#F0E8D2]/60">{b.payment_status}</td>
                     <td className="p-3">
-                      {b.status !== "cancelled" && (
-                        <button
-                          onClick={() => handleCancelBooking(b.id)}
-                          disabled={actionLoading !== null}
-                          className="px-2 py-1 bg-red-900/40 text-red-300 rounded text-xs hover:bg-red-900/60 disabled:opacity-50 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      )}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {b.status !== "cancelled" && (
+                          <button
+                            onClick={() => handleCancelBooking(b.id)}
+                            disabled={actionLoading !== null}
+                            className="px-2 py-1 bg-red-900/40 text-red-300 rounded text-xs hover:bg-red-900/60 disabled:opacity-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                        {b.stripe_payment_id && b.payment_status !== "refunded" && (
+                          <button
+                            onClick={() => handleRefundBooking(b.id, b.stripe_payment_id)}
+                            disabled={actionLoading !== null}
+                            className="px-2 py-1 border border-[#C8973A]/30 text-[#C8973A]/70 rounded text-xs hover:bg-[#C8973A]/10 hover:text-[#C8973A] disabled:opacity-50 transition-colors"
+                          >
+                            Refund
+                          </button>
+                        )}
+                        {b.payment_status === "refunded" && (
+                          <span className="text-[10px] uppercase tracking-wider text-green-400/50">Refunded</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

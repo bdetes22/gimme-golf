@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
 import { dbDelete, dbInsert, dbSelect } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,44 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
+  }
+
+  if (action === "refund_booking") {
+    const { bookingId, stripePaymentId } = body;
+    if (!bookingId || !stripePaymentId) {
+      return NextResponse.json({ error: "bookingId and stripePaymentId are required" }, { status: 400 });
+    }
+
+    try {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+        apiVersion: "2026-04-22.dahlia",
+      });
+
+      // Issue refund via Stripe
+      const refund = await stripe.refunds.create({
+        payment_intent: stripePaymentId,
+      });
+
+      // Update booking status to cancelled + refunded
+      const apiUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      await fetch(`${apiUrl}/rest/v1/bookings?id=eq.${bookingId}`, {
+        method: "PATCH",
+        headers: {
+          apikey: apiKey,
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ status: "cancelled", payment_status: "refunded" }),
+      });
+
+      return NextResponse.json({ success: true, refundId: refund.id });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Refund failed";
+      console.error("[ADMIN] Refund failed:", message);
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
   }
 
   if (action === "cancel_booking") {
