@@ -4,6 +4,17 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+const rules = [
+  "Membership is non-transferable — one membership per person.",
+  "Member must be present during all sessions.",
+  "Monthly hours reset on your billing date each month.",
+  "Unused hours do not roll over.",
+  "Punch passes expire 1 year from purchase date.",
+  "Max 4 hours per booking.",
+  "Valid at both Kaysville and Clearfield locations.",
+  "Memberships can be cancelled anytime — access continues until end of billing period.",
+];
+
 const plans = [
   {
     id: "walkin",
@@ -12,6 +23,12 @@ const plans = [
     period: "/hr",
     description: "No signup needed — just book a bay and play.",
     features: ["No commitment", "Book online or walk in", "Play any time 24/7"],
+    details: [
+      "Pay per session — no membership required",
+      "Book online or just walk in during open hours",
+      "24/7 self-serve access at both locations",
+      "$35 per hour, up to 4 hours per booking",
+    ],
     cta: "Book a Bay",
     href: "/book",
     stripe: false,
@@ -23,8 +40,15 @@ const plans = [
     name: "Punch Pass",
     price: "$299",
     period: " / 10 sessions",
-    description: "Buy 10 sessions up front and save. No expiration.",
+    description: "Buy 10 sessions up front and save.",
     features: ["Save 15% vs. walk-in", "Expires after 1 year", "Transferable"],
+    details: [
+      "10 one-hour sessions for $299 ($29.90/session)",
+      "Each hour booked deducts 1 session",
+      "Multi-hour bookings deduct multiple sessions",
+      "Expires 1 year from purchase date",
+      "Sessions are transferable to another person",
+    ],
     cta: "Buy Punch Pass",
     href: "",
     stripe: true,
@@ -38,6 +62,14 @@ const plans = [
     period: "/mo",
     description: "20 hours per month with priority booking and member perks.",
     features: ["20 hours per month", "Priority access", "Member discounts"],
+    details: [
+      "20 hours of simulator time per month",
+      "Hours reset on your billing date each month",
+      "Unused hours do not roll over",
+      "Priority booking access",
+      "Member discounts on events and merchandise",
+      "Cancel anytime — access continues through billing period",
+    ],
     cta: "Join Monthly",
     href: "",
     stripe: true,
@@ -51,6 +83,14 @@ const plans = [
     period: "/yr",
     description: "Best value — one payment, 20 hours per month all year.",
     features: ["20 hours per month", "Save vs. monthly", "One payment, full year"],
+    details: [
+      "20 hours of simulator time per month, all year",
+      "One upfront payment of $1,200 ($100/mo equivalent)",
+      "Save vs. paying monthly ($179/mo × 12 = $2,148)",
+      "Hours reset on the same date each month",
+      "Unused hours do not roll over",
+      "All monthly member perks included",
+    ],
     cta: "Go Annual",
     href: "",
     stripe: true,
@@ -64,6 +104,7 @@ export default function MembershipsPage() {
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
   const [agreedToRules, setAgreedToRules] = useState(false);
 
   useEffect(() => {
@@ -85,23 +126,26 @@ export default function MembershipsPage() {
     checkAuth();
   }, []);
 
-  async function handlePurchase(planId: string) {
-    if (!agreedToRules) {
-      alert("Please agree to the membership rules before purchasing.");
-      return;
-    }
+  function openPlanModal(plan: typeof plans[0]) {
+    setSelectedPlan(plan);
+    setAgreedToRules(false);
+  }
+
+  async function handleCheckout() {
+    if (!selectedPlan) return;
+
     if (!customerId || !customerEmail) {
       window.location.href = "/login?redirect=/memberships";
       return;
     }
 
-    setLoading(planId);
+    setLoading(selectedPlan.id);
     try {
       const res = await fetch("/api/checkout/membership", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          plan: planId,
+          plan: selectedPlan.id,
           customerId,
           customerEmail,
           customerName,
@@ -198,9 +242,8 @@ export default function MembershipsPage() {
 
               {plan.stripe ? (
                 <button
-                  onClick={() => handlePurchase(plan.id)}
-                  disabled={loading === plan.id || !agreedToRules}
-                  className={`mt-auto block rounded px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  onClick={() => openPlanModal(plan)}
+                  className={`mt-auto block rounded px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider transition-colors ${
                     plan.highlight
                       ? "bg-[#2D6A47] text-[#F0E8D2] hover:bg-[#2D6A47]/90"
                       : plan.border === "gold"
@@ -208,7 +251,7 @@ export default function MembershipsPage() {
                         : "border border-[#F0E8D2]/20 text-[#F0E8D2] hover:border-[#F0E8D2]/40"
                   }`}
                 >
-                  {loading === plan.id ? "Redirecting..." : plan.cta}
+                  {plan.cta}
                 </button>
               ) : (
                 <Link
@@ -220,56 +263,6 @@ export default function MembershipsPage() {
               )}
             </div>
           ))}
-        </div>
-
-        {/* Agree to Rules Checkbox */}
-        <div className="mt-10 flex justify-center">
-          <label className="flex cursor-pointer items-start gap-3">
-            <input
-              type="checkbox"
-              checked={agreedToRules}
-              onChange={(e) => setAgreedToRules(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-[#F0E8D2]/30 bg-[#060A07] accent-[#2D6A47]"
-            />
-            <span className="text-sm text-[#F0E8D2]/60">
-              I have read and agree to the{" "}
-              <a href="#rules" className="text-[#2D6A47] underline">
-                membership rules
-              </a>
-            </span>
-          </label>
-        </div>
-
-        {/* Membership Rules */}
-        <div id="rules" className="mt-16">
-          <div className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-8">
-            <h3
-              className="mb-6 text-xl font-bold uppercase text-[#F0E8D2]"
-              style={{ fontFamily: "var(--font-barlow-condensed)" }}
-            >
-              Membership Rules
-            </h3>
-            <ol className="flex flex-col gap-3">
-              {[
-                "Membership is non-transferable — one membership per person.",
-                "Member must be present during all sessions.",
-                "Monthly hours reset on your billing date each month.",
-                "Unused hours do not roll over.",
-                "Punch passes expire 1 year from purchase date.",
-                "Max 2 hours per booking.",
-                "Max 1 booking per day.",
-                "Valid at both Kaysville and Clearfield locations.",
-                "Memberships can be cancelled anytime — access continues until end of billing period.",
-              ].map((rule, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm leading-relaxed text-[#F0E8D2]/60">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#F0E8D2]/10 text-[10px] font-bold text-[#F0E8D2]/40">
-                    {i + 1}
-                  </span>
-                  {rule}
-                </li>
-              ))}
-            </ol>
-          </div>
         </div>
 
         {/* FAQ / Info */}
@@ -284,6 +277,99 @@ export default function MembershipsPage() {
           </p>
         </div>
       </div>
+
+      {/* ── Plan Details & Checkout Modal ── */}
+      {selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-[#F0E8D2]/10 bg-[#060A07] p-6 sm:p-8">
+            {/* Close */}
+            <button
+              onClick={() => { setSelectedPlan(null); setLoading(null); }}
+              className="absolute right-4 top-4 text-xl text-[#F0E8D2]/40 hover:text-[#F0E8D2]"
+            >
+              &times;
+            </button>
+
+            {/* Plan header */}
+            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">
+              {selectedPlan.name}
+            </p>
+            <div className="mb-4 flex items-baseline gap-2">
+              <span
+                className="text-4xl font-bold text-[#F0E8D2]"
+                style={{ fontFamily: "var(--font-barlow-condensed)" }}
+              >
+                {selectedPlan.price}
+              </span>
+              <span className="text-sm text-[#F0E8D2]/40">{selectedPlan.period}</span>
+            </div>
+
+            {/* Plan details */}
+            <div className="mb-6">
+              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2]/70">
+                What You Get
+              </h4>
+              <ul className="flex flex-col gap-2">
+                {selectedPlan.details.map((detail, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-[#F0E8D2]/60">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                    {detail}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Membership rules */}
+            <div className="mb-6 rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-5">
+              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2]/70">
+                Membership Rules
+              </h4>
+              <ol className="flex flex-col gap-2">
+                {rules.map((rule, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-xs leading-relaxed text-[#F0E8D2]/50">
+                    <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#F0E8D2]/10 text-[9px] font-bold text-[#F0E8D2]/40">
+                      {i + 1}
+                    </span>
+                    {rule}
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* Agreement checkbox */}
+            <label className="mb-6 flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={agreedToRules}
+                onChange={(e) => setAgreedToRules(e.target.checked)}
+                className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded accent-[#2D6A47]"
+              />
+              <span className="text-sm font-medium text-[#F0E8D2]/80">
+                I have read and agree to the membership rules
+              </span>
+            </label>
+
+            {/* Checkout button */}
+            <button
+              onClick={handleCheckout}
+              disabled={!agreedToRules || loading === selectedPlan.id}
+              className="w-full rounded bg-[#2D6A47] px-6 py-4 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {loading === selectedPlan.id
+                ? "Redirecting to Stripe..."
+                : `Checkout — ${selectedPlan.price}${selectedPlan.period}`}
+            </button>
+
+            {!agreedToRules && (
+              <p className="mt-2 text-center text-xs text-[#F0E8D2]/30">
+                Check the box above to continue
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
