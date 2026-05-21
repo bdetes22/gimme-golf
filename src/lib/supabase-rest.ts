@@ -27,6 +27,19 @@ export async function dbInsert(table: string, data: Record<string, unknown>) {
   return res.json();
 }
 
+export async function dbUpdate(
+  table: string,
+  query: string,
+  data: Record<string, unknown>
+) {
+  const res = await fetch(`${url()}/rest/v1/${table}?${query}`, {
+    method: "PATCH",
+    headers: headers(),
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
 export async function dbDelete(table: string, query: string) {
   const res = await fetch(`${url()}/rest/v1/${table}?${query}`, {
     method: "DELETE",
