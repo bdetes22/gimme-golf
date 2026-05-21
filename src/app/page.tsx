@@ -141,7 +141,7 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section
         className="relative flex min-h-[60vh] items-center justify-center overflow-hidden pt-20 sm:min-h-[70vh]"
-        style={{ backgroundImage: "url('/images/kaysille/Kaysvillephoto1.JPG')", backgroundSize: "cover", backgroundPosition: "center" }}
+        style={{ backgroundImage: "url('/images/Clearfield/clearfieldphoto1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/85 via-[#060A07]/80 to-[#060A07]" />
         <div className="absolute left-1/2 top-1/3 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2D6A47]/5 blur-3xl" />
