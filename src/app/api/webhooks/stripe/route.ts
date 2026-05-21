@@ -82,6 +82,12 @@ function buildConfirmationEmail({
         <p style="color:#F0E8D2;opacity:0.6;font-size:12px;margin:8px 0 0 0;">Enter this code on the keybox at the front door</p>
       </div>
 
+      <!-- Reminder -->
+      <div style="background-color:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;margin-bottom:24px;">
+        <p style="color:#C8973A;font-size:12px;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin:0 0 8px 0;">Don't Forget</p>
+        <p style="color:#F0E8D2;opacity:0.6;font-size:13px;line-height:1.8;margin:0;">• Bring your own clubs — we do not provide clubs<br>• Wear comfortable shoes (no hard soles)<br>• Use the balls we provide — clean balls only if using your own<br>• Clean your clubs before hitting to protect the screen<br>• Balls are Gimme Golf property — missing balls will be charged</p>
+      </div>
+
       <!-- YouTube Button -->
       ${youtubeUrl ? `
       <div style="text-align:center;margin-bottom:24px;">

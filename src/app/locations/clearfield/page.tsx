@@ -70,6 +70,21 @@ export default function ClearfieldPage() {
               </div>
             </div>
           </div>
+          <div className="mt-6 rounded-lg border border-[#C8973A]/20 bg-[#C8973A]/[0.04] p-6">
+            <h3
+              className="mb-2 text-lg font-bold uppercase text-[#C8973A]"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              What to Bring
+            </h3>
+            <ul className="flex flex-col gap-2 text-sm leading-relaxed text-[#F0E8D2]/60">
+              <li>Bring your own golf clubs — we do not provide clubs.</li>
+              <li>Wear comfortable shoes (golf shoes or sneakers — no hard soles).</li>
+              <li>Please use the balls we provide. If you use your own, make sure they&apos;re clean.</li>
+              <li>Clean your clubs before hitting — dirty clubfaces can damage the screen.</li>
+              <li>Balls are property of Gimme Golf — missing balls will be charged to your account.</li>
+            </ul>
+          </div>
         </div>
       </section>
 

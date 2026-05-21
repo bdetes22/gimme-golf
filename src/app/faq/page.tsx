@@ -81,7 +81,7 @@ const sections: FAQSection[] = [
     faqs: [
       {
         question: "What should I bring?",
-        answer: "Just bring your golf clubs and wear comfortable shoes (golf shoes or sneakers are fine — no heels or hard-soled shoes on the turf). We provide everything else including the hitting mat, balls, and tees.",
+        answer: "Bring your own golf clubs — we do not provide clubs. Wear comfortable shoes (golf shoes or sneakers — no hard soles on the turf). We provide the hitting mat, balls, and tees. Please use our provided balls, or if you bring your own, make sure they're clean. Clean your clubfaces before hitting to protect the impact screen. Please note that balls are property of Gimme Golf and missing balls will be charged to your account.",
       },
       {
         question: "Do you provide clubs?",
