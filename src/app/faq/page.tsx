@@ -102,7 +102,7 @@ const sections: FAQSection[] = [
     faqs: [
       {
         question: "What does a simulator installation cost?",
-        answer: "Our premium installations start at $20,000. The final price depends on the launch monitor you choose, room size, screen and enclosure specs, and any custom work needed. We specialize in high-end builds — if you're looking for a budget DIY setup, we recommend checking out Carl's Place or Rain or Shine Golf.",
+        answer: "Simulator installations vary widely depending on the setup. We do everything from budget-friendly builds starting around $5,000 to premium installations at $20,000+. The price depends on your launch monitor, room size, screen and enclosure, and any custom work. We also offer maintenance, repairs, and upgrades on existing setups. Schedule a free consultation and we'll put together a quote that fits your budget.",
       },
       {
         question: "How long does an installation take?",
