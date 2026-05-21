@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
+import { Resend } from "resend";
 import { dbDelete, dbInsert, dbSelect } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,133 @@ export async function POST(req: NextRequest) {
 
   if (!password || password !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (action === "create_member") {
+    const { name, email, phone, membershipType, startDate, endDate, hoursRemaining, sessionsRemaining, notes } = body;
+    if (!name || !email || !membershipType) {
+      return NextResponse.json({ error: "Name, email, and membership type are required" }, { status: 400 });
+    }
+
+    const admin = adminClient();
+    const apiUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const restHeaders = {
+      apikey: apiKey,
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    };
+
+    // Generate random temporary password
+    const tempPassword = `GG-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
+
+    // Create auth user
+    const { data: authData, error: authErr } = await admin.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: { name, phone },
+    });
+
+    if (authErr) {
+      console.error("[ADMIN] Create auth user failed:", authErr);
+      return NextResponse.json({ error: authErr.message }, { status: 400 });
+    }
+
+    // Create customer record
+    const custRes = await fetch(`${apiUrl}/rest/v1/customers`, {
+      method: "POST",
+      headers: restHeaders,
+      body: JSON.stringify({
+        id: authData.user.id,
+        name,
+        email,
+        phone: phone || null,
+        notes: notes || null,
+      }),
+    });
+
+    if (!custRes.ok) {
+      // Cleanup auth user
+      await admin.auth.admin.deleteUser(authData.user.id);
+      return NextResponse.json({ error: "Failed to create customer record" }, { status: 500 });
+    }
+
+    // Create membership (skip for walkin)
+    if (membershipType !== "walkin") {
+      const now = new Date();
+      const nextReset = new Date(now);
+      nextReset.setMonth(nextReset.getMonth() + 1);
+
+      await fetch(`${apiUrl}/rest/v1/memberships`, {
+        method: "POST",
+        headers: { ...restHeaders, Prefer: "return=minimal" },
+        body: JSON.stringify({
+          customer_id: authData.user.id,
+          type: membershipType,
+          active: true,
+          start_date: startDate || now.toISOString().split("T")[0],
+          end_date: endDate || null,
+          sessions_remaining: membershipType === "punchpass" ? (sessionsRemaining || 10) : null,
+          hours_used_this_month: membershipType === "staff" ? 0 : (20 - (hoursRemaining || 20)),
+          hours_reset_date: membershipType === "staff" ? null : nextReset.toISOString().split("T")[0],
+        }),
+      });
+    }
+
+    // Generate password reset link and send welcome email
+    const { data: resetData } = await admin.auth.admin.generateLink({
+      type: "recovery",
+      email,
+    });
+
+    const resetLink = resetData?.properties?.action_link || "";
+
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY!);
+      await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: email,
+        subject: "Welcome to Gimme Golf — Set Up Your Account",
+        html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#060A07;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+    </div>
+    <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
+      <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Welcome to Gimme Golf, ${name}!</h2>
+      <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px 0;">
+        We've set up your account and you're ready to start booking. Click the button below to set your password and get started.
+      </p>
+      <div style="text-align:center;margin-bottom:24px;">
+        <a href="${resetLink}" style="display:inline-block;background-color:#2D6A47;color:#F0E8D2;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Set Your Password</a>
+      </div>
+      <p style="color:#F0E8D2;opacity:0.4;font-size:13px;line-height:1.6;margin:0 0 16px 0;">
+        After setting your password, you can log in at gimmegolfsimulators.com and start booking sessions at either of our locations.
+      </p>
+      <div style="background-color:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;text-align:center;">
+        <p style="color:#F0E8D2;font-size:13px;font-weight:600;margin:0 0 6px 0;">Need help? Text us — it's the fastest way to reach us.</p>
+        <p style="color:#F0E8D2;opacity:0.5;font-size:13px;margin:0;">(801) 513-3538 · info@gimmegolfsimulators.com</p>
+      </div>
+    </div>
+    <div style="text-align:center;padding:16px 0;">
+      <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+      });
+      console.log("[ADMIN] Welcome email sent to", email);
+    } catch (emailErr) {
+      console.error("[ADMIN] Failed to send welcome email:", emailErr);
+    }
+
+    return NextResponse.json({ success: true });
   }
 
   if (action === "update_notes") {

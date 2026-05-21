@@ -70,6 +70,19 @@ export default function AdminPage() {
   const [memNoExpiry, setMemNoExpiry] = useState(false);
   const [memSessions, setMemSessions] = useState(10);
 
+  // Create member modal state
+  const [showCreateMember, setShowCreateMember] = useState(false);
+  const [cmName, setCmName] = useState("");
+  const [cmEmail, setCmEmail] = useState("");
+  const [cmPhone, setCmPhone] = useState("");
+  const [cmType, setCmType] = useState("monthly");
+  const [cmStartDate, setCmStartDate] = useState("");
+  const [cmEndDate, setCmEndDate] = useState("");
+  const [cmNoExpiry, setCmNoExpiry] = useState(false);
+  const [cmHours, setCmHours] = useState(20);
+  const [cmSessions, setCmSessions] = useState(10);
+  const [cmNotes, setCmNotes] = useState("");
+
   // Notes editing state
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [notesText, setNotesText] = useState("");
@@ -158,6 +171,37 @@ export default function AdminPage() {
 
   const handleRemoveSessions = (customerId: string, sessions: number) => {
     doAction({ action: "remove_sessions", customerId, sessions });
+  };
+
+  const openCreateMember = () => {
+    setShowCreateMember(true);
+    setCmName("");
+    setCmEmail("");
+    setCmPhone("");
+    setCmType("monthly");
+    setCmStartDate(new Date().toISOString().split("T")[0]);
+    setCmEndDate("");
+    setCmNoExpiry(false);
+    setCmHours(20);
+    setCmSessions(10);
+    setCmNotes("");
+  };
+
+  const handleCreateMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await doAction({
+      action: "create_member",
+      name: cmName,
+      email: cmEmail,
+      phone: cmPhone,
+      membershipType: cmType,
+      startDate: cmStartDate,
+      endDate: cmNoExpiry ? null : cmEndDate || null,
+      hoursRemaining: cmHours,
+      sessionsRemaining: cmType === "punchpass" ? cmSessions : null,
+      notes: cmNotes,
+    });
+    setShowCreateMember(false);
   };
 
   const handleDeleteCustomer = (customerId: string, customerName: string) => {
@@ -462,12 +506,20 @@ export default function AdminPage() {
 
         {/* Customers Section */}
         <section>
-          <h2
-            className="text-2xl font-bold text-[#F0E8D2] mb-4"
-            style={{ fontFamily: "var(--font-barlow-condensed)" }}
-          >
-            CUSTOMERS
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2
+              className="text-2xl font-bold text-[#F0E8D2]"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              CUSTOMERS
+            </h2>
+            <button
+              onClick={openCreateMember}
+              className="rounded bg-[#C8973A] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
+            >
+              Create Member
+            </button>
+          </div>
           <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg overflow-x-auto">
             <table className="w-full min-w-[700px] text-sm">
               <thead>
@@ -603,6 +655,88 @@ export default function AdminPage() {
           </div>
         </section>
       </div>
+
+      {/* ── Create Member Modal ── */}
+      {showCreateMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-lg border border-[#F0E8D2]/10 bg-[#060A07] p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3
+                className="text-lg font-bold uppercase text-[#F0E8D2]"
+                style={{ fontFamily: "var(--font-barlow-condensed)" }}
+              >
+                Create Member
+              </h3>
+              <button onClick={() => setShowCreateMember(false)} className="text-[#F0E8D2]/40 hover:text-[#F0E8D2]">&times;</button>
+            </div>
+            <form onSubmit={handleCreateMember} className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Name *</label>
+                  <input type="text" value={cmName} onChange={(e) => setCmName(e.target.value)} required className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Email *</label>
+                  <input type="email" value={cmEmail} onChange={(e) => setCmEmail(e.target.value)} required className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Phone</label>
+                <input type="tel" value={cmPhone} onChange={(e) => setCmPhone(e.target.value)} className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Membership Type</label>
+                <select value={cmType} onChange={(e) => setCmType(e.target.value)} className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]">
+                  <option value="monthly">Monthly</option>
+                  <option value="annual">Annual</option>
+                  <option value="punchpass">Punch Pass</option>
+                  <option value="staff">Staff / Owner</option>
+                </select>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Start Date</label>
+                  <input type="date" value={cmStartDate} onChange={(e) => setCmStartDate(e.target.value)} className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]" />
+                </div>
+                <div>
+                  <label className="mb-1 flex items-center gap-2">
+                    <input type="checkbox" checked={cmNoExpiry} onChange={(e) => setCmNoExpiry(e.target.checked)} className="accent-[#2D6A47]" />
+                    <span className="text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">No Expiry</span>
+                  </label>
+                  {!cmNoExpiry && (
+                    <input type="date" value={cmEndDate} onChange={(e) => setCmEndDate(e.target.value)} className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]" />
+                  )}
+                </div>
+              </div>
+              {(cmType === "monthly" || cmType === "annual") && (
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Hours Remaining This Month</label>
+                  <input type="number" value={cmHours} onChange={(e) => setCmHours(Number(e.target.value))} min={0} max={20} className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]" />
+                </div>
+              )}
+              {cmType === "punchpass" && (
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Sessions Remaining</label>
+                  <input type="number" value={cmSessions} onChange={(e) => setCmSessions(Number(e.target.value))} min={0} className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]" />
+                </div>
+              )}
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Notes</label>
+                <textarea value={cmNotes} onChange={(e) => setCmNotes(e.target.value)} rows={2} className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47] resize-none" placeholder="e.g. Migrated from Wix, paid cash" />
+              </div>
+              <p className="text-[10px] text-[#F0E8D2]/30">A temporary password will be created. The member will receive a welcome email with a link to set their own password.</p>
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={actionLoading !== null} className="flex-1 rounded bg-[#2D6A47] px-4 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:opacity-50">
+                  Create Member
+                </button>
+                <button type="button" onClick={() => setShowCreateMember(false)} className="rounded border border-[#F0E8D2]/20 px-4 py-2.5 text-sm text-[#F0E8D2]/50 hover:text-[#F0E8D2]">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── Membership Modal ── */}
       {memModalCustomer && (
