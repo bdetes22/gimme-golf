@@ -58,6 +58,9 @@ export async function POST(
       metadata: {
         type: "quote_deposit",
         quoteId: id,
+        quoteNumber: quote.quote_number,
+        clientName: quote.client_name,
+        clientEmail: quote.client_email,
       },
       success_url: `${origin}/quote/${id}?paid=true`,
       cancel_url: `${origin}/quote/${id}`,

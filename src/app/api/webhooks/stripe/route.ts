@@ -148,6 +148,53 @@ export async function POST(req: NextRequest) {
     const meta = session.metadata || {};
     console.log("[WEBHOOK] Metadata:", JSON.stringify(meta));
 
+    // ── Quote deposit payment ──
+    if (meta.type === "quote_deposit") {
+      const quoteId = meta.quoteId;
+      console.log("[WEBHOOK] Quote deposit paid:", quoteId);
+
+      if (quoteId) {
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+        const paymentMethod = session.payment_method_types?.[0] === "us_bank_account" ? "ach" : "card";
+
+        await fetch(`${url}/rest/v1/quotes?id=eq.${quoteId}`, {
+          method: "PATCH",
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({
+            status: "accepted",
+            payment_method: `deposit-${paymentMethod}`,
+            stripe_payment_id: session.payment_intent as string,
+          }),
+        });
+
+        // Notify admin
+        try {
+          await resend.emails.send({
+            from: "Gimme Golf <onboarding@resend.dev>",
+            to: "info@gimmegolfsimulators.com",
+            subject: `Deposit Received — Quote #${meta.quoteNumber || quoteId}`,
+            html: `<div style="font-family:sans-serif;padding:24px;">
+              <h2 style="color:#2D6A47;">Deposit Payment Received</h2>
+              <p><strong>Client:</strong> ${meta.clientName || "Unknown"}</p>
+              <p><strong>Method:</strong> ${paymentMethod.toUpperCase()}</p>
+              <p><strong>Quote:</strong> #${meta.quoteNumber || quoteId}</p>
+              <p>Log in to the admin dashboard to view details.</p>
+            </div>`,
+          });
+        } catch {
+          console.error("[WEBHOOK] Failed to send deposit notification email");
+        }
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
     // ── Membership purchase ──
     if (meta.type === "membership") {
       const plan = meta.plan || "";
