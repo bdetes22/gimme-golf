@@ -74,7 +74,17 @@ export async function POST(req: NextRequest) {
 
     // Update existing quote
     if (body.id) {
-      const { password: _pw, action: _a, ...updateData } = body;
+      const updateData: Record<string, unknown> = {};
+      if (body.clientName !== undefined) updateData.client_name = body.clientName;
+      if (body.clientEmail !== undefined) updateData.client_email = body.clientEmail;
+      if (body.clientPhone !== undefined) updateData.client_phone = body.clientPhone;
+      if (body.clientAddress !== undefined) updateData.client_address = body.clientAddress;
+      if (body.lineItems !== undefined) updateData.line_items = body.lineItems;
+      if (body.subtotal !== undefined) updateData.subtotal = body.subtotal;
+      if (body.total !== undefined) updateData.total = body.total;
+      if (body.depositAmount !== undefined) updateData.deposit_amount = body.depositAmount;
+      if (body.notes !== undefined) updateData.notes = body.notes;
+      if (body.status !== undefined) updateData.status = body.status;
       await dbUpdate("quotes", `id=eq.${body.id}`, updateData);
       const updated = await dbSelect("quotes", `id=eq.${body.id}`);
       return NextResponse.json(updated?.[0] || {});
@@ -92,11 +102,18 @@ export async function POST(req: NextRequest) {
     }
     const quoteNumber = String(nextNum).padStart(7, "0");
 
-    const { password: _pw, ...insertData } = body;
     const result = await dbInsert("quotes", {
-      ...insertData,
       quote_number: quoteNumber,
-      status: insertData.status || "draft",
+      client_name: body.clientName || body.client_name || "",
+      client_email: body.clientEmail || body.client_email || "",
+      client_phone: body.clientPhone || body.client_phone || "",
+      client_address: body.clientAddress || body.client_address || "",
+      line_items: body.lineItems || body.line_items || [],
+      subtotal: body.subtotal || 0,
+      total: body.total || 0,
+      deposit_amount: body.depositAmount || body.deposit_amount || 0,
+      notes: body.notes || "",
+      status: body.status || "draft",
     });
 
     return NextResponse.json(result?.[0] || result);
