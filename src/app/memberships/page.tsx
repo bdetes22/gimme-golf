@@ -86,8 +86,12 @@ export default function MembershipsPage() {
   }, []);
 
   async function handlePurchase(planId: string) {
+    if (!agreedToRules) {
+      alert("Please agree to the membership rules before purchasing.");
+      return;
+    }
     if (!customerId || !customerEmail) {
-      window.location.href = "/login";
+      window.location.href = "/login?redirect=/memberships";
       return;
     }
 

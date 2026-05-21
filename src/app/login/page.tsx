@@ -9,6 +9,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered");
+  const redirect = searchParams.get("redirect");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +29,7 @@ function LoginForm() {
 
       if (signInError) throw signInError;
 
-      router.push("/account");
+      router.push(redirect || "/account");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
