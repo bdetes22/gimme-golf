@@ -32,6 +32,26 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
+  async function handleReset() {
+    if (!email) {
+      setError("Enter your email above, then click Forgot Password");
+      return;
+    }
+    setResetLoading(true);
+    setError("");
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/account`,
+    });
+    if (resetErr) {
+      setError(resetErr.message);
+    } else {
+      setResetSent(true);
+    }
+    setResetLoading(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -111,7 +131,23 @@ function LoginForm() {
               <EyeIcon open={showPassword} />
             </button>
           </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={resetLoading}
+              className="text-xs text-[#C8973A]/70 hover:text-[#C8973A] disabled:opacity-50"
+            >
+              {resetLoading ? "Sending..." : "Forgot Password?"}
+            </button>
+          </div>
         </div>
+
+        {resetSent && (
+          <div className="rounded border border-[#2D6A47]/30 bg-[#2D6A47]/10 px-4 py-2 text-sm text-[#2D6A47]">
+            Password reset email sent! Check your inbox.
+          </div>
+        )}
 
         <button
           type="submit"
