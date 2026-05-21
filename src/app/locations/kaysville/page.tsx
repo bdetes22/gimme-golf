@@ -105,6 +105,29 @@ export default function KaysvillePage() {
         </div>
       </section>
 
+      {/* ── Find Us ── */}
+      <section className="py-16">
+        <div className="mx-auto max-w-4xl px-6">
+          <h2
+            className="mb-8 text-center text-3xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-4xl"
+            style={{ fontFamily: "var(--font-barlow-condensed)" }}
+          >
+            Find Us
+          </h2>
+          <div className="aspect-video overflow-hidden rounded-lg border border-[#F0E8D2]/10">
+            <iframe
+              src="https://maps.google.com/maps?q=140+N+Main+Street+Kaysville+UT+84037&output=embed"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              title="Kaysville location map"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="py-16">
         <div className="mx-auto max-w-3xl px-6 text-center">
