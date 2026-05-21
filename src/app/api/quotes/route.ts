@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
         const origin = req.nextUrl.origin;
         const quoteUrl = `${origin}/quote/${quote.id}`;
 
-        await resend.emails.send({
+        console.log("[QUOTES] Sending quote email to:", quote.client_email);
+        const emailResult = await resend.emails.send({
           from: "Gimme Golf <onboarding@resend.dev>",
           to: quote.client_email,
           subject: `Your Quote #${quote.quote_number} from Gimme Golf`,
@@ -67,6 +68,9 @@ export async function POST(req: NextRequest) {
             </div>
           `,
         });
+        console.log("[QUOTES] Resend result:", JSON.stringify(emailResult));
+      } else {
+        console.log("[QUOTES] No client email found, skipping email send");
       }
 
       return NextResponse.json({ success: true });
