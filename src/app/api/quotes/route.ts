@@ -132,15 +132,17 @@ export async function POST(req: NextRequest) {
     // Update existing quote
     if (body.id) {
       const updateData: Record<string, unknown> = {};
-      if (body.clientName !== undefined) updateData.client_name = body.clientName;
-      if (body.clientEmail !== undefined) updateData.client_email = body.clientEmail;
-      if (body.clientPhone !== undefined) updateData.client_phone = body.clientPhone;
-      if (body.clientAddress !== undefined) updateData.client_address = body.clientAddress;
-      if (body.lineItems !== undefined) updateData.line_items = body.lineItems;
+      if (body.clientName !== undefined || body.client_name !== undefined) updateData.client_name = body.clientName || body.client_name;
+      if (body.clientEmail !== undefined || body.client_email !== undefined) updateData.client_email = body.clientEmail || body.client_email;
+      if (body.clientPhone !== undefined || body.client_phone !== undefined) updateData.client_phone = body.clientPhone || body.client_phone;
+      if (body.clientAddress !== undefined || body.client_address !== undefined) updateData.client_address = body.clientAddress || body.client_address;
+      if (body.lineItems !== undefined || body.line_items !== undefined) updateData.line_items = body.lineItems || body.line_items;
       if (body.subtotal !== undefined) updateData.subtotal = body.subtotal;
       if (body.total !== undefined) updateData.total = body.total;
-      if (body.depositAmount !== undefined) updateData.deposit_amount = body.depositAmount;
+      if (body.depositAmount !== undefined || body.deposit_amount !== undefined) updateData.deposit_amount = body.depositAmount || body.deposit_amount;
+      if (body.quote_date !== undefined) updateData.quote_date = body.quote_date;
       if (body.notes !== undefined) updateData.notes = body.notes;
+      if (body.internal_notes !== undefined) updateData.internal_notes = body.internal_notes;
       if (body.status !== undefined) updateData.status = body.status;
       if (body.payment_method !== undefined) updateData.payment_method = body.payment_method;
       if (body.paid_at !== undefined) updateData.paid_at = body.paid_at;
@@ -172,6 +174,7 @@ export async function POST(req: NextRequest) {
       total: body.total || 0,
       deposit_amount: body.depositAmount || body.deposit_amount || 0,
       notes: body.notes || "",
+      internal_notes: body.internal_notes || "",
       status: body.status || "draft",
     });
 

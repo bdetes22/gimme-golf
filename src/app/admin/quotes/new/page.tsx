@@ -9,6 +9,14 @@ interface LineItem {
   unit_price: number;
 }
 
+const LINE_ITEM_PRESETS: LineItem[] = [
+  { description: "Extra padding package", qty: 1, unit_price: 800 },
+  { description: "Premium turf upgrade", qty: 1, unit_price: 500 },
+  { description: "Additional TV/Monitor", qty: 1, unit_price: 689 },
+  { description: "Projector upgrade", qty: 1, unit_price: 1200 },
+  { description: "Custom lighting", qty: 1, unit_price: 350 },
+];
+
 const DEFAULT_LINE_ITEMS: LineItem[] = [
   { description: "ProTee VX Launch Monitor installation and calibration", qty: 1, unit_price: 7955 },
   { description: "Software implementation (software purchased separately)", qty: 1, unit_price: 100 },
@@ -288,6 +296,26 @@ export default function NewQuotePage() {
           >
             Line Items
           </h3>
+
+          {/* Quick-add Presets */}
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs text-[#F0E8D2]/40 uppercase self-center mr-1">Quick Add:</span>
+            {LINE_ITEM_PRESETS.map((preset) => (
+              <button
+                key={preset.description}
+                onClick={() =>
+                  setLineItems((prev) => [
+                    ...prev,
+                    { ...preset },
+                  ])
+                }
+                className="px-3 py-1.5 text-xs border border-[#C8973A]/30 text-[#C8973A] rounded hover:bg-[#C8973A]/10 transition-colors"
+              >
+                {preset.description} — ${preset.unit_price.toLocaleString()}
+              </button>
+            ))}
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
