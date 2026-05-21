@@ -56,6 +56,19 @@ export async function POST(req: NextRequest) {
 
     // ── Punch Pass limits ──
     if (membership.type !== "staff" && membership.type === "punchpass") {
+      // Check expiry
+      if (membership.end_date && today > membership.end_date) {
+        await fetch(`${url()}/rest/v1/memberships?id=eq.${membership.id}`, {
+          method: "PATCH",
+          headers: restHeaders(),
+          body: JSON.stringify({ active: false }),
+        });
+        return NextResponse.json({
+          error: "Your punch pass has expired. Please purchase a new one.",
+          expired: true,
+        }, { status: 403 });
+      }
+
       const remaining = membership.sessions_remaining || 0;
       if (remaining < slotCount) {
         return NextResponse.json({

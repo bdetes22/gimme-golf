@@ -163,6 +163,9 @@ export async function POST(req: NextRequest) {
 
       if (plan === "punchpass") {
         sessionsRemaining = 10;
+        const end = new Date(now);
+        end.setFullYear(end.getFullYear() + 1);
+        endDate = end.toISOString().split("T")[0];
       } else if (plan === "monthly") {
         const end = new Date(now);
         end.setMonth(end.getMonth() + 1);
@@ -218,7 +221,7 @@ export async function POST(req: NextRequest) {
         <p style="color:#F0E8D2;font-size:24px;font-weight:700;margin:0;">${planLabel}</p>
         ${sessionsRemaining ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">${sessionsRemaining} sessions ready to use</p>` : ""}
         ${endDate ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">Valid through ${endDate}</p>` : ""}
-        ${plan === "punchpass" ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">No expiration</p>` : ""}
+        ${plan === "punchpass" ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">Expires ${endDate}</p>` : ""}
       </div>
       <div style="text-align:center;">
         <a href="https://gimme-git-main-bridgn.vercel.app/book" style="display:inline-block;background-color:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Book Your First Session</a>

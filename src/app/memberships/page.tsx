@@ -24,7 +24,7 @@ const plans = [
     price: "$299",
     period: " / 10 sessions",
     description: "Buy 10 sessions up front and save. No expiration.",
-    features: ["Save 15% vs. walk-in", "Never expires", "Transferable"],
+    features: ["Save 15% vs. walk-in", "Expires after 1 year", "Transferable"],
     cta: "Buy Punch Pass",
     href: "",
     stripe: true,

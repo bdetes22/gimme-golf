@@ -107,7 +107,7 @@ const pricingOptions = [
     name: "Punch Pass",
     price: "$299",
     period: " / 10 sessions",
-    features: ["Save 15% vs. walk-in", "Never expires", "Transferable"],
+    features: ["Save 15% vs. walk-in", "Expires after 1 year", "Transferable"],
     cta: "Buy a Pass",
     href: "/memberships",
     highlight: false,
