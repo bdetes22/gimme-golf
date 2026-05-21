@@ -244,6 +244,50 @@ export default function BookPage() {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="mx-auto max-w-2xl px-6">
+        {/* ── Auth Banner ── */}
+        {!customerId && (
+          <div className="mb-6 rounded-lg border border-[#2D6A47]/20 bg-[#2D6A47]/[0.06] p-4 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-[#F0E8D2]">Already a member?</p>
+                <p className="text-xs text-[#F0E8D2]/50">Log in to book with your membership or punch pass — no payment needed.</p>
+              </div>
+              <div className="flex gap-2">
+                <a
+                  href="/login?redirect=/book"
+                  className="rounded bg-[#2D6A47] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+                >
+                  Log In
+                </a>
+                <a
+                  href="/signup?redirect=/book"
+                  className="rounded border border-[#F0E8D2]/20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#F0E8D2]/70 transition-colors hover:border-[#F0E8D2]/40"
+                >
+                  Sign Up
+                </a>
+              </div>
+            </div>
+            <p className="mt-3 text-[10px] text-[#F0E8D2]/30">
+              Not a member? No problem — you can book as a walk-in for $35/hr. <a href="/memberships" className="text-[#C8973A] hover:underline">View membership plans</a>
+            </p>
+          </div>
+        )}
+
+        {/* ── Member Banner ── */}
+        {customerId && canBookFree && (
+          <div className="mb-6 rounded-lg border border-[#2D6A47]/20 bg-[#2D6A47]/[0.06] p-4">
+            <div className="flex items-center gap-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5 shrink-0 text-[#2D6A47]">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+              <p className="text-sm text-[#F0E8D2]">
+                <span className="font-semibold">Logged in as a member</span>
+                <span className="text-[#F0E8D2]/50"> — your booking will be included with your {membership?.type === "punchpass" ? "punch pass" : "membership"}.</span>
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* ── Progress ── */}
         <div className="mb-12">
           <div className="flex items-center justify-between">
