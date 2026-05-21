@@ -13,7 +13,7 @@ interface Booking {
   payment_status: string;
   stripe_payment_id: string;
   created_at: string;
-  customers: { name: string; email: string } | null;
+  customers: { name: string; email: string; phone?: string } | null;
 }
 
 interface Membership {
@@ -23,6 +23,9 @@ interface Membership {
   hours_used_this_month: number | null;
   hours_reset_date: string | null;
   active: boolean;
+  end_date: string | null;
+  customer_id: string;
+  customers?: { name: string; email: string } | null;
 }
 
 interface Customer {
@@ -35,6 +38,23 @@ interface Customer {
   membership: Membership | null;
 }
 
+interface Location {
+  id: string;
+  name: string;
+  address: string;
+  keybox_code: string;
+  youtube_url: string;
+}
+
+interface Revenue {
+  thisMonth: number;
+  lastMonth: number;
+  thisYear: number;
+  thisMonthBookings: number;
+  lastMonthBookings: number;
+  thisYearBookings: number;
+}
+
 interface Stats {
   bookingsToday: number;
   bookingsThisWeek: number;
@@ -44,6 +64,10 @@ interface Stats {
 interface AdminData {
   bookings: Booking[];
   customers: Customer[];
+  locations: Location[];
+  upcomingBookings: Booking[];
+  expiringMemberships: Membership[];
+  revenue: Revenue;
   stats: Stats;
 }
 
@@ -86,6 +110,22 @@ export default function AdminPage() {
   // Notes editing state
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [notesText, setNotesText] = useState("");
+
+  // Block slot form state
+  const [showBlockSlot, setShowBlockSlot] = useState(false);
+  const [blockLocation, setBlockLocation] = useState("kaysville");
+  const [blockDate, setBlockDate] = useState("");
+  const [blockHour, setBlockHour] = useState(9);
+
+  // Comp session modal state
+  const [compModalCustomer, setCompModalCustomer] = useState<Customer | null>(null);
+  const [compLocation, setCompLocation] = useState("kaysville");
+  const [compDate, setCompDate] = useState("");
+  const [compHour, setCompHour] = useState(9);
+
+  // Keybox editing state
+  const [editingKeybox, setEditingKeybox] = useState<string | null>(null);
+  const [keyboxValue, setKeyboxValue] = useState("");
 
   const [storedPassword, setStoredPassword] = useState("");
 
@@ -153,6 +193,11 @@ export default function AdminPage() {
     doAction({ action: "refund_booking", bookingId, stripePaymentId });
   };
 
+  const handleResendConfirmation = (bookingId: string) => {
+    if (!confirm("Resend confirmation email for this booking?")) return;
+    doAction({ action: "resend_confirmation", bookingId });
+  };
+
   const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     await doAction({
@@ -163,6 +208,56 @@ export default function AdminPage() {
       hour: newBookingHour,
     });
     setShowCreateBooking(false);
+  };
+
+  const handleBlockSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await doAction({
+      action: "block_slot",
+      location: blockLocation,
+      dateISO: blockDate,
+      hour: blockHour,
+    });
+    setShowBlockSlot(false);
+  };
+
+  const handleUnblockSlot = (bookingId: string) => {
+    if (!confirm("Unblock this time slot?")) return;
+    doAction({ action: "unblock_slot", bookingId });
+  };
+
+  const handleCompBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!compModalCustomer) return;
+    await doAction({
+      action: "comp_booking",
+      customerId: compModalCustomer.id,
+      location: compLocation,
+      dateISO: compDate,
+      hour: compHour,
+    });
+    setCompModalCustomer(null);
+  };
+
+  const handleUpdateKeybox = async (locationId: string) => {
+    await doAction({
+      action: "update_keybox",
+      locationId,
+      keyboxCode: keyboxValue,
+    });
+    setEditingKeybox(null);
+  };
+
+  const handleSendRenewalReminder = (mem: Membership) => {
+    if (!confirm(`Send renewal reminder to ${mem.customers?.name}?`)) return;
+    doAction({
+      action: "send_renewal_reminder",
+      membershipId: mem.id,
+      customerEmail: mem.customers?.email,
+      customerName: mem.customers?.name,
+      endDate: mem.end_date,
+      membershipType: mem.type,
+    });
   };
 
   const handleAddSessions = (customerId: string, sessions: number) => {
@@ -296,42 +391,196 @@ export default function AdminPage() {
 
   if (!data) return null;
 
+  // Group upcoming bookings by date then location
+  const todayStr = new Date().toISOString().split("T")[0];
+  const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+  const todayUpcoming = data.upcomingBookings.filter(b => b.start_time.startsWith(todayStr));
+  const tomorrowUpcoming = data.upcomingBookings.filter(b => b.start_time.startsWith(tomorrowStr));
+
   return (
     <div className="min-h-screen bg-[#060A07] text-[#F0E8D2] px-4 py-8 pt-24">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <h1
-          className="text-3xl font-bold text-[#C8973A]"
-          style={{ fontFamily: "var(--font-barlow-condensed)" }}
-        >
-          ADMIN DASHBOARD
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1
+            className="text-3xl font-bold text-[#C8973A]"
+            style={{ fontFamily: "var(--font-barlow-condensed)" }}
+          >
+            ADMIN DASHBOARD
+          </h1>
+          <button
+            onClick={() => fetchData(storedPassword)}
+            disabled={loading}
+            className="px-3 py-1.5 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-xs hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
+          >
+            {loading ? "Refreshing..." : "Refresh"}
+          </button>
+        </div>
 
-        {/* Stats Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* ── Keybox Codes ── */}
+        {data.locations.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {data.locations.map((loc) => (
+              <div key={loc.id} className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold capitalize">{loc.name}</p>
+                  <p className="text-xs text-[#F0E8D2]/40">{loc.address}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {editingKeybox === loc.id ? (
+                    <>
+                      <input
+                        type="text"
+                        value={keyboxValue}
+                        onChange={(e) => setKeyboxValue(e.target.value)}
+                        className="w-24 px-2 py-1 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#C8973A] text-center text-lg font-bold tracking-widest"
+                      />
+                      <button
+                        onClick={() => handleUpdateKeybox(loc.id)}
+                        disabled={actionLoading !== null}
+                        className="px-2 py-1 bg-[#2D6A47]/40 text-green-300 rounded text-xs hover:bg-[#2D6A47]/60 disabled:opacity-50"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingKeybox(null)}
+                        className="px-2 py-1 text-[#F0E8D2]/40 text-xs hover:text-[#F0E8D2]"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase tracking-wider text-[#F0E8D2]/40">Keybox</p>
+                        <p className="text-xl font-bold text-[#C8973A] tracking-widest">{loc.keybox_code || "N/A"}</p>
+                      </div>
+                      <button
+                        onClick={() => { setEditingKeybox(loc.id); setKeyboxValue(loc.keybox_code || ""); }}
+                        className="px-2 py-1 border border-[#F0E8D2]/10 text-[#F0E8D2]/30 rounded text-[10px] hover:text-[#F0E8D2]/60 hover:border-[#F0E8D2]/20"
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Stats & Revenue Bar ── */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
             { label: "Bookings Today", value: data.stats.bookingsToday },
             { label: "Bookings This Week", value: data.stats.bookingsThisWeek },
             { label: "Active Members", value: data.stats.activeMembers },
+            { label: "Revenue This Month", value: `$${data.revenue.thisMonth.toLocaleString()}`, sub: `${data.revenue.thisMonthBookings} bookings` },
+            { label: "Revenue Last Month", value: `$${data.revenue.lastMonth.toLocaleString()}`, sub: `${data.revenue.lastMonthBookings} bookings` },
+            { label: "Revenue This Year", value: `$${data.revenue.thisYear.toLocaleString()}`, sub: `${data.revenue.thisYearBookings} bookings` },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-6 text-center"
+              className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-4 text-center"
             >
-              <p className="text-[#F0E8D2]/60 text-sm uppercase tracking-wider">
+              <p className="text-[#F0E8D2]/60 text-[10px] uppercase tracking-wider">
                 {stat.label}
               </p>
               <p
-                className="text-4xl font-bold text-[#C8973A] mt-2"
+                className="text-2xl font-bold text-[#C8973A] mt-1"
                 style={{ fontFamily: "var(--font-barlow-condensed)" }}
               >
-                {stat.value}
+                {typeof stat.value === "number" ? stat.value : stat.value}
               </p>
+              {"sub" in stat && stat.sub && (
+                <p className="text-[10px] text-[#F0E8D2]/30 mt-0.5">{stat.sub}</p>
+              )}
             </div>
           ))}
         </div>
 
-        {/* Bookings Section */}
+        {/* ── Expiring Memberships ── */}
+        {Array.isArray(data.expiringMemberships) && data.expiringMemberships.length > 0 && (
+          <section className="border border-[#C8973A]/30 bg-[#C8973A]/5 rounded-lg p-4">
+            <h2
+              className="text-lg font-bold text-[#C8973A] mb-3"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              MEMBERSHIPS EXPIRING SOON
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {data.expiringMemberships.map((mem) => (
+                <div key={mem.id} className="flex items-center justify-between bg-[#060A07] border border-[#F0E8D2]/10 rounded-lg p-3">
+                  <div>
+                    <p className="text-sm font-semibold">{mem.customers?.name || "Unknown"}</p>
+                    <p className="text-xs text-[#F0E8D2]/40">{mem.customers?.email}</p>
+                    <p className="text-xs text-[#C8973A] mt-0.5">
+                      {mem.type} - expires {mem.end_date}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleSendRenewalReminder(mem)}
+                    disabled={actionLoading !== null}
+                    className="shrink-0 ml-2 px-3 py-1.5 bg-[#C8973A]/20 text-[#C8973A] rounded text-xs font-medium hover:bg-[#C8973A]/30 disabled:opacity-50 transition-colors"
+                  >
+                    Remind
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Upcoming Bookings (Today & Tomorrow) ── */}
+        {(todayUpcoming.length > 0 || tomorrowUpcoming.length > 0) && (
+          <section>
+            <h2
+              className="text-2xl font-bold text-[#F0E8D2] mb-4"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              TODAY &amp; TOMORROW
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {[
+                { label: "Today", bookings: todayUpcoming },
+                { label: "Tomorrow", bookings: tomorrowUpcoming },
+              ].map(({ label, bookings: bks }) => (
+                <div key={label} className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-4">
+                  <h3
+                    className="text-sm font-bold uppercase tracking-wider text-[#F0E8D2]/60 mb-3"
+                    style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                  >
+                    {label} ({bks.length})
+                  </h3>
+                  {bks.length === 0 ? (
+                    <p className="text-xs text-[#F0E8D2]/30">No bookings</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {bks.map((b) => (
+                        <div key={b.id} className="flex items-center justify-between bg-[#060A07] border border-[#F0E8D2]/5 rounded p-2.5">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-mono text-[#C8973A] w-16">{formatTime(b.start_time)}</span>
+                            <span className="text-sm">{b.customers?.name || "Unknown"}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-medium ${
+                              b.status === "blocked"
+                                ? "bg-red-900/30 text-red-400"
+                                : "bg-[#2D6A47]/20 text-green-400"
+                            }`}>
+                              {b.status === "blocked" ? "blocked" : b.payment_status}
+                            </span>
+                          </div>
+                          <span className="text-xs text-[#F0E8D2]/40 capitalize">{b.location}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Bookings Section ── */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2
@@ -340,13 +589,72 @@ export default function AdminPage() {
             >
               BOOKINGS
             </h2>
-            <button
-              onClick={() => setShowCreateBooking(!showCreateBooking)}
-              className="px-4 py-2 bg-[#2D6A47] text-[#F0E8D2] rounded font-semibold hover:bg-[#2D6A47]/80 transition-colors text-sm"
-            >
-              {showCreateBooking ? "Cancel" : "Create Booking"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowBlockSlot(!showBlockSlot)}
+                className="px-4 py-2 border border-red-500/30 text-red-400/70 rounded font-semibold hover:bg-red-900/20 hover:text-red-400 transition-colors text-sm"
+              >
+                {showBlockSlot ? "Cancel" : "Block Slot"}
+              </button>
+              <button
+                onClick={() => setShowCreateBooking(!showCreateBooking)}
+                className="px-4 py-2 bg-[#2D6A47] text-[#F0E8D2] rounded font-semibold hover:bg-[#2D6A47]/80 transition-colors text-sm"
+              >
+                {showCreateBooking ? "Cancel" : "Create Booking"}
+              </button>
+            </div>
           </div>
+
+          {/* Block Slot Form */}
+          {showBlockSlot && (
+            <form
+              onSubmit={handleBlockSlot}
+              className="border border-red-500/20 bg-red-900/5 rounded-lg p-6 mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
+            >
+              <div>
+                <label className="block text-xs text-[#F0E8D2]/60 mb-1 uppercase">Location</label>
+                <select
+                  value={blockLocation}
+                  onChange={(e) => setBlockLocation(e.target.value)}
+                  className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm"
+                >
+                  <option value="kaysville">Kaysville</option>
+                  <option value="clearfield">Clearfield</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-[#F0E8D2]/60 mb-1 uppercase">Date</label>
+                <input
+                  type="date"
+                  value={blockDate}
+                  onChange={(e) => setBlockDate(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#F0E8D2]/60 mb-1 uppercase">Hour</label>
+                <select
+                  value={blockHour}
+                  onChange={(e) => setBlockHour(Number(e.target.value))}
+                  className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm"
+                >
+                  {Array.from({ length: 18 }, (_, i) => i + 6).map((h) => (
+                    <option key={h} value={h}>
+                      {h > 12 ? `${h - 12} PM` : h === 12 ? "12 PM" : `${h} AM`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                disabled={actionLoading !== null}
+                className="px-4 py-2 bg-red-900/40 text-red-300 rounded font-semibold hover:bg-red-900/60 disabled:opacity-50 transition-colors text-sm"
+              >
+                Block Slot
+              </button>
+            </form>
+          )}
 
           {/* Create Booking Form */}
           {showCreateBooking && (
@@ -442,11 +750,13 @@ export default function AdminPage() {
                 {data.bookings.map((b) => (
                   <tr
                     key={b.id}
-                    className="border-b border-[#F0E8D2]/5 hover:bg-[#F0E8D2]/[0.02]"
+                    className={`border-b border-[#F0E8D2]/5 hover:bg-[#F0E8D2]/[0.02] ${
+                      b.status === "blocked" ? "opacity-60" : ""
+                    }`}
                   >
-                    <td className="p-3">{b.customers?.name || "Unknown"}</td>
+                    <td className="p-3">{b.status === "blocked" ? "BLOCKED" : (b.customers?.name || "Unknown")}</td>
                     <td className="p-3 text-[#F0E8D2]/60">
-                      {b.customers?.email || "-"}
+                      {b.status === "blocked" ? "-" : (b.customers?.email || "-")}
                     </td>
                     <td className="p-3 capitalize">{b.location}</td>
                     <td className="p-3">{formatDateTime(b.start_time)}</td>
@@ -456,6 +766,8 @@ export default function AdminPage() {
                         className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
                           b.status === "cancelled"
                             ? "bg-red-900/40 text-red-300"
+                            : b.status === "blocked"
+                            ? "bg-red-900/30 text-red-400"
                             : b.status === "confirmed"
                             ? "bg-[#2D6A47]/40 text-green-300"
                             : "bg-[#C8973A]/20 text-[#C8973A]"
@@ -467,26 +779,47 @@ export default function AdminPage() {
                     <td className="p-3 text-[#F0E8D2]/60">{b.payment_status}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-1 flex-wrap">
-                        {b.status !== "cancelled" && (
+                        {b.status === "blocked" ? (
                           <button
-                            onClick={() => handleCancelBooking(b.id)}
+                            onClick={() => handleUnblockSlot(b.id)}
                             disabled={actionLoading !== null}
-                            className="px-2 py-1 bg-red-900/40 text-red-300 rounded text-xs hover:bg-red-900/60 disabled:opacity-50 transition-colors"
+                            className="px-2 py-1 bg-[#2D6A47]/40 text-green-300 rounded text-xs hover:bg-[#2D6A47]/60 disabled:opacity-50 transition-colors"
                           >
-                            Cancel
+                            Unblock
                           </button>
-                        )}
-                        {b.stripe_payment_id && b.payment_status !== "refunded" && (
-                          <button
-                            onClick={() => handleRefundBooking(b.id, b.stripe_payment_id)}
-                            disabled={actionLoading !== null}
-                            className="px-2 py-1 border border-[#C8973A]/30 text-[#C8973A]/70 rounded text-xs hover:bg-[#C8973A]/10 hover:text-[#C8973A] disabled:opacity-50 transition-colors"
-                          >
-                            Refund
-                          </button>
-                        )}
-                        {b.payment_status === "refunded" && (
-                          <span className="text-[10px] uppercase tracking-wider text-green-400/50">Refunded</span>
+                        ) : (
+                          <>
+                            {b.status === "confirmed" && (
+                              <button
+                                onClick={() => handleResendConfirmation(b.id)}
+                                disabled={actionLoading !== null}
+                                className="px-2 py-1 bg-[#2D6A47]/20 text-green-300/70 rounded text-xs hover:bg-[#2D6A47]/40 hover:text-green-300 disabled:opacity-50 transition-colors"
+                              >
+                                Resend Email
+                              </button>
+                            )}
+                            {b.status !== "cancelled" && (
+                              <button
+                                onClick={() => handleCancelBooking(b.id)}
+                                disabled={actionLoading !== null}
+                                className="px-2 py-1 bg-red-900/40 text-red-300 rounded text-xs hover:bg-red-900/60 disabled:opacity-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            {b.stripe_payment_id && b.payment_status !== "refunded" && (
+                              <button
+                                onClick={() => handleRefundBooking(b.id, b.stripe_payment_id)}
+                                disabled={actionLoading !== null}
+                                className="px-2 py-1 border border-[#C8973A]/30 text-[#C8973A]/70 rounded text-xs hover:bg-[#C8973A]/10 hover:text-[#C8973A] disabled:opacity-50 transition-colors"
+                              >
+                                Refund
+                              </button>
+                            )}
+                            {b.payment_status === "refunded" && (
+                              <span className="text-[10px] uppercase tracking-wider text-green-400/50">Refunded</span>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>
@@ -504,7 +837,7 @@ export default function AdminPage() {
           </div>
         </section>
 
-        {/* Customers Section */}
+        {/* ── Customers Section ── */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2
@@ -513,12 +846,39 @@ export default function AdminPage() {
             >
               CUSTOMERS
             </h2>
-            <button
-              onClick={openCreateMember}
-              className="rounded bg-[#C8973A] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
-            >
-              Create Member
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const rows = [["Name", "Email", "Phone", "Membership", "Notes"]];
+                  data.customers.forEach((c) => {
+                    rows.push([
+                      c.name,
+                      c.email,
+                      c.phone || "",
+                      c.membership?.type || "none",
+                      (c.notes || "").replace(/,/g, ";"),
+                    ]);
+                  });
+                  const csv = rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+                  const blob = new Blob([csv], { type: "text/csv" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `gimme-golf-customers-${new Date().toISOString().split("T")[0]}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="rounded border border-[#F0E8D2]/20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#F0E8D2]/60 transition-colors hover:border-[#F0E8D2]/40 hover:text-[#F0E8D2]"
+              >
+                Export CSV
+              </button>
+              <button
+                onClick={openCreateMember}
+                className="rounded bg-[#C8973A] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
+              >
+                Create Member
+              </button>
+            </div>
           </div>
           <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg overflow-x-auto">
             <table className="w-full min-w-[700px] text-sm">
@@ -621,6 +981,18 @@ export default function AdminPage() {
                         >
                           -1
                         </button>
+                        <button
+                          onClick={() => {
+                            setCompModalCustomer(c);
+                            setCompLocation("kaysville");
+                            setCompDate(new Date().toISOString().split("T")[0]);
+                            setCompHour(9);
+                          }}
+                          disabled={actionLoading !== null}
+                          className="px-2 py-1 bg-[#C8973A]/20 text-[#C8973A] rounded text-xs hover:bg-[#C8973A]/30 disabled:opacity-50 transition-colors"
+                        >
+                          Comp
+                        </button>
                       </div>
                     </td>
                     <td className="p-3">
@@ -655,6 +1027,77 @@ export default function AdminPage() {
           </div>
         </section>
       </div>
+
+      {/* ── Comp Session Modal ── */}
+      {compModalCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-lg border border-[#F0E8D2]/10 bg-[#060A07] p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3
+                className="text-lg font-bold uppercase text-[#F0E8D2]"
+                style={{ fontFamily: "var(--font-barlow-condensed)" }}
+              >
+                Comp Session — {compModalCustomer.name}
+              </h3>
+              <button onClick={() => setCompModalCustomer(null)} className="text-[#F0E8D2]/40 hover:text-[#F0E8D2]">&times;</button>
+            </div>
+            <form onSubmit={handleCompBooking} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Location</label>
+                <select
+                  value={compLocation}
+                  onChange={(e) => setCompLocation(e.target.value)}
+                  className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]"
+                >
+                  <option value="kaysville">Kaysville</option>
+                  <option value="clearfield">Clearfield</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Date</label>
+                <input
+                  type="date"
+                  value={compDate}
+                  onChange={(e) => setCompDate(e.target.value)}
+                  required
+                  className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Hour</label>
+                <select
+                  value={compHour}
+                  onChange={(e) => setCompHour(Number(e.target.value))}
+                  className="w-full rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] outline-none focus:border-[#2D6A47]"
+                >
+                  {Array.from({ length: 18 }, (_, i) => i + 6).map((h) => (
+                    <option key={h} value={h}>
+                      {h > 12 ? `${h - 12} PM` : h === 12 ? "12 PM" : `${h} AM`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-[10px] text-[#F0E8D2]/30">This will create a confirmed booking with payment status &quot;comp&quot; and send a confirmation email to the customer.</p>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={actionLoading !== null}
+                  className="flex-1 rounded bg-[#C8973A] px-4 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90 disabled:opacity-50"
+                >
+                  Comp Session
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCompModalCustomer(null)}
+                  className="rounded border border-[#F0E8D2]/20 px-4 py-2.5 text-sm text-[#F0E8D2]/50 hover:text-[#F0E8D2]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── Create Member Modal ── */}
       {showCreateMember && (

@@ -14,12 +14,348 @@ function adminClient() {
   );
 }
 
+function formatTime(hour: number) {
+  if (hour < 12) return `${hour} AM`;
+  if (hour === 12) return "12 PM";
+  return `${hour - 12} PM`;
+}
+
+function buildConfirmationEmail({
+  customerName,
+  locationName,
+  address,
+  dateDisplay,
+  timeDisplay,
+  keyboxCode,
+  youtubeUrl,
+}: {
+  customerName: string;
+  locationName: string;
+  address: string;
+  dateDisplay: string;
+  timeDisplay: string;
+  keyboxCode: string;
+  youtubeUrl: string;
+}) {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#060A07;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+    </div>
+    <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;margin-bottom:24px;">
+      <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">You're All Set, ${customerName}!</h2>
+      <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 28px 0;">
+        Here's everything you need to get in and start playing.
+      </p>
+      <div style="background-color:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:20px;margin-bottom:24px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Location</td>
+            <td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${locationName}</td>
+          </tr>
+          <tr>
+            <td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Address</td>
+            <td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${address}</td>
+          </tr>
+          <tr>
+            <td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Date</td>
+            <td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${dateDisplay}</td>
+          </tr>
+          <tr>
+            <td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;">Time</td>
+            <td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;">${timeDisplay}</td>
+          </tr>
+        </table>
+      </div>
+      <div style="background-color:#2D6A47;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
+        <p style="color:#F0E8D2;opacity:0.8;font-size:12px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px 0;font-weight:600;">Your Access Code</p>
+        <p style="color:#F0E8D2;font-size:36px;font-weight:700;margin:0;letter-spacing:6px;">${keyboxCode}</p>
+        <p style="color:#F0E8D2;opacity:0.6;font-size:12px;margin:8px 0 0 0;">Enter this code on the keybox at the front door</p>
+      </div>
+      ${youtubeUrl ? `
+      <div style="text-align:center;margin-bottom:24px;">
+        <p style="color:#F0E8D2;opacity:0.6;font-size:14px;margin:0 0 12px 0;">First time? Watch our quick walkthrough:</p>
+        <a href="${youtubeUrl}" target="_blank" style="display:inline-block;background-color:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Watch Instructions Video</a>
+      </div>
+      ` : ""}
+    </div>
+    <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:8px;padding:20px;text-align:center;margin-bottom:24px;">
+      <p style="color:#F0E8D2;font-size:14px;font-weight:600;margin:0 0 8px 0;">Need Help?</p>
+      <p style="color:#F0E8D2;opacity:0.5;font-size:13px;margin:0;">(801) 513-3538 · info@gimmegolfsimulators.com</p>
+    </div>
+    <div style="text-align:center;padding:16px 0;">
+      <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { password, action } = body;
 
   if (!password || password !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // ── Resend confirmation email ──
+  if (action === "resend_confirmation") {
+    const { bookingId } = body;
+    if (!bookingId) {
+      return NextResponse.json({ error: "bookingId is required" }, { status: 400 });
+    }
+
+    const bookingArr = await dbSelect(
+      "bookings",
+      `select=*,customers(name,email)&id=eq.${bookingId}&limit=1`
+    );
+    if (!Array.isArray(bookingArr) || bookingArr.length === 0) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+    const booking = bookingArr[0];
+    const customerName = booking.customers?.name || "Guest";
+    const customerEmail = booking.customers?.email;
+    if (!customerEmail) {
+      return NextResponse.json({ error: "No customer email found" }, { status: 400 });
+    }
+
+    // Fetch location data
+    const locArr = await dbSelect(
+      "locations",
+      `select=name,address,keybox_code,youtube_url&name=ilike.${encodeURIComponent(booking.location)}&limit=1`
+    );
+    const loc = Array.isArray(locArr) && locArr.length > 0 ? locArr[0] : null;
+
+    const startDate = new Date(booking.start_time);
+    const hour = startDate.getHours();
+    const dateDisplay = startDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const timeDisplay = `${formatTime(hour)} - ${formatTime(hour + 1)}`;
+    const locationName = loc?.name || booking.location;
+
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY!);
+      await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: customerEmail,
+        subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
+        html: buildConfirmationEmail({
+          customerName,
+          locationName,
+          address: loc?.address || "",
+          dateDisplay,
+          timeDisplay,
+          keyboxCode: loc?.keybox_code || "N/A",
+          youtubeUrl: loc?.youtube_url || "",
+        }),
+      });
+      console.log("[ADMIN] Confirmation email resent to", customerEmail);
+      return NextResponse.json({ success: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Email send failed";
+      console.error("[ADMIN] Resend email failed:", message);
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
+  }
+
+  // ── Block time slot ──
+  if (action === "block_slot") {
+    const { location, dateISO, hour: blockHour } = body;
+    if (!location || !dateISO || blockHour === undefined) {
+      return NextResponse.json({ error: "location, dateISO, and hour are required" }, { status: 400 });
+    }
+
+    // Get or create system customer for blocked slots
+    let systemCustomer = await dbSelect(
+      "customers",
+      `select=id&email=eq.system@gimmegolf.internal&limit=1`
+    );
+    let systemCustomerId: string;
+
+    if (Array.isArray(systemCustomer) && systemCustomer.length > 0) {
+      systemCustomerId = systemCustomer[0].id;
+    } else {
+      // Create system customer
+      const created = await dbInsert("customers", {
+        name: "SYSTEM (Blocked Slots)",
+        email: "system@gimmegolf.internal",
+        phone: null,
+      });
+      if (Array.isArray(created) && created.length > 0) {
+        systemCustomerId = created[0].id;
+      } else {
+        return NextResponse.json({ error: "Failed to create system customer" }, { status: 500 });
+      }
+    }
+
+    const startTime = new Date(`${dateISO}T${String(blockHour).padStart(2, "0")}:00:00`);
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+
+    await dbInsert("bookings", {
+      customer_id: systemCustomerId,
+      location: location.toLowerCase(),
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+      duration_hours: 1,
+      status: "blocked",
+      payment_status: "blocked",
+    });
+
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Unblock time slot ──
+  if (action === "unblock_slot") {
+    const { bookingId } = body;
+    if (!bookingId) {
+      return NextResponse.json({ error: "bookingId is required" }, { status: 400 });
+    }
+
+    const result = await dbDelete("bookings", `id=eq.${bookingId}&status=eq.blocked`);
+    if (!result.ok) {
+      return NextResponse.json({ error: "Failed to unblock slot" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Send renewal reminder ──
+  if (action === "send_renewal_reminder") {
+    const { membershipId, customerEmail, customerName, endDate, membershipType } = body;
+    if (!membershipId || !customerEmail || !customerName) {
+      return NextResponse.json({ error: "membershipId, customerEmail, and customerName are required" }, { status: 400 });
+    }
+
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY!);
+      await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: customerEmail,
+        subject: "Your Gimme Golf Membership is Expiring Soon",
+        html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#060A07;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+    </div>
+    <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
+      <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Hey ${customerName},</h2>
+      <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px 0;">
+        Your ${membershipType || "membership"} is set to expire on <strong style="color:#C8973A;">${endDate || "soon"}</strong>. Renew now to keep your access and booking privileges.
+      </p>
+      <div style="text-align:center;margin-bottom:24px;">
+        <a href="https://gimme-git-main-bridgn.vercel.app/membership" style="display:inline-block;background-color:#2D6A47;color:#F0E8D2;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Renew Membership</a>
+      </div>
+      <div style="background-color:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;text-align:center;">
+        <p style="color:#F0E8D2;font-size:13px;font-weight:600;margin:0 0 6px 0;">Questions? Text us!</p>
+        <p style="color:#F0E8D2;opacity:0.5;font-size:13px;margin:0;">(801) 513-3538 · info@gimmegolfsimulators.com</p>
+      </div>
+    </div>
+    <div style="text-align:center;padding:16px 0;">
+      <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+      });
+      console.log("[ADMIN] Renewal reminder sent to", customerEmail);
+      return NextResponse.json({ success: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Email send failed";
+      console.error("[ADMIN] Renewal reminder failed:", message);
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
+  }
+
+  // ── Comp a booking ──
+  if (action === "comp_booking") {
+    const { customerId, location, dateISO, hour: compHour } = body;
+    if (!customerId || !location || !dateISO || compHour === undefined) {
+      return NextResponse.json({ error: "customerId, location, dateISO, and hour are required" }, { status: 400 });
+    }
+
+    const startTime = new Date(`${dateISO}T${String(compHour).padStart(2, "0")}:00:00`);
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+
+    await dbInsert("bookings", {
+      customer_id: customerId,
+      location: location.toLowerCase(),
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+      duration_hours: 1,
+      status: "confirmed",
+      payment_status: "comp",
+    });
+
+    // Fetch customer and location info for confirmation email
+    const custArr = await dbSelect("customers", `select=name,email&id=eq.${customerId}&limit=1`);
+    const locArr = await dbSelect(
+      "locations",
+      `select=name,address,keybox_code,youtube_url&name=ilike.${encodeURIComponent(location)}&limit=1`
+    );
+    const cust = Array.isArray(custArr) && custArr.length > 0 ? custArr[0] : null;
+    const loc = Array.isArray(locArr) && locArr.length > 0 ? locArr[0] : null;
+
+    if (cust?.email && loc) {
+      const dateDisplay = startTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+      const timeDisplay = `${formatTime(compHour)} - ${formatTime(compHour + 1)}`;
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY!);
+        await resend.emails.send({
+          from: "Gimme Golf <onboarding@resend.dev>",
+          to: cust.email,
+          subject: `Booking Confirmed — ${loc.name} on ${dateDisplay}`,
+          html: buildConfirmationEmail({
+            customerName: cust.name || "Guest",
+            locationName: loc.name,
+            address: loc.address || "",
+            dateDisplay,
+            timeDisplay,
+            keyboxCode: loc.keybox_code || "N/A",
+            youtubeUrl: loc.youtube_url || "",
+          }),
+        });
+        console.log("[ADMIN] Comp confirmation email sent to", cust.email);
+      } catch (emailErr) {
+        console.error("[ADMIN] Comp email failed:", emailErr);
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Update keybox code ──
+  if (action === "update_keybox") {
+    const { locationId, keyboxCode } = body;
+    if (!locationId || !keyboxCode) {
+      return NextResponse.json({ error: "locationId and keyboxCode are required" }, { status: 400 });
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const res = await fetch(`${apiUrl}/rest/v1/locations?id=eq.${locationId}`, {
+      method: "PATCH",
+      headers: {
+        apikey: apiKey,
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ keybox_code: keyboxCode }),
+    });
+
+    if (!res.ok) {
+      return NextResponse.json({ error: "Failed to update keybox code" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
   }
 
   if (action === "create_member") {
