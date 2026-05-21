@@ -422,5 +422,86 @@ export async function POST(req: NextRequest) {
     console.log(`[WEBHOOK] Complete: ${locationName} on ${dateISO} at ${hour}:00`);
   }
 
+  // ── Subscription payment failed — deactivate monthly membership ──
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as Stripe.Invoice;
+    const subMeta = ((invoice as unknown as { subscription_details?: { metadata?: Record<string, string> } }).subscription_details?.metadata || {}) as Record<string, string>;
+    const custId = subMeta.customerId;
+
+    if (custId) {
+      console.log("[WEBHOOK] Subscription payment failed for customer:", custId);
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      await fetch(`${url}/rest/v1/memberships?customer_id=eq.${custId}&type=eq.monthly&active=eq.true`, {
+        method: "PATCH",
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ active: false }),
+      });
+      console.log("[WEBHOOK] Monthly membership deactivated due to payment failure");
+    }
+  }
+
+  // ── Subscription cancelled — deactivate monthly membership ──
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object as Stripe.Subscription;
+    const subMeta = (subscription.metadata || {}) as Record<string, string>;
+    const custId = subMeta.customerId;
+
+    if (custId) {
+      console.log("[WEBHOOK] Subscription cancelled for customer:", custId);
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      await fetch(`${url}/rest/v1/memberships?customer_id=eq.${custId}&type=eq.monthly&active=eq.true`, {
+        method: "PATCH",
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ active: false }),
+      });
+      console.log("[WEBHOOK] Monthly membership deactivated due to cancellation");
+    }
+  }
+
+  // ── Subscription renewed successfully — reset monthly hours ──
+  if (event.type === "invoice.payment_succeeded") {
+    const invoice = event.data.object as Stripe.Invoice;
+    // Only handle subscription renewals, not the first payment
+    if (invoice.billing_reason === "subscription_cycle") {
+      const subMeta = ((invoice as unknown as { subscription_details?: { metadata?: Record<string, string> } }).subscription_details?.metadata || {}) as Record<string, string>;
+      const custId = subMeta.customerId;
+
+      if (custId) {
+        console.log("[WEBHOOK] Subscription renewed for customer:", custId);
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+        const nextReset = new Date();
+        nextReset.setMonth(nextReset.getMonth() + 1);
+
+        await fetch(`${url}/rest/v1/memberships?customer_id=eq.${custId}&type=eq.monthly&active=eq.true`, {
+          method: "PATCH",
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({
+            hours_used_this_month: 0,
+            hours_reset_date: nextReset.toISOString().split("T")[0],
+          }),
+        });
+        console.log("[WEBHOOK] Monthly hours reset for renewal");
+      }
+    }
+  }
+
   return NextResponse.json({ received: true });
 }

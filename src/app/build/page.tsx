@@ -57,7 +57,7 @@ const includes = [
   },
 ];
 
-const budgetOptions = ["$10,000 – $20,000", "$20,000 – $30,000", "$30,000 – $50,000", "$50,000+"];
+const budgetOptions = ["Under $10,000", "$10,000 – $20,000", "$20,000 – $30,000", "$30,000+"];
 const timelineOptions = ["ASAP", "1–3 months", "3–6 months", "Just exploring"];
 
 export default function BuildPage() {
@@ -119,9 +119,9 @@ export default function BuildPage() {
             <span className="text-[#2D6A47]">Simulator Rooms</span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg leading-relaxed text-[#F0E8D2]/60">
-            Professional golf simulator installations starting at $20,000.
             We design and build world-class simulator rooms for serious golfers
-            and commercial spaces.
+            and commercial spaces. Every build is custom — from budget-friendly
+            setups to premium installations.
           </p>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#F0E8D2]/35">
             We specialize in premium builds only — if you&apos;re looking for a budget

@@ -102,7 +102,7 @@ const sections: FAQSection[] = [
     faqs: [
       {
         question: "What does a simulator installation cost?",
-        answer: "Simulator installations vary widely depending on the setup. We do everything from budget-friendly builds starting around $5,000 to premium installations at $20,000+. The price depends on your launch monitor, room size, screen and enclosure, and any custom work. We also offer maintenance, repairs, and upgrades on existing setups. Schedule a free consultation and we'll put together a quote that fits your budget.",
+        answer: "Every simulator build is different — pricing depends on the launch monitor, room size, screen and enclosure, and any custom work needed. We do everything from budget-friendly setups to premium installations. We also offer maintenance, repairs, and upgrades on existing setups. Schedule a free consultation and we'll put together a custom quote.",
       },
       {
         question: "How long does an installation take?",

@@ -286,7 +286,7 @@ export default function HomePage() {
               <p className="mb-8 max-w-lg text-lg leading-relaxed text-[#F0E8D2]/60">
                 Want a golf simulator in your home, garage, or office? We handle
                 everything — from room design and equipment selection to full
-                installation. Turnkey builds starting at $5,000.
+                installation. Every build is custom — schedule a free consultation for a quote.
               </p>
 
               {/* Benefits grid */}
