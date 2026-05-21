@@ -35,7 +35,7 @@ const sections: FAQSection[] = [
       },
       {
         question: "What is your cancellation policy?",
-        answer: "You can cancel any upcoming booking from your account page. We understand plans change — just try to cancel with at least a few hours notice so other golfers can grab the slot.",
+        answer: "You can cancel any upcoming booking from your account page up to 15 minutes before your session starts. Cancellations within 15 minutes of the start time are not allowed, and no refunds are given for late cancellations or no-shows. If you need to request a refund for a qualifying cancellation, text us at (801) 513-3538.",
       },
       {
         question: "Can I extend my session while I'm there?",

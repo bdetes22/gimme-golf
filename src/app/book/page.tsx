@@ -198,6 +198,9 @@ export default function BookPage() {
       const data = await res.json();
       if (data.success) {
         router.push("/book/success");
+      } else if (res.status === 401 || res.status === 403 || data.expired) {
+        setBookingError("SESSION_EXPIRED");
+        setLoading(false);
       } else {
         setBookingError(data.error || "Booking failed");
         setLoading(false);
@@ -610,7 +613,17 @@ export default function BookPage() {
 
             {bookingError && (
               <div className="mb-4 rounded border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                {bookingError}
+                {bookingError === "SESSION_EXPIRED" ? (
+                  <span>
+                    Your session has expired. Please{" "}
+                    <a href="/login?redirect=/book" className="font-semibold underline hover:text-red-300">
+                      log in again
+                    </a>{" "}
+                    to continue.
+                  </span>
+                ) : (
+                  bookingError
+                )}
               </div>
             )}
 

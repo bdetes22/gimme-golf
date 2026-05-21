@@ -16,6 +16,10 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
+const mobileLinks = links.filter(
+  (l) => l.label !== "Shop" && l.label !== "FAQ"
+);
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -122,7 +126,7 @@ export default function Navbar() {
       {open && (
         <div className="border-t border-[#F0E8D2]/10 bg-[#060A07] px-6 pb-6 md:hidden">
           <ul className="flex flex-col gap-4 pt-4">
-            {links.map((link) => (
+            {mobileLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}

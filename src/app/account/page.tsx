@@ -112,7 +112,7 @@ export default function AccountPage() {
     load();
   }, [router]);
 
-  async function handleCancel(bookingId: string) {
+  async function handleCancel(booking: Booking) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
@@ -124,15 +124,28 @@ export default function AccountPage() {
 
     if (!customer) return;
 
-    setCancelling(bookingId);
+    setCancelling(booking.id);
     try {
       const res = await fetch("/api/bookings/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId, customerId: customer.id }),
+        body: JSON.stringify({
+          bookingId: booking.id,
+          customerId: customer.id,
+          customerEmail: session.user.email,
+          startTime: booking.start_time,
+          bookingDetails: {
+            location: booking.location,
+            date: formatDate(booking.start_time),
+            time: `${formatTime(booking.start_time)} – ${formatTime(booking.end_time)}`,
+          },
+        }),
       });
       if (res.ok) {
-        setUpcomingBookings((prev) => prev.filter((b) => b.id !== bookingId));
+        setUpcomingBookings((prev) => prev.filter((b) => b.id !== booking.id));
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to cancel booking");
       }
     } catch {
       alert("Failed to cancel booking");
@@ -291,6 +304,7 @@ export default function AccountPage() {
           >
             Upcoming Bookings
           </h2>
+          <p className="mb-3 text-xs text-[#F0E8D2]/30">Cancellations must be made at least 15 minutes before your session. No refunds for late cancellations or no-shows.</p>
           {upcomingBookings.length === 0 ? (
             <div className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-6 text-center">
               <p className="text-sm text-[#F0E8D2]/40">No upcoming bookings</p>
@@ -310,13 +324,23 @@ export default function AccountPage() {
                       {formatDate(b.start_time)} &middot; {formatTime(b.start_time)} – {formatTime(b.end_time)}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleCancel(b.id)}
-                    disabled={cancelling === b.id}
-                    className="self-start shrink-0 rounded border border-[#F0E8D2]/10 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/40 transition-colors hover:border-red-500/50 hover:text-red-400 disabled:opacity-50"
-                  >
-                    {cancelling === b.id ? "..." : "Cancel"}
-                  </button>
+                  {(() => {
+                    const diffMin = (new Date(b.start_time).getTime() - Date.now()) / (1000 * 60);
+                    const canCancel = diffMin >= 15;
+                    return canCancel ? (
+                      <button
+                        onClick={() => handleCancel(b)}
+                        disabled={cancelling === b.id}
+                        className="self-start shrink-0 rounded border border-[#F0E8D2]/10 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/40 transition-colors hover:border-red-500/50 hover:text-red-400 disabled:opacity-50"
+                      >
+                        {cancelling === b.id ? "..." : "Cancel"}
+                      </button>
+                    ) : (
+                      <span className="self-start text-[10px] uppercase tracking-wider text-[#F0E8D2]/20">
+                        Cannot cancel
+                      </span>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

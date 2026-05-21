@@ -16,15 +16,28 @@ export default function BookingSuccessPage() {
           Booking Confirmed
         </h1>
         <p className="mb-8 text-lg leading-relaxed text-[#F0E8D2]/50">
-          You&apos;re all set! Check your email for a confirmation with your
-          booking details and access instructions.
+          Check your email for your access code and booking details.
         </p>
-        <Link
-          href="/"
-          className="inline-block rounded bg-[#2D6A47] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
-        >
-          Back to Home
-        </Link>
+        <div className="flex flex-col gap-3">
+          <Link
+            href="/account"
+            className="inline-block rounded bg-[#2D6A47] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+          >
+            View Your Upcoming Bookings
+          </Link>
+          <Link
+            href="/book"
+            className="inline-block rounded border border-[#F0E8D2]/20 px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2]/70 transition-colors hover:border-[#F0E8D2]/40 hover:text-[#F0E8D2]"
+          >
+            Book Another Session
+          </Link>
+          <Link
+            href="/"
+            className="mt-2 text-sm font-medium text-[#F0E8D2]/40 transition-colors hover:text-[#F0E8D2]/70"
+          >
+            Back to Home
+          </Link>
+        </div>
       </div>
     </div>
   );
