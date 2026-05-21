@@ -22,6 +22,59 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Request final payment
+    if (body.action === "request_final") {
+      const quotes = await dbSelect("quotes", `id=eq.${body.id}`);
+      const quote = quotes?.[0];
+      if (!quote || !quote.client_email) {
+        return NextResponse.json({ error: "Quote or email not found" }, { status: 400 });
+      }
+
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const origin = req.nextUrl.origin;
+      const finalAmount = Number(quote.deposit_amount);
+
+      await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: quote.client_email,
+        subject: `Final Payment Due — Quote #${quote.quote_number}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #060A07; color: #F0E8D2; padding: 40px; border-radius: 8px;">
+            <img src="${origin}/logos/logo-trimmed.png" alt="Gimme Golf" style="height: 40px; margin-bottom: 24px;" />
+            <h1 style="color: #C8973A; font-size: 24px; margin: 0 0 16px;">Final Payment Due</h1>
+            <p style="color: #F0E8D2; opacity: 0.8; line-height: 1.6;">
+              Hi ${quote.client_name},<br><br>
+              Your golf simulator installation is complete (or nearing completion)! The remaining balance of <strong style="color: #C8973A;">$${finalAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })}</strong> is now due.
+            </p>
+            <p style="margin: 24px 0;">
+              <strong style="color: #F0E8D2;">Quote #${quote.quote_number}</strong><br/>
+              <span style="color: #F0E8D2; opacity: 0.6;">Total: $${Number(quote.total).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span><br/>
+              <span style="color: #F0E8D2; opacity: 0.6;">Remaining Balance: $${finalAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+            </p>
+            <p style="color: #F0E8D2; opacity: 0.7; line-height: 1.6; font-size: 14px;">
+              <strong>Payment Options:</strong><br/>
+              • ACH Bank Transfer or Card — <a href="${origin}/quote/${quote.id}" style="color: #2D6A47;">pay online</a><br/>
+              • Check payable to: <strong>Deters Birrell Golf LLC</strong><br/>
+              • Zelle or Venmo — contact us for details
+            </p>
+            <a href="${origin}/quote/${quote.id}" style="display: inline-block; background: #2D6A47; color: #F0E8D2; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 16px 0;">
+              Pay Online
+            </a>
+            <p style="color: #F0E8D2; opacity: 0.4; font-size: 13px; margin-top: 24px;">
+              Payment is due within 14 days of project completion. Questions? Call or text (801) 513-3538.
+            </p>
+            <hr style="border: none; border-top: 1px solid rgba(240,232,210,0.1); margin: 24px 0;" />
+            <p style="color: #F0E8D2; opacity: 0.3; font-size: 12px;">
+              Gimme Golf | Deters Birrell Golf LLC<br/>
+              140 N Main St, Kaysville, UT 84037
+            </p>
+          </div>
+        `,
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
     // Send action: update status and send email
     if (body.action === "send") {
       const now = new Date().toISOString();
@@ -89,6 +142,8 @@ export async function POST(req: NextRequest) {
       if (body.depositAmount !== undefined) updateData.deposit_amount = body.depositAmount;
       if (body.notes !== undefined) updateData.notes = body.notes;
       if (body.status !== undefined) updateData.status = body.status;
+      if (body.payment_method !== undefined) updateData.payment_method = body.payment_method;
+      if (body.paid_at !== undefined) updateData.paid_at = body.paid_at;
       await dbUpdate("quotes", `id=eq.${body.id}`, updateData);
       const updated = await dbSelect("quotes", `id=eq.${body.id}`);
       return NextResponse.json(updated?.[0] || {});

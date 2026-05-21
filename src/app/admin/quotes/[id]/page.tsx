@@ -198,8 +198,9 @@ export default function EditQuotePage({
     setSaving(false);
   };
 
-  const handleMarkPaid = async () => {
-    if (!confirm("Mark this quote as paid?")) return;
+  const handleMarkPaid = async (paymentType: string) => {
+    const label = paymentType === "deposit" ? "deposit" : "final balance";
+    if (!confirm(`Mark ${label} as paid?`)) return;
     setSaving(true);
     try {
       await fetch("/api/quotes", {
@@ -208,13 +209,39 @@ export default function EditQuotePage({
         body: JSON.stringify({
           password,
           id,
-          status: "paid",
-          paid_at: new Date().toISOString(),
+          status: paymentType === "final" ? "paid" : quote?.status,
+          payment_method: paymentType === "deposit"
+            ? `deposit-${quote?.payment_method || "manual"}`
+            : `final-${quote?.payment_method || "manual"}`,
         }),
       });
       await fetchQuote(password);
     } catch {
       setError("Failed to update");
+    }
+    setSaving(false);
+  };
+
+  const handleRequestFinalPayment = async () => {
+    if (!quote?.client_email) {
+      alert("No client email on this quote");
+      return;
+    }
+    if (!confirm(`Send final payment request to ${quote.client_email}?`)) return;
+    setSaving(true);
+    try {
+      await fetch("/api/quotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          password,
+          action: "request_final",
+          id,
+        }),
+      });
+      alert("Final payment request sent!");
+    } catch {
+      setError("Failed to send");
     }
     setSaving(false);
   };
@@ -564,13 +591,29 @@ export default function EditQuotePage({
         {/* Actions */}
         <div className="flex gap-3 justify-end flex-wrap pb-8">
           {quote.status !== "paid" && (
-            <button
-              onClick={handleMarkPaid}
-              disabled={saving}
-              className="px-6 py-3 bg-[#C8973A] text-[#060A07] rounded font-semibold hover:bg-[#C8973A]/80 disabled:opacity-50 transition-colors"
-            >
-              Mark as Paid
-            </button>
+            <>
+              <button
+                onClick={() => handleMarkPaid("deposit")}
+                disabled={saving}
+                className="px-4 py-3 border border-[#2D6A47]/40 text-[#2D6A47] rounded text-sm font-semibold hover:bg-[#2D6A47]/10 disabled:opacity-50 transition-colors"
+              >
+                Mark Deposit Paid
+              </button>
+              <button
+                onClick={handleRequestFinalPayment}
+                disabled={saving}
+                className="px-4 py-3 border border-[#C8973A]/40 text-[#C8973A] rounded text-sm font-semibold hover:bg-[#C8973A]/10 disabled:opacity-50 transition-colors"
+              >
+                Request Final 50%
+              </button>
+              <button
+                onClick={() => handleMarkPaid("final")}
+                disabled={saving}
+                className="px-4 py-3 bg-[#C8973A] text-[#060A07] rounded text-sm font-semibold hover:bg-[#C8973A]/80 disabled:opacity-50 transition-colors"
+              >
+                Mark Fully Paid
+              </button>
+            </>
           )}
           <button
             onClick={() => handleSave(false)}
