@@ -637,17 +637,28 @@ export default function EditQuotePage({
           <button
             onClick={() => handleSave(false)}
             disabled={saving}
-            className="px-6 py-3 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded font-semibold hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
+            className="px-6 py-3 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-sm font-semibold hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>
-          <button
-            onClick={() => handleSave(true)}
-            disabled={saving}
-            className="px-6 py-3 bg-[#2D6A47] text-[#F0E8D2] rounded font-semibold hover:bg-[#2D6A47]/80 disabled:opacity-50 transition-colors"
-          >
-            {saving ? "Sending..." : "Save & Send to Client"}
-          </button>
+          {quote.status === "draft" && (
+            <button
+              onClick={() => handleSave(true)}
+              disabled={saving}
+              className="px-6 py-3 bg-[#2D6A47] text-[#F0E8D2] rounded text-sm font-semibold hover:bg-[#2D6A47]/80 disabled:opacity-50 transition-colors"
+            >
+              {saving ? "Sending..." : "Send to Client"}
+            </button>
+          )}
+          {quote.status === "sent" && (
+            <button
+              onClick={() => handleSave(true)}
+              disabled={saving}
+              className="px-4 py-3 border border-[#F0E8D2]/10 text-[#F0E8D2]/40 rounded text-sm font-semibold hover:text-[#F0E8D2]/60 disabled:opacity-50 transition-colors"
+            >
+              Resend Quote
+            </button>
+          )}
         </div>
       </div>
     </div>
