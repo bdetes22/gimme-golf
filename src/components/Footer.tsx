@@ -15,7 +15,9 @@ const buildLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t-2 border-[#2D6A47] bg-[#060A07]">
+    <footer className="relative bg-[#060A07]">
+      <div className="bg-gradient-to-r from-transparent via-[#2D6A47] to-transparent h-px" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-40 w-[600px] rounded-full bg-[#2D6A47]/5 blur-3xl pointer-events-none" />
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
           {/* Logo + Tagline */}

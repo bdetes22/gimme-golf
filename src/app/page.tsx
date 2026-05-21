@@ -139,14 +139,21 @@ export default function HomePage() {
   return (
     <>
       {/* ── Hero ── */}
-      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden pt-20 sm:min-h-[70vh]">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#060A07] via-[#060A07]/95 to-[#060A07]" />
+      <section
+        className="relative flex min-h-[60vh] items-center justify-center overflow-hidden pt-20 sm:min-h-[70vh]"
+        style={{ backgroundImage: "url('/images/kaysille/Kaysvillephoto1.JPG')", backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/85 via-[#060A07]/80 to-[#060A07]" />
         <div className="absolute left-1/2 top-1/3 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2D6A47]/5 blur-3xl" />
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-[#2D6A47]">
-            Play at Our Locations &nbsp;·&nbsp; Build Your Own at Home
-          </p>
+          <div className="mb-6 flex items-center justify-center gap-4">
+            <div className="h-px w-8 bg-[#2D6A47]/30" />
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#2D6A47]">
+              Play at Our Locations &nbsp;·&nbsp; Build Your Own at Home
+            </p>
+            <div className="h-px w-8 bg-[#2D6A47]/30" />
+          </div>
           <h1
             className="mb-6 text-4xl font-bold uppercase leading-[1.1] tracking-tight text-[#F0E8D2] sm:text-7xl lg:text-8xl"
             style={{ fontFamily: "var(--font-barlow-condensed)" }}
@@ -196,7 +203,7 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-2">
             {/* ── Kaysville ── */}
             <div
-              className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all hover:border-[#2D6A47]/30"
+              className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all duration-300 hover:border-[#2D6A47]/30 hover:scale-[1.01]"
               style={{ backgroundImage: "url('/images/kaysille/Kaysvillephoto1.JPG')", backgroundSize: "cover", backgroundPosition: "center" }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/80 via-[#060A07]/75 to-[#060A07]/90" />
@@ -227,7 +234,7 @@ export default function HomePage() {
 
             {/* ── Clearfield ── */}
             <div
-              className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all hover:border-[#2D6A47]/30"
+              className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all duration-300 hover:border-[#2D6A47]/30 hover:scale-[1.01]"
               style={{ backgroundImage: "url('/images/Clearfield/clearfieldphoto1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/80 via-[#060A07]/75 to-[#060A07]/90" />
@@ -362,7 +369,7 @@ export default function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-7 transition-colors hover:border-[#F0E8D2]/20"
+                className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-7 transition-all duration-300 hover:border-[#F0E8D2]/20 hover:-translate-y-1"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[#2D6A47]/10 text-[#2D6A47]">
                   {feature.icon}
@@ -403,7 +410,7 @@ export default function HomePage() {
                 key={option.name}
                 className={`relative flex flex-col rounded-lg border p-8 transition-colors ${
                   option.highlight
-                    ? "border-[#2D6A47] bg-[#2D6A47]/[0.06]"
+                    ? "border-[#2D6A47] bg-[#2D6A47]/[0.06] shadow-[0_0_30px_rgba(45,106,71,0.15)] scale-[1.02]"
                     : option.border === "gold"
                       ? "border-[#F0E8D2] bg-[#F0E8D2]/[0.06]"
                       : "border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] hover:border-[#F0E8D2]/20"
