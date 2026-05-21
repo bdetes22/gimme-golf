@@ -21,6 +21,7 @@ const STATUS_STYLES: Record<string, string> = {
   sent: "bg-blue-900/40 text-blue-300",
   accepted: "bg-[#2D6A47]/40 text-green-300",
   "accepted-pending": "bg-amber-900/40 text-amber-300",
+  "deposit-paid": "bg-[#C8973A]/30 text-[#C8973A]",
   paid: "bg-[#2D6A47]/60 text-green-200",
 };
 

@@ -199,8 +199,8 @@ export default function EditQuotePage({
   };
 
   const handleMarkPaid = async (paymentType: string) => {
-    const label = paymentType === "deposit" ? "deposit" : "final balance";
-    if (!confirm(`Mark ${label} as paid?`)) return;
+    const label = paymentType === "deposit" ? "50% deposit" : "final balance (fully paid)";
+    if (!confirm(`Mark ${label} as received?`)) return;
     setSaving(true);
     try {
       await fetch("/api/quotes", {
@@ -209,10 +209,10 @@ export default function EditQuotePage({
         body: JSON.stringify({
           password,
           id,
-          status: paymentType === "final" ? "paid" : quote?.status,
+          status: paymentType === "final" ? "paid" : "deposit-paid",
           payment_method: paymentType === "deposit"
-            ? `deposit-${quote?.payment_method || "manual"}`
-            : `final-${quote?.payment_method || "manual"}`,
+            ? "deposit-manual"
+            : "paid-manual",
         }),
       });
       await fetchQuote(password);
@@ -590,15 +590,34 @@ export default function EditQuotePage({
 
         {/* Actions */}
         <div className="flex gap-3 justify-end flex-wrap pb-8">
-          {quote.status !== "paid" && (
+          {/* Payment status indicator */}
+          {quote.status === "deposit-paid" && (
+            <div className="flex items-center gap-2 mr-auto">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#C8973A]" />
+              <span className="text-sm text-[#C8973A]">50% Deposit Received — Awaiting Final Payment</span>
+            </div>
+          )}
+          {quote.status === "paid" && (
+            <div className="flex items-center gap-2 mr-auto">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#2D6A47]" />
+              <span className="text-sm text-[#2D6A47]">Fully Paid</span>
+            </div>
+          )}
+
+          {/* Deposit not yet paid */}
+          {quote.status !== "paid" && quote.status !== "deposit-paid" && (
+            <button
+              onClick={() => handleMarkPaid("deposit")}
+              disabled={saving}
+              className="px-4 py-3 border border-[#2D6A47]/40 text-[#2D6A47] rounded text-sm font-semibold hover:bg-[#2D6A47]/10 disabled:opacity-50 transition-colors"
+            >
+              Mark Deposit Paid
+            </button>
+          )}
+
+          {/* Deposit paid, need final payment */}
+          {quote.status === "deposit-paid" && (
             <>
-              <button
-                onClick={() => handleMarkPaid("deposit")}
-                disabled={saving}
-                className="px-4 py-3 border border-[#2D6A47]/40 text-[#2D6A47] rounded text-sm font-semibold hover:bg-[#2D6A47]/10 disabled:opacity-50 transition-colors"
-              >
-                Mark Deposit Paid
-              </button>
               <button
                 onClick={handleRequestFinalPayment}
                 disabled={saving}

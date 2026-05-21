@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
             Prefer: "return=minimal",
           },
           body: JSON.stringify({
-            status: "accepted",
+            status: "deposit-paid",
             payment_method: `deposit-${paymentMethod}`,
             stripe_payment_id: session.payment_intent as string,
           }),
