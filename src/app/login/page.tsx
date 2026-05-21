@@ -124,7 +124,7 @@ function LoginForm() {
 
       <p className="mt-6 text-center text-sm text-[#F0E8D2]/50">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="text-[#C8973A] hover:underline">
+        <Link href={`/signup${redirect ? `?redirect=${redirect}` : ""}`} className="text-[#C8973A] hover:underline">
           Sign Up
         </Link>
       </p>

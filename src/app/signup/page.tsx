@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -20,8 +20,10 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -55,7 +57,7 @@ export default function SignUpPage() {
         throw new Error(data.error || "Signup failed");
       }
 
-      router.push("/login?registered=true");
+      router.push(`/login?registered=true${redirect ? `&redirect=${redirect}` : ""}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -155,11 +157,19 @@ export default function SignUpPage() {
 
         <p className="mt-6 text-center text-sm text-[#F0E8D2]/50">
           Already have an account?{" "}
-          <Link href="/login" className="text-[#C8973A] hover:underline">
+          <Link href={`/login${redirect ? `?redirect=${redirect}` : ""}`} className="text-[#C8973A] hover:underline">
             Log In
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense>
+      <SignUpForm />
+    </Suspense>
   );
 }
