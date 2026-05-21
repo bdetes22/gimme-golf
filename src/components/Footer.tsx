@@ -10,7 +10,8 @@ const playLinks = [
 const buildLinks = [
   { href: "/build", label: "Get a Quote" },
   { href: "/shop", label: "Pro Shop" },
-  { href: "/contact", label: "Installation FAQ" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/contact", label: "Contact Us" },
 ];
 
 export default function Footer() {
