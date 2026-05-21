@@ -94,7 +94,7 @@ function buildConfirmationEmail({
 
     <!-- Footer -->
     <div style="text-align:center;padding:16px 0;">
-      <p style="color:#F0E8D2;opacity:0.3;font-size:12px;margin:0 0 4px 0;">Questions? Email us at info@gimmegolfsimulators.com</p>
+      <p style="color:#F0E8D2;opacity:0.3;font-size:12px;margin:0 0 4px 0;">Questions? Call (801) 513-3538 or email info@gimmegolfsimulators.com</p>
       <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
     </div>
 

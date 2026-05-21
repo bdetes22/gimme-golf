@@ -88,6 +88,14 @@ export default function Footer() {
             <ul className="flex flex-col gap-3">
               <li>
                 <a
+                  href="tel:+18015133538"
+                  className="text-sm text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
+                >
+                  (801) 513-3538
+                </a>
+              </li>
+              <li>
+                <a
                   href="mailto:info@gimmegolfsimulators.com"
                   className="text-sm text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]"
                 >
@@ -100,7 +108,9 @@ export default function Footer() {
             <div className="mt-5 flex gap-4">
               {/* Instagram */}
               <a
-                href="#"
+                href="https://www.instagram.com/gimmegolf.simulators/"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[#F0E8D2]/10 text-[#F0E8D2]/40 transition-colors hover:border-[#2D6A47]/40 hover:text-[#2D6A47]"
               >
@@ -110,7 +120,9 @@ export default function Footer() {
               </a>
               {/* Facebook */}
               <a
-                href="#"
+                href="https://www.facebook.com/gimmegolfclub.co/"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Facebook"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[#F0E8D2]/10 text-[#F0E8D2]/40 transition-colors hover:border-[#2D6A47]/40 hover:text-[#2D6A47]"
               >
