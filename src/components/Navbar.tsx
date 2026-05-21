@@ -16,9 +16,7 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-const mobileLinks = links.filter(
-  (l) => l.label !== "Shop" && l.label !== "FAQ"
-);
+const mobileLinks = links;
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
