@@ -195,52 +195,64 @@ export default function HomePage() {
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* ── Kaysville ── */}
-            <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-6 sm:p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
-              <div className="absolute right-4 top-4 sm:right-6 sm:top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
-              </div>
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
-              <h3 className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>Kaysville</h3>
-              <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our flagship location featuring premium simulator bays, lounge seating, and a fully stocked pro shop.</p>
-              <div className="mb-4 flex items-start gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-                <span className="text-sm text-[#F0E8D2]/70">140 N Main Street, Kaysville, UT 84037</span>
-              </div>
-              <div className="mb-6 flex items-center gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                <span className="text-sm font-medium text-[#F0E8D2]/70">24/7 Self-Serve Access</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Link href="/book" className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90">Book Now</Link>
-                <a href="https://maps.google.com/?q=140+N+Main+Street+Kaysville+UT+84037" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
-                  Directions
-                </a>
+            <div
+              className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all hover:border-[#2D6A47]/30"
+              style={{ backgroundImage: "url('/images/kaysille/Kaysvillephoto1.JPG')", backgroundSize: "cover", backgroundPosition: "center" }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/80 via-[#060A07]/75 to-[#060A07]/90" />
+              <div className="relative z-10">
+                <div className="absolute right-0 top-0 sm:right-0 sm:top-0 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
+                </div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
+                <h3 className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>Kaysville</h3>
+                <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our flagship location featuring premium simulator bays, lounge seating, and a fully stocked pro shop.</p>
+                <div className="mb-4 flex items-start gap-2.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+                  <span className="text-sm text-[#F0E8D2]/70">140 N Main Street, Kaysville, UT 84037</span>
+                </div>
+                <div className="mb-6 flex items-center gap-2.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                  <span className="text-sm font-medium text-[#F0E8D2]/70">24/7 Self-Serve Access</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Link href="/book" className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90">Book Now</Link>
+                  <a href="https://maps.google.com/?q=140+N+Main+Street+Kaysville+UT+84037" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                    Directions
+                  </a>
+                </div>
               </div>
             </div>
 
             {/* ── Clearfield ── */}
-            <div className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-6 sm:p-8 transition-all hover:border-[#2D6A47]/30 hover:bg-[#F0E8D2]/[0.06]">
-              <div className="absolute right-4 top-4 sm:right-6 sm:top-6 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
-              </div>
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
-              <h3 className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>Clearfield</h3>
-              <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our newest location with state-of-the-art simulators, event space, and a laid-back atmosphere.</p>
-              <div className="mb-4 flex items-start gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-                <span className="text-sm text-[#F0E8D2]/70">293 State St, Clearfield, UT 84015</span>
-              </div>
-              <div className="mb-6 flex items-center gap-2.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                <span className="text-sm font-medium text-[#F0E8D2]/70">24/7 Self-Serve Access</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Link href="/book" className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90">Book Now</Link>
-                <a href="https://maps.google.com/?q=293+State+St+Clearfield+UT+84015" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
-                  Directions
-                </a>
+            <div
+              className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all hover:border-[#2D6A47]/30"
+              style={{ backgroundImage: "url('/images/Clearfield/clearfieldphoto1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/80 via-[#060A07]/75 to-[#060A07]/90" />
+              <div className="relative z-10">
+                <div className="absolute right-0 top-0 sm:right-0 sm:top-0 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
+                </div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
+                <h3 className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>Clearfield</h3>
+                <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our newest location with state-of-the-art simulators, event space, and a laid-back atmosphere.</p>
+                <div className="mb-4 flex items-start gap-2.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+                  <span className="text-sm text-[#F0E8D2]/70">293 State St, Clearfield, UT 84015</span>
+                </div>
+                <div className="mb-6 flex items-center gap-2.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                  <span className="text-sm font-medium text-[#F0E8D2]/70">24/7 Self-Serve Access</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Link href="/book" className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90">Book Now</Link>
+                  <a href="https://maps.google.com/?q=293+State+St+Clearfield+UT+84015" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-[#F0E8D2]/50 transition-colors hover:text-[#2D6A47]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                    Directions
+                  </a>
+                </div>
               </div>
             </div>
           </div>

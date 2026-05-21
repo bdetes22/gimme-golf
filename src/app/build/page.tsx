@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+
+const buildPhotos = [
+  { src: "/images/builds/jeffbuild.jpeg", alt: "Custom installation by Jeff" },
+  { src: "/images/builds/spencerbuild.JPG", alt: "Custom installation by Spencer" },
+  { src: "/images/builds/jasonbuild.JPG", alt: "Custom installation by Jason" },
+];
 
 const includes = [
   {
@@ -154,6 +161,49 @@ export default function BuildPage() {
                 <p className="text-sm leading-relaxed text-[#F0E8D2]/50">
                   {item.description}
                 </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Our Work Gallery ── */}
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-12 text-center">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
+              Recent Projects
+            </p>
+            <h2
+              className="text-3xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-4xl"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              Our Work
+            </h2>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {buildPhotos.map((photo) => (
+              <div
+                key={photo.src}
+                className="group relative aspect-[4/3] overflow-hidden rounded-lg"
+              >
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  unoptimized
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-[#060A07]/0 transition-colors duration-300 group-hover:bg-[#060A07]/50" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <span
+                    className="text-lg font-bold uppercase tracking-wider text-[#F0E8D2]"
+                    style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                  >
+                    Custom Installation
+                  </span>
+                </div>
               </div>
             ))}
           </div>
