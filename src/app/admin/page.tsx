@@ -408,13 +408,21 @@ export default function AdminPage() {
           >
             ADMIN DASHBOARD
           </h1>
-          <button
-            onClick={() => fetchData(storedPassword)}
-            disabled={loading}
-            className="px-3 py-1.5 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-xs hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
-          >
-            {loading ? "Refreshing..." : "Refresh"}
-          </button>
+          <div className="flex items-center gap-3">
+            <a
+              href="/admin/quotes"
+              className="rounded bg-[#C8973A] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
+            >
+              Quotes
+            </a>
+            <button
+              onClick={() => fetchData(storedPassword)}
+              disabled={loading}
+              className="px-3 py-1.5 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-xs hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
+            >
+              {loading ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
         </div>
 
         {/* ── Keybox Codes ── */}

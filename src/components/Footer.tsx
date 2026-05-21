@@ -139,7 +139,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-[#F0E8D2]/5">
         <div className="mx-auto max-w-7xl px-6 py-6 text-center text-xs text-[#F0E8D2]/30">
-          &copy; {new Date().getFullYear()} Gimme Golf. All rights reserved.
+          &copy; {new Date().getFullYear()} <a href="/admin" className="text-[#F0E8D2]/10 hover:text-[#F0E8D2]/30 transition-colors">Gimme Golf</a>. All rights reserved.
         </div>
       </div>
     </footer>
