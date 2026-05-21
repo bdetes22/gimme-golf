@@ -139,7 +139,7 @@ export default function HomePage() {
   return (
     <>
       {/* ── Hero ── */}
-      <section className="relative flex min-h-[90vh] items-center justify-center overflow-hidden pt-20">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden pt-20 sm:min-h-[70vh]">
         <div className="absolute inset-0 bg-gradient-to-b from-[#060A07] via-[#060A07]/95 to-[#060A07]" />
         <div className="absolute left-1/2 top-1/3 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2D6A47]/5 blur-3xl" />
 
@@ -179,9 +179,9 @@ export default function HomePage() {
       </section>
 
       {/* ── Locations ── */}
-      <section className="relative py-24">
+      <section className="relative py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-14 text-center">
+          <div className="mb-8 text-center sm:mb-14">
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
               Two Locations
             </p>
@@ -260,7 +260,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Home Builds — Primary CTA ── */}
-      <section className="relative py-24">
+      <section className="relative py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             {/* Left — Copy */}
@@ -344,9 +344,9 @@ export default function HomePage() {
       </section>
 
       {/* ── Features Grid ── */}
-      <section className="relative py-24">
+      <section className="relative py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-14 text-center">
+          <div className="mb-8 text-center sm:mb-14">
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
               What We Offer
             </p>
@@ -380,9 +380,9 @@ export default function HomePage() {
       </section>
 
       {/* ── Membership / Pricing ── */}
-      <section className="relative py-24">
+      <section className="relative py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-14 text-center">
+          <div className="mb-8 text-center sm:mb-14">
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
               Pricing Options
             </p>
@@ -465,7 +465,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Pro Shop Coming Soon ── */}
-      <section className="relative py-24">
+      <section className="relative py-12 sm:py-20">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
             Coming Soon
@@ -499,7 +499,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Bottom Build CTA Strip ── */}
-      <section className="relative py-16">
+      <section className="relative py-10 sm:py-16">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-col items-center justify-between gap-6 rounded-lg border border-[#C8973A]/20 bg-[#C8973A]/[0.04] px-8 py-10 sm:flex-row sm:py-8">
             <div>
