@@ -92,9 +92,21 @@ function buildConfirmationEmail({
 
     </div>
 
+    <!-- Contact -->
+    <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:8px;padding:20px;text-align:center;margin-bottom:24px;">
+      <p style="color:#F0E8D2;font-size:14px;font-weight:600;margin:0 0 8px 0;">Need Help? We're Here for You</p>
+      <p style="color:#F0E8D2;opacity:0.6;font-size:13px;line-height:1.6;margin:0 0 12px 0;">
+        Text or call us anytime — texting is the fastest way to reach us.
+      </p>
+      <a href="sms:+18015133538" style="display:inline-block;background-color:#2D6A47;color:#F0E8D2;text-decoration:none;padding:10px 24px;border-radius:6px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-right:8px;">Text Us</a>
+      <a href="tel:+18015133538" style="display:inline-block;background-color:transparent;color:#F0E8D2;opacity:0.5;text-decoration:none;padding:10px 24px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid rgba(240,232,210,0.2);">Call (801) 513-3538</a>
+      <p style="color:#F0E8D2;opacity:0.35;font-size:12px;margin:12px 0 0 0;">
+        info@gimmegolfsimulators.com
+      </p>
+    </div>
+
     <!-- Footer -->
     <div style="text-align:center;padding:16px 0;">
-      <p style="color:#F0E8D2;opacity:0.3;font-size:12px;margin:0 0 4px 0;">Questions? Call (801) 513-3538 or email info@gimmegolfsimulators.com</p>
       <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
     </div>
 
@@ -223,8 +235,12 @@ export async function POST(req: NextRequest) {
         ${endDate ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">Valid through ${endDate}</p>` : ""}
         ${plan === "punchpass" ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">Expires ${endDate}</p>` : ""}
       </div>
-      <div style="text-align:center;">
+      <div style="text-align:center;margin-bottom:24px;">
         <a href="https://gimme-git-main-bridgn.vercel.app/book" style="display:inline-block;background-color:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Book Your First Session</a>
+      </div>
+      <div style="background-color:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;text-align:center;">
+        <p style="color:#F0E8D2;font-size:13px;font-weight:600;margin:0 0 6px 0;">Need anything? Text us — it's the fastest way to reach us.</p>
+        <p style="color:#F0E8D2;opacity:0.5;font-size:13px;margin:0;">(801) 513-3538 · info@gimmegolfsimulators.com</p>
       </div>
     </div>
     <div style="text-align:center;padding:16px 0;">
