@@ -41,7 +41,7 @@ export default function Navbar() {
     <nav className="fixed top-0 z-50 w-full border-b border-[#F0E8D2]/10 bg-[#060A07] backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link href="/" className="flex items-center">
-          <img src="/logos/logo-trimmed.png" alt="Gimme Golf" className="h-10 w-auto max-w-[160px] sm:h-11" />
+          <img src="/logos/logo-trimmed.png" alt="Gimme Golf" className="h-8 w-auto sm:h-10" />
         </Link>
 
         {/* Desktop nav */}
