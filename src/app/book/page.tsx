@@ -650,13 +650,8 @@ export default function BookPage() {
         {step < 4 && (
           <div className="mt-10 flex items-center justify-between">
             <button
-              onClick={() => setStep(step - 1)}
-              disabled={!canGoBack}
-              className={`rounded border border-[#F0E8D2]/20 px-6 py-2.5 text-sm font-medium uppercase tracking-wider transition-colors ${
-                canGoBack
-                  ? "text-[#F0E8D2] hover:border-[#F0E8D2]/40"
-                  : "cursor-not-allowed text-[#F0E8D2]/20"
-              }`}
+              onClick={() => step === 0 ? router.push("/") : setStep(step - 1)}
+              className="rounded border border-[#F0E8D2]/20 px-6 py-2.5 text-sm font-medium uppercase tracking-wider text-[#F0E8D2] transition-colors hover:border-[#F0E8D2]/40"
             >
               Back
             </button>
