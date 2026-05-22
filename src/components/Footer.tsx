@@ -16,7 +16,7 @@ const buildLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative bg-[#060A07]">
+    <footer className="relative overflow-hidden bg-[#060A07]">
       <div className="bg-gradient-to-r from-transparent via-[#2D6A47] to-transparent h-px" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-40 w-[600px] rounded-full bg-[#2D6A47]/5 blur-3xl pointer-events-none" />
       <div className="mx-auto max-w-7xl px-6 py-16">

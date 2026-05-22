@@ -8,6 +8,9 @@
 }
 
 @layer base {
+  html, body {
+    overflow-x: hidden;
+  }
   body {
     background-color: #060A07;
     color: #F0E8D2;
