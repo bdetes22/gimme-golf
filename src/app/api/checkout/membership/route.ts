@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { dbSelect, dbUpdate } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
       apiVersion: "2026-04-22.dahlia",
     });
 
-    const { plan, customerId, customerEmail, customerName } = await req.json();
+    const { plan, customerId, customerEmail, customerName, promoCode } = await req.json();
 
     const planInfo = PLANS[plan];
     if (!planInfo) {
@@ -49,6 +50,29 @@ export async function POST(req: NextRequest) {
     if (!customerId || !customerEmail) {
       return NextResponse.json({ error: "Must be logged in to purchase a membership" }, { status: 400 });
     }
+
+    // Validate and apply promo code
+    let discountCents = 0;
+    if (promoCode) {
+      const promos = await dbSelect(
+        "promo_codes",
+        `code=eq.${encodeURIComponent(promoCode)}&used=eq.false&limit=1`
+      );
+      if (Array.isArray(promos) && promos.length > 0) {
+        const promo = promos[0];
+        if (!promo.expires_at || new Date(promo.expires_at as string) >= new Date()) {
+          discountCents = Math.round(Number(promo.discount_amount) * 100);
+          // Mark as used
+          await dbUpdate("promo_codes", `id=eq.${promo.id}`, {
+            used: true,
+            used_at: new Date().toISOString(),
+            used_by_email: customerEmail,
+          });
+        }
+      }
+    }
+
+    const finalAmount = Math.max(planInfo.amount - discountCents, 0);
 
     if (planInfo.mode === "subscription") {
       // Recurring subscription for monthly
@@ -61,7 +85,7 @@ export async function POST(req: NextRequest) {
             price_data: {
               currency: "usd",
               product_data: { name: planInfo.name },
-              unit_amount: planInfo.amount,
+              unit_amount: finalAmount,
               recurring: { interval: planInfo.interval! },
             },
             quantity: 1,
@@ -99,7 +123,7 @@ export async function POST(req: NextRequest) {
             price_data: {
               currency: "usd",
               product_data: { name: planInfo.name },
-              unit_amount: planInfo.amount,
+              unit_amount: finalAmount,
             },
             quantity: 1,
           },

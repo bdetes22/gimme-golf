@@ -111,8 +111,12 @@ function MembershipsContent() {
   const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
   const [agreedToRules, setAgreedToRules] = useState(false);
   const [autoCheckoutDone, setAutoCheckoutDone] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoApplied, setPromoApplied] = useState<{ discount: number; code: string } | null>(null);
+  const [promoError, setPromoError] = useState("");
+  const [promoChecking, setPromoChecking] = useState(false);
 
-  const goToStripe = useCallback(async (planId: string, custId: string, email: string, name: string | null) => {
+  const goToStripe = useCallback(async (planId: string, custId: string, email: string, name: string | null, promo?: string) => {
     setLoading(planId);
     try {
       const res = await fetch("/api/checkout/membership", {
@@ -122,6 +126,7 @@ function MembershipsContent() {
           plan: planId,
           customerId: custId,
           customerEmail: email,
+          promoCode: promo || undefined,
           customerName: name,
         }),
       });
@@ -183,7 +188,7 @@ function MembershipsContent() {
       return;
     }
 
-    goToStripe(selectedPlan.id, customerId, customerEmail, customerName);
+    goToStripe(selectedPlan.id, customerId, customerEmail, customerName, promoApplied?.code);
   }
 
   return (
@@ -360,6 +365,50 @@ function MembershipsContent() {
               </ol>
             </div>
 
+            {/* Promo Code */}
+            <div className="mb-4">
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/50">Promo Code</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(""); setPromoApplied(null); }}
+                  placeholder="e.g. WELCOME-A3X9"
+                  className="flex-1 rounded border border-[#F0E8D2]/20 bg-[#060A07] px-3 py-2 text-sm text-[#F0E8D2] uppercase tracking-wider outline-none focus:border-[#2D6A47] placeholder-[#F0E8D2]/20"
+                />
+                <button
+                  type="button"
+                  disabled={!promoCode.trim() || promoChecking}
+                  onClick={async () => {
+                    setPromoChecking(true);
+                    setPromoError("");
+                    try {
+                      const res = await fetch(`/api/promo/validate?code=${encodeURIComponent(promoCode.trim())}`);
+                      const data = await res.json();
+                      if (data.valid) {
+                        setPromoApplied({ discount: data.discount, code: data.code });
+                      } else {
+                        setPromoError(data.error || "Invalid code");
+                        setPromoApplied(null);
+                      }
+                    } catch {
+                      setPromoError("Failed to validate");
+                    }
+                    setPromoChecking(false);
+                  }}
+                  className="rounded bg-[#F0E8D2]/10 px-4 py-2 text-xs font-semibold text-[#F0E8D2]/60 hover:bg-[#F0E8D2]/20 disabled:opacity-30"
+                >
+                  {promoChecking ? "..." : "Apply"}
+                </button>
+              </div>
+              {promoError && <p className="mt-1 text-xs text-red-400">{promoError}</p>}
+              {promoApplied && (
+                <p className="mt-1 text-xs text-[#2D6A47]">
+                  ✓ ${promoApplied.discount} discount applied!
+                </p>
+              )}
+            </div>
+
             {/* Agreement checkbox */}
             <label className="mb-6 flex cursor-pointer items-start gap-3">
               <input
@@ -381,7 +430,9 @@ function MembershipsContent() {
             >
               {loading === selectedPlan.id
                 ? "Redirecting to Stripe..."
-                : `Checkout — ${selectedPlan.price}${selectedPlan.period}`}
+                : promoApplied
+                  ? `Checkout — $${(Number(selectedPlan.price.replace(/[^0-9.]/g, "")) - promoApplied.discount).toFixed(2)}`
+                  : `Checkout — ${selectedPlan.price}${selectedPlan.period}`}
             </button>
 
             {!agreedToRules && (

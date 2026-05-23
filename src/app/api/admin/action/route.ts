@@ -144,11 +144,22 @@ export async function POST(req: NextRequest) {
 
       try {
         if (isFirstTimer) {
-          // First-time customer email — membership upsell
+          // Generate unique promo code
+          const promoCode = `WELCOME-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+          const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+          await dbInsert("promo_codes", {
+            code: promoCode,
+            type: "welcome",
+            discount_amount: 35,
+            customer_id: custId,
+            expires_at: expiresAt,
+          });
+
+          // First-time customer email — membership upsell with promo code
           await resend.emails.send({
             from: "Gimme Golf <onboarding@resend.dev>",
             to: email,
-            subject: "Thanks for Trying Gimme Golf!",
+            subject: "Thanks for Trying Gimme Golf — Here's $35 Off",
             html: `
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
   <div style="text-align:center;margin-bottom:32px;">
@@ -163,9 +174,14 @@ export async function POST(req: NextRequest) {
     <div style="background:#2D6A47;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
       <p style="color:#F0E8D2;opacity:0.8;font-size:12px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;font-weight:600;">Special First-Timer Offer</p>
       <p style="color:#F0E8D2;font-size:20px;font-weight:700;margin:0 0 8px;">Get Your $35 Back</p>
-      <p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:0;">
-        Sign up for a Monthly ($179/mo) or Annual ($1,200/yr) membership and we'll credit your walk-in session back — that's $35 off your first month.
+      <p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:0 0 16px;">
+        Sign up for a Monthly or Annual membership and we'll credit your walk-in session back — $35 off your first payment.
       </p>
+      <div style="background:#060A07;border-radius:6px;padding:12px;display:inline-block;">
+        <p style="color:#F0E8D2;opacity:0.4;font-size:10px;text-transform:uppercase;letter-spacing:2px;margin:0 0 4px;">Your Promo Code</p>
+        <p style="color:#C8973A;font-size:24px;font-weight:800;letter-spacing:4px;margin:0;">${promoCode}</p>
+      </div>
+      <p style="color:#F0E8D2;opacity:0.5;font-size:11px;margin:8px 0 0;">Valid for 30 days · One-time use</p>
     </div>
 
     <p style="color:#F0E8D2;opacity:0.5;font-size:14px;line-height:1.6;margin:0 0 20px;">
