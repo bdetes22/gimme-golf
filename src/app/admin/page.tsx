@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import Link from "next/link";
 
 interface Booking {
   id: string;
@@ -128,6 +129,33 @@ export default function AdminPage() {
   const [keyboxValue, setKeyboxValue] = useState("");
 
   const [storedPassword, setStoredPassword] = useState("");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "quotes">("dashboard");
+
+  // Quotes state
+  const [quotes, setQuotes] = useState<Array<Record<string, unknown>>>([]);
+  const [quotesLoading, setQuotesLoading] = useState(false);
+
+  const fetchQuotes = useCallback(async (pw: string) => {
+    setQuotesLoading(true);
+    try {
+      const res = await fetch(`/api/quotes?password=${encodeURIComponent(pw)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setQuotes(Array.isArray(data) ? data : []);
+      }
+    } catch { /* ignore */ }
+    setQuotesLoading(false);
+  }, []);
+
+  // Auto-login from sessionStorage
+  useEffect(() => {
+    const stored = sessionStorage.getItem("admin_pw");
+    if (stored) {
+      setPassword(stored);
+      setStoredPassword(stored);
+      fetchData(stored);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = useCallback(
     async (pw: string) => {
@@ -160,6 +188,7 @@ export default function AdminPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setStoredPassword(password);
+    sessionStorage.setItem("admin_pw", password);
     await fetchData(password);
   };
 
@@ -406,24 +435,95 @@ export default function AdminPage() {
             className="text-3xl font-bold text-[#C8973A]"
             style={{ fontFamily: "var(--font-barlow-condensed)" }}
           >
-            ADMIN DASHBOARD
+            ADMIN
           </h1>
-          <div className="flex items-center gap-3">
-            <a
-              href="/admin/quotes"
-              className="rounded bg-[#C8973A] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
-            >
-              Quotes
-            </a>
-            <button
-              onClick={() => fetchData(storedPassword)}
-              disabled={loading}
-              className="px-3 py-1.5 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-xs hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
-            >
-              {loading ? "Refreshing..." : "Refresh"}
-            </button>
-          </div>
+          <button
+            onClick={() => { fetchData(storedPassword); if (activeTab === "quotes") fetchQuotes(storedPassword); }}
+            disabled={loading}
+            className="px-3 py-1.5 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-xs hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
+          >
+            {loading ? "Refreshing..." : "Refresh"}
+          </button>
         </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 border-b border-[#F0E8D2]/10">
+          <button
+            onClick={() => setActiveTab("dashboard")}
+            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+              activeTab === "dashboard"
+                ? "text-[#C8973A] border-b-2 border-[#C8973A]"
+                : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
+            }`}
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => { setActiveTab("quotes"); fetchQuotes(storedPassword); }}
+            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+              activeTab === "quotes"
+                ? "text-[#C8973A] border-b-2 border-[#C8973A]"
+                : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
+            }`}
+          >
+            Quotes
+          </button>
+        </div>
+
+        {/* ── Quotes Tab ── */}
+        {activeTab === "quotes" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>ALL QUOTES</h2>
+              <Link href="/admin/quotes/new" className="rounded bg-[#2D6A47] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90">
+                New Quote
+              </Link>
+            </div>
+            <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg overflow-x-auto">
+              <table className="w-full min-w-[600px] text-sm">
+                <thead>
+                  <tr className="border-b border-[#F0E8D2]/10 text-[#F0E8D2]/60 text-xs uppercase">
+                    <th className="text-left p-3">Quote #</th>
+                    <th className="text-left p-3">Client</th>
+                    <th className="text-left p-3">Date</th>
+                    <th className="text-left p-3">Total</th>
+                    <th className="text-left p-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quotesLoading ? (
+                    <tr><td colSpan={5} className="p-6 text-center text-[#F0E8D2]/40">Loading...</td></tr>
+                  ) : quotes.length === 0 ? (
+                    <tr><td colSpan={5} className="p-6 text-center text-[#F0E8D2]/40">No quotes yet. Create your first quote.</td></tr>
+                  ) : (
+                    quotes.map((q) => (
+                      <tr key={q.id as string} className="border-b border-[#F0E8D2]/5 hover:bg-[#F0E8D2]/[0.02] cursor-pointer" onClick={() => window.location.href = `/admin/quotes/${q.id}`}>
+                        <td className="p-3 font-mono text-[#C8973A]">#{q.quote_number as string}</td>
+                        <td className="p-3">{q.client_name as string}</td>
+                        <td className="p-3 text-[#F0E8D2]/60">{q.created_at ? new Date(q.created_at as string).toLocaleDateString() : ""}</td>
+                        <td className="p-3">${Number(q.total || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
+                        <td className="p-3">
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                            q.status === "paid" ? "bg-[#2D6A47]/60 text-green-200"
+                            : q.status === "deposit-paid" ? "bg-[#C8973A]/30 text-[#C8973A]"
+                            : q.status === "accepted" ? "bg-[#2D6A47]/40 text-green-300"
+                            : q.status === "sent" ? "bg-blue-900/40 text-blue-300"
+                            : "bg-[#F0E8D2]/10 text-[#F0E8D2]/60"
+                          }`}>
+                            {q.status as string}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ── Dashboard Tab ── */}
+        {activeTab === "dashboard" && <>
 
         {/* ── Keybox Codes ── */}
         {data.locations.length > 0 && (
@@ -1034,6 +1134,8 @@ export default function AdminPage() {
             </table>
           </div>
         </section>
+
+        </>}
       </div>
 
       {/* ── Comp Session Modal ── */}
