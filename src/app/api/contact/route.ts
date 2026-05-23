@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { dbInsert } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,19 @@ export async function POST(req: NextRequest) {
   </div>
 </div>`,
     });
+
+    // Save to messages table
+    try {
+      await dbInsert("messages", {
+        type: "contact",
+        name,
+        email,
+        subject: subject || null,
+        message,
+      });
+    } catch (dbErr) {
+      console.error("Failed to save contact message to DB:", dbErr);
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

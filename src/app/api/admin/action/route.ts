@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { Resend } from "resend";
-import { dbDelete, dbInsert, dbSelect } from "@/lib/supabase-rest";
+import { dbDelete, dbInsert, dbSelect, dbUpdate } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
 
@@ -747,6 +747,36 @@ export async function POST(req: NextRequest) {
       console.log("[ADMIN] No auth user found");
     }
 
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Mark message read ──
+  if (action === "mark_read") {
+    const { messageId } = body;
+    if (!messageId) {
+      return NextResponse.json({ error: "messageId is required" }, { status: 400 });
+    }
+    await dbUpdate("messages", `id=eq.${messageId}`, { read: true });
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Mark message unread ──
+  if (action === "mark_unread") {
+    const { messageId } = body;
+    if (!messageId) {
+      return NextResponse.json({ error: "messageId is required" }, { status: 400 });
+    }
+    await dbUpdate("messages", `id=eq.${messageId}`, { read: false });
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Delete message ──
+  if (action === "delete_message") {
+    const { messageId } = body;
+    if (!messageId) {
+      return NextResponse.json({ error: "messageId is required" }, { status: 400 });
+    }
+    await dbDelete("messages", `id=eq.${messageId}`);
     return NextResponse.json({ success: true });
   }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { dbInsert } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,20 @@ export async function POST(req: NextRequest) {
 </body>
 </html>`,
     });
+
+    // Save to messages table
+    try {
+      await dbInsert("messages", {
+        type: "build_inquiry",
+        name,
+        email,
+        phone: phone || null,
+        message: message || null,
+        metadata: { width, length, height, budget, timeline },
+      });
+    } catch (dbErr) {
+      console.error("Failed to save build inquiry to DB:", dbErr);
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

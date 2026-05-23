@@ -103,6 +103,68 @@ export async function GET(req: NextRequest) {
     `select=*,customers(name,email)&active=eq.true&end_date=gte.${todayDate}&end_date=lte.${thirtyDaysFromNow}&order=end_date.asc`
   );
 
+  // ── Analytics data ──
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const analyticsBookings = await dbSelect(
+    "bookings",
+    `select=start_time,location,payment_status,customer_id&start_time=gte.${fourteenDaysAgo}&status=neq.cancelled&status=neq.blocked`
+  );
+
+  // Bookings per day (last 14 days)
+  const bookingsPerDay: Record<string, number> = {};
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    bookingsPerDay[d.toISOString().split("T")[0]] = 0;
+  }
+
+  // Bookings by hour
+  const bookingsByHour: Record<number, number> = {};
+  for (let h = 6; h <= 23; h++) bookingsByHour[h] = 0;
+
+  // Bookings by location
+  const bookingsByLocation: Record<string, number> = { kaysville: 0, clearfield: 0 };
+
+  // Bookings by payment type
+  const bookingsByType: Record<string, number> = { paid: 0, membership: 0, comp: 0, other: 0 };
+
+  // Unique customers
+  const uniqueCustomerIds = new Set<string>();
+
+  if (Array.isArray(analyticsBookings)) {
+    for (const b of analyticsBookings) {
+      const dateKey = new Date(b.start_time).toISOString().split("T")[0];
+      if (dateKey in bookingsPerDay) bookingsPerDay[dateKey]++;
+
+      const hour = new Date(b.start_time).getHours();
+      if (hour >= 6 && hour <= 23) bookingsByHour[hour]++;
+
+      const loc = (b.location || "").toLowerCase();
+      if (loc in bookingsByLocation) bookingsByLocation[loc]++;
+
+      const ps = b.payment_status || "";
+      if (ps === "paid") bookingsByType.paid++;
+      else if (ps === "membership") bookingsByType.membership++;
+      else if (ps === "comp") bookingsByType.comp++;
+      else bookingsByType.other++;
+
+      if (b.customer_id) uniqueCustomerIds.add(b.customer_id);
+    }
+  }
+
+  const analytics = {
+    bookingsPerDay,
+    bookingsByHour,
+    bookingsByLocation,
+    bookingsByType,
+    uniqueCustomers: uniqueCustomerIds.size,
+  };
+
+  // ── Messages ──
+  const messages = await dbSelect(
+    "messages",
+    "select=*&order=created_at.desc&limit=50"
+  );
+
   return NextResponse.json({
     bookings: bookings || [],
     customers: customersWithMembership,
@@ -115,5 +177,7 @@ export async function GET(req: NextRequest) {
       bookingsThisWeek: Array.isArray(weekBookings) ? weekBookings.length : 0,
       activeMembers: Array.isArray(activeMembers) ? activeMembers.length : 0,
     },
+    analytics,
+    messages: Array.isArray(messages) ? messages : [],
   });
 }

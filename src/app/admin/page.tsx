@@ -62,6 +62,27 @@ interface Stats {
   activeMembers: number;
 }
 
+interface Analytics {
+  bookingsPerDay: Record<string, number>;
+  bookingsByHour: Record<string, number>;
+  bookingsByLocation: Record<string, number>;
+  bookingsByType: Record<string, number>;
+  uniqueCustomers: number;
+}
+
+interface Message {
+  id: string;
+  type: "contact" | "build_inquiry";
+  name: string;
+  email: string;
+  phone: string | null;
+  subject: string | null;
+  message: string | null;
+  metadata: Record<string, unknown> | null;
+  read: boolean;
+  created_at: string;
+}
+
 interface AdminData {
   bookings: Booking[];
   customers: Customer[];
@@ -70,6 +91,8 @@ interface AdminData {
   expiringMemberships: Membership[];
   revenue: Revenue;
   stats: Stats;
+  analytics: Analytics;
+  messages: Message[];
 }
 
 export default function AdminPage() {
@@ -129,7 +152,8 @@ export default function AdminPage() {
   const [keyboxValue, setKeyboxValue] = useState("");
 
   const [storedPassword, setStoredPassword] = useState("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "quotes">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "messages" | "quotes">("dashboard");
+  const [expandedMessage, setExpandedMessage] = useState<string | null>(null);
 
   // Quotes state
   const [quotes, setQuotes] = useState<Array<Record<string, unknown>>>([]);
@@ -439,6 +463,7 @@ export default function AdminPage() {
           </h1>
           <button
             onClick={() => { fetchData(storedPassword); if (activeTab === "quotes") fetchQuotes(storedPassword); }}
+
             disabled={loading}
             className="px-3 py-1.5 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-xs hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
           >
@@ -457,6 +482,31 @@ export default function AdminPage() {
             }`}
           >
             Dashboard
+          </button>
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+              activeTab === "analytics"
+                ? "text-[#C8973A] border-b-2 border-[#C8973A]"
+                : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
+            }`}
+          >
+            Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab("messages")}
+            className={`relative px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+              activeTab === "messages"
+                ? "text-[#C8973A] border-b-2 border-[#C8973A]"
+                : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
+            }`}
+          >
+            Messages
+            {data && data.messages.filter(m => !m.read).length > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#2D6A47] text-[10px] font-bold text-[#F0E8D2]">
+                {data.messages.filter(m => !m.read).length}
+              </span>
+            )}
           </button>
           <button
             onClick={() => { setActiveTab("quotes"); fetchQuotes(storedPassword); }}
@@ -519,6 +569,249 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* ── Analytics Tab ── */}
+        {activeTab === "analytics" && data.analytics && (() => {
+          const { bookingsPerDay, bookingsByHour, bookingsByLocation, bookingsByType, uniqueCustomers } = data.analytics;
+          const dayEntries = Object.entries(bookingsPerDay);
+          const maxDay = Math.max(...dayEntries.map(([, v]) => v), 1);
+          const hourEntries = Object.entries(bookingsByHour).map(([h, v]) => [Number(h), v] as [number, number]);
+          const maxHour = Math.max(...hourEntries.map(([, v]) => v), 1);
+          const totalLocation = (bookingsByLocation.kaysville || 0) + (bookingsByLocation.clearfield || 0);
+          const totalType = (bookingsByType.paid || 0) + (bookingsByType.membership || 0) + (bookingsByType.comp || 0) + (bookingsByType.other || 0);
+
+          return (
+            <div className="space-y-8">
+              {/* Bookings Last 14 Days */}
+              <section className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-6">
+                <h3 className="text-lg font-bold text-[#F0E8D2] mb-4" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                  BOOKINGS — LAST 14 DAYS
+                </h3>
+                <div className="flex items-end gap-1.5" style={{ height: 180 }}>
+                  {dayEntries.map(([date, count]) => {
+                    const d = new Date(date + "T12:00:00");
+                    const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                    const heightPct = count > 0 ? Math.max((count / maxDay) * 100, 4) : 0;
+                    return (
+                      <div key={date} className="flex-1 flex flex-col items-center justify-end h-full">
+                        <span className="text-[10px] text-[#C8973A] font-bold mb-1">{count > 0 ? count : ""}</span>
+                        <div
+                          className="w-full rounded-t bg-[#2D6A47] min-w-[8px] transition-all"
+                          style={{ height: `${heightPct}%` }}
+                        />
+                        <span className="text-[9px] text-[#F0E8D2]/40 mt-1.5 whitespace-nowrap">{label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+
+              {/* Busiest Hours */}
+              <section className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-6">
+                <h3 className="text-lg font-bold text-[#F0E8D2] mb-4" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                  BUSIEST HOURS
+                </h3>
+                <div className="space-y-1.5">
+                  {hourEntries.map(([hour, count]) => {
+                    const label = hour > 12 ? `${hour - 12} PM` : hour === 12 ? "12 PM" : `${hour} AM`;
+                    const widthPct = count > 0 ? Math.max((count / maxHour) * 100, 2) : 0;
+                    return (
+                      <div key={hour} className="flex items-center gap-3">
+                        <span className="text-xs text-[#F0E8D2]/50 w-12 text-right font-mono">{label}</span>
+                        <div className="flex-1 h-5 bg-[#F0E8D2]/5 rounded overflow-hidden">
+                          <div
+                            className="h-full bg-[#2D6A47] rounded transition-all"
+                            style={{ width: `${widthPct}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-[#C8973A] font-bold w-8">{count > 0 ? count : ""}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+
+              {/* Location Split + Booking Type + Unique Customers */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Location Split */}
+                <section className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-6">
+                  <h3 className="text-lg font-bold text-[#F0E8D2] mb-4" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                    LOCATION SPLIT
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {(["kaysville", "clearfield"] as const).map((loc) => {
+                      const count = bookingsByLocation[loc] || 0;
+                      const pct = totalLocation > 0 ? Math.round((count / totalLocation) * 100) : 0;
+                      return (
+                        <div key={loc} className="bg-[#060A07] border border-[#F0E8D2]/10 rounded-lg p-4 text-center">
+                          <p className="text-[10px] uppercase tracking-wider text-[#F0E8D2]/40 capitalize">{loc}</p>
+                          <p className="text-3xl font-bold text-[#C8973A] mt-1" style={{ fontFamily: "var(--font-barlow-condensed)" }}>{count}</p>
+                          <p className="text-xs text-[#F0E8D2]/30 mt-0.5">{pct}%</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                {/* Booking Type Breakdown */}
+                <section className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-6">
+                  <h3 className="text-lg font-bold text-[#F0E8D2] mb-4" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                    BOOKING TYPE
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Walk-In", key: "paid", color: "text-green-300" },
+                      { label: "Member", key: "membership", color: "text-blue-300" },
+                      { label: "Comp", key: "comp", color: "text-[#C8973A]" },
+                      { label: "Total", key: "_total", color: "text-[#F0E8D2]" },
+                    ].map(({ label, key, color }) => (
+                      <div key={key} className="bg-[#060A07] border border-[#F0E8D2]/10 rounded-lg p-3 text-center">
+                        <p className="text-[10px] uppercase tracking-wider text-[#F0E8D2]/40">{label}</p>
+                        <p className={`text-2xl font-bold mt-1 ${color}`} style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                          {key === "_total" ? totalType : (bookingsByType[key] || 0)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+
+              {/* Unique Customers */}
+              <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-6 text-center">
+                <p className="text-[10px] uppercase tracking-wider text-[#F0E8D2]/40">Unique Customers (Last 14 Days)</p>
+                <p className="text-4xl font-bold text-[#C8973A] mt-2" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                  {uniqueCustomers}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── Messages Tab ── */}
+        {activeTab === "messages" && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+              MESSAGES ({data.messages.length})
+            </h2>
+            {data.messages.length === 0 ? (
+              <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-8 text-center text-[#F0E8D2]/40">
+                No messages yet.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {data.messages.map((msg) => {
+                  const isExpanded = expandedMessage === msg.id;
+                  const meta = msg.metadata as Record<string, unknown> | null;
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`border rounded-lg overflow-hidden transition-colors ${
+                        !msg.read
+                          ? "border-l-4 border-l-[#2D6A47] border-t-[#F0E8D2]/10 border-r-[#F0E8D2]/10 border-b-[#F0E8D2]/10 bg-[#F0E8D2]/[0.05]"
+                          : "border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03]"
+                      }`}
+                    >
+                      {/* Header - clickable */}
+                      <button
+                        onClick={() => setExpandedMessage(isExpanded ? null : msg.id)}
+                        className="w-full text-left p-4 flex items-start gap-3"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
+                              msg.type === "build_inquiry"
+                                ? "bg-[#C8973A]/20 text-[#C8973A]"
+                                : "bg-[#2D6A47]/30 text-green-300"
+                            }`}>
+                              {msg.type === "build_inquiry" ? "Build Inquiry" : "Contact"}
+                            </span>
+                            {!msg.read && (
+                              <span className="inline-block w-2 h-2 rounded-full bg-[#2D6A47]" />
+                            )}
+                            <span className="text-xs text-[#F0E8D2]/30 ml-auto">
+                              {new Date(msg.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                              {" "}
+                              {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
+                            </span>
+                          </div>
+                          <p className="text-sm font-semibold text-[#F0E8D2] mt-1.5">{msg.name}</p>
+                          <p className="text-xs text-[#F0E8D2]/50">{msg.email}</p>
+                          {msg.subject && (
+                            <p className="text-xs text-[#C8973A]/70 mt-1">{msg.subject}</p>
+                          )}
+                          {!isExpanded && msg.message && (
+                            <p className="text-xs text-[#F0E8D2]/30 mt-1 truncate">{msg.message}</p>
+                          )}
+                        </div>
+                        <span className="text-[#F0E8D2]/20 text-lg mt-1">{isExpanded ? "\u25B2" : "\u25BC"}</span>
+                      </button>
+
+                      {/* Expanded content */}
+                      {isExpanded && (
+                        <div className="px-4 pb-4 space-y-3">
+                          {msg.phone && (
+                            <p className="text-xs text-[#F0E8D2]/50">Phone: <span className="text-[#F0E8D2]/80">{msg.phone}</span></p>
+                          )}
+                          {msg.message && (
+                            <div className="bg-[#060A07] border border-[#F0E8D2]/10 rounded p-3">
+                              <p className="text-xs text-[#F0E8D2]/40 mb-1 uppercase tracking-wider">Message</p>
+                              <p className="text-sm text-[#F0E8D2]/80 whitespace-pre-wrap">{msg.message}</p>
+                            </div>
+                          )}
+                          {msg.type === "build_inquiry" && meta && (
+                            <div className="bg-[#060A07] border border-[#F0E8D2]/10 rounded p-3">
+                              <p className="text-xs text-[#F0E8D2]/40 mb-2 uppercase tracking-wider">Build Details</p>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                                {Boolean(meta.width && meta.length && meta.height) && (
+                                  <div>
+                                    <span className="text-[#F0E8D2]/40">Room Size: </span>
+                                    <span className="text-[#F0E8D2]/80">{String(meta.width)}&apos; W x {String(meta.length)}&apos; L x {String(meta.height)}&apos; H</span>
+                                  </div>
+                                )}
+                                {Boolean(meta.budget) && (
+                                  <div>
+                                    <span className="text-[#F0E8D2]/40">Budget: </span>
+                                    <span className="text-[#F0E8D2]/80">{String(meta.budget)}</span>
+                                  </div>
+                                )}
+                                {Boolean(meta.timeline) && (
+                                  <div>
+                                    <span className="text-[#F0E8D2]/40">Timeline: </span>
+                                    <span className="text-[#F0E8D2]/80">{String(meta.timeline)}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              onClick={() => doAction({ action: msg.read ? "mark_unread" : "mark_read", messageId: msg.id })}
+                              disabled={actionLoading !== null}
+                              className="px-3 py-1.5 bg-[#2D6A47]/30 text-green-300 rounded text-xs hover:bg-[#2D6A47]/50 disabled:opacity-50 transition-colors"
+                            >
+                              {msg.read ? "Mark Unread" : "Mark Read"}
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (!confirm("Delete this message?")) return;
+                                doAction({ action: "delete_message", messageId: msg.id });
+                                setExpandedMessage(null);
+                              }}
+                              disabled={actionLoading !== null}
+                              className="px-3 py-1.5 bg-red-900/30 text-red-300 rounded text-xs hover:bg-red-900/50 disabled:opacity-50 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
