@@ -88,6 +88,27 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [expNotes, setExpNotes] = useState("");
   const [showAddExpense, setShowAddExpense] = useState(false);
 
+  // Copy from job
+  const [allJobs, setAllJobs] = useState<Array<{ id: string; title: string; client_name: string }>>([]);
+  const [showCopyFrom, setShowCopyFrom] = useState(false);
+  const [copying, setCopying] = useState(false);
+
+  // Expense presets
+  const EXPENSE_PRESETS = [
+    { description: "ProTee VX Launch Monitor", category: "equipment", amount: 5200, vendor: "ProTee" },
+    { description: "Impact Screen", category: "materials", amount: 800, vendor: "Carl's Place" },
+    { description: "4K Projector", category: "equipment", amount: 1500, vendor: "" },
+    { description: "Artificial Turf + Padding", category: "materials", amount: 2500, vendor: "" },
+    { description: "Enclosure Materials", category: "materials", amount: 3000, vendor: "" },
+    { description: "PC + Setup", category: "equipment", amount: 1800, vendor: "" },
+    { description: "Wall Padding", category: "materials", amount: 1200, vendor: "" },
+    { description: "Monitor/TV Screen", category: "equipment", amount: 600, vendor: "" },
+    { description: "Miscellaneous Hardware", category: "materials", amount: 500, vendor: "Home Depot" },
+    { description: "Labor (per day)", category: "labor", amount: 500, vendor: "" },
+    { description: "Lunch/Food", category: "food", amount: 30, vendor: "" },
+    { description: "Gas/Travel", category: "travel", amount: 25, vendor: "" },
+  ];
+
   useEffect(() => {
     const stored = sessionStorage.getItem("admin_pw");
     if (stored) { setPassword(stored); setAuthenticated(true); }
@@ -170,6 +191,62 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       body: JSON.stringify({ password, action: "delete_expense", id, job_id: jobId }),
     });
     await fetchJob(password);
+  };
+
+  const fetchAllJobs = async () => {
+    try {
+      const res = await fetch(`/api/jobs?password=${encodeURIComponent(password)}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setAllJobs(data.filter((j: Record<string, unknown>) => j.id !== jobId).map((j: Record<string, unknown>) => ({
+          id: j.id as string,
+          title: j.title as string,
+          client_name: j.client_name as string,
+        })));
+      }
+    } catch { /* ignore */ }
+  };
+
+  const copyExpensesFrom = async (sourceJobId: string) => {
+    setCopying(true);
+    try {
+      const res = await fetch(`/api/jobs/${sourceJobId}?password=${encodeURIComponent(password)}`);
+      const sourceJob = await res.json();
+      if (sourceJob.expenses && Array.isArray(sourceJob.expenses)) {
+        const today = new Date().toISOString().split("T")[0];
+        for (const exp of sourceJob.expenses) {
+          await fetch("/api/jobs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              password, action: "add_expense", job_id: jobId,
+              description: exp.description, category: exp.category,
+              amount: Number(exp.amount), vendor: exp.vendor || null,
+              date: today, receipt_url: null, notes: `Copied from ${sourceJob.title || "another job"}`,
+            }),
+          });
+        }
+        await fetchJob(password);
+      }
+    } catch { alert("Failed to copy expenses"); }
+    setCopying(false);
+    setShowCopyFrom(false);
+  };
+
+  const addPresetExpense = async (preset: typeof EXPENSE_PRESETS[0]) => {
+    setSaving(true);
+    await fetch("/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        password, action: "add_expense", job_id: jobId,
+        description: preset.description, category: preset.category,
+        amount: preset.amount, vendor: preset.vendor || null,
+        date: new Date().toISOString().split("T")[0],
+      }),
+    });
+    await fetchJob(password);
+    setSaving(false);
   };
 
   const deleteJob = async () => {
@@ -289,11 +366,60 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
         {/* Expenses */}
         <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-5">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#F0E8D2]/60">Expenses</h3>
-            <button onClick={() => setShowAddExpense(!showAddExpense)} className="text-xs text-[#2D6A47] hover:text-[#2D6A47]/80">
-              {showAddExpense ? "Cancel" : "+ Add Expense"}
-            </button>
+            <div className="flex gap-2">
+              <button onClick={() => { setShowCopyFrom(!showCopyFrom); if (!showCopyFrom) fetchAllJobs(); }} className="px-2 py-1 text-xs border border-[#F0E8D2]/15 text-[#F0E8D2]/40 rounded hover:text-[#F0E8D2]/60 hover:border-[#F0E8D2]/30">
+                {showCopyFrom ? "Cancel" : "Copy from Job"}
+              </button>
+              <button onClick={() => setShowAddExpense(!showAddExpense)} className="px-2 py-1 text-xs text-[#2D6A47] border border-[#2D6A47]/30 rounded hover:bg-[#2D6A47]/10">
+                {showAddExpense ? "Cancel" : "+ Add Expense"}
+              </button>
+            </div>
+          </div>
+
+          {/* Copy from another job */}
+          {showCopyFrom && (
+            <div className="mb-4 p-4 border border-[#F0E8D2]/10 rounded-lg">
+              <p className="text-xs text-[#F0E8D2]/50 mb-3">Select a job to copy all its expenses into this one:</p>
+              {allJobs.length === 0 ? (
+                <p className="text-xs text-[#F0E8D2]/30">No other jobs found</p>
+              ) : (
+                <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+                  {allJobs.map((j) => (
+                    <button
+                      key={j.id}
+                      onClick={() => copyExpensesFrom(j.id)}
+                      disabled={copying}
+                      className="flex items-center justify-between px-3 py-2 border border-[#F0E8D2]/10 rounded text-left hover:border-[#2D6A47]/30 hover:bg-[#2D6A47]/[0.04] transition-colors disabled:opacity-50"
+                    >
+                      <div>
+                        <p className="text-sm text-[#F0E8D2]">{j.title}</p>
+                        <p className="text-[10px] text-[#F0E8D2]/40">{j.client_name}</p>
+                      </div>
+                      <span className="text-xs text-[#2D6A47]">{copying ? "Copying..." : "Copy →"}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Quick-add presets */}
+          <div className="mb-4">
+            <p className="text-[10px] uppercase tracking-wider text-[#F0E8D2]/30 mb-2">Quick Add</p>
+            <div className="flex flex-wrap gap-1.5">
+              {EXPENSE_PRESETS.map((preset) => (
+                <button
+                  key={preset.description}
+                  onClick={() => addPresetExpense(preset)}
+                  disabled={saving}
+                  className="px-2 py-1 text-[10px] border border-[#F0E8D2]/10 text-[#F0E8D2]/40 rounded hover:border-[#F0E8D2]/20 hover:text-[#F0E8D2]/60 disabled:opacity-30 transition-colors"
+                >
+                  {preset.description} <span className="text-[#C8973A]/60">${preset.amount.toLocaleString()}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {showAddExpense && (
