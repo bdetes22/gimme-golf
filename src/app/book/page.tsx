@@ -33,12 +33,11 @@ const LOCATIONS = [
   },
 ];
 
-const SLOTS = Array.from({ length: 18 }, (_, i) => {
-  const h = i + 6;
-  const label = h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
-  const endH = h + 1;
-  const endLabel =
-    endH < 12 ? `${endH} AM` : endH === 12 ? "12 PM" : `${endH - 12} PM`;
+const SLOTS = Array.from({ length: 24 }, (_, i) => {
+  const h = i;
+  const label = h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
+  const endH = (h + 1) % 24;
+  const endLabel = endH === 0 ? "12 AM" : endH < 12 ? `${endH} AM` : endH === 12 ? "12 PM" : `${endH - 12} PM`;
   return { hour: h, label, endLabel };
 });
 
@@ -458,7 +457,7 @@ export default function BookPage() {
             <div className="mb-6">
               <label className="mb-2 block text-sm font-medium text-[#F0E8D2]/70">Duration</label>
               <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((d) => (
+                {(canBookFree ? [1, 2, 3, 4] : [1, 2, 3]).map((d) => (
                   <button
                     key={d}
                     onClick={() => {
