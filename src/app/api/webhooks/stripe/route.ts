@@ -406,9 +406,64 @@ export async function POST(req: NextRequest) {
 
     console.log("[WEBHOOK] Customer ID:", customerId);
 
-    // Create booking(s) — one per hour slot to prevent double-booking
-    const bookingRows = Array.from({ length: dur }, (_, i) => {
-      const slotStart = new Date(`${dateISO}T${String(hour + i).padStart(2, "0")}:00:00`);
+    // Check for double-booking before creating
+    const slotsToBook = Array.from({ length: dur }, (_, i) => {
+      const h = (hour + i) % 24;
+      return new Date(`${dateISO}T${String(h).padStart(2, "0")}:00:00`);
+    });
+
+    // Check if any slot is already taken
+    let slotConflict = false;
+    for (const slotTime of slotsToBook) {
+      const { data: existing } = await supabaseAdmin
+        .from("bookings")
+        .select("id")
+        .eq("location", locationName.toLowerCase())
+        .eq("start_time", slotTime.toISOString())
+        .neq("status", "cancelled")
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        slotConflict = true;
+        break;
+      }
+    }
+
+    if (slotConflict) {
+      // Auto-refund — slot was taken between checkout and payment
+      console.log("[WEBHOOK] Double-booking detected, issuing auto-refund");
+      try {
+        await stripe.refunds.create({
+          payment_intent: session.payment_intent as string,
+        });
+        console.log("[WEBHOOK] Auto-refund issued for double-booking");
+
+        // Send apology email
+        try {
+          await resend.emails.send({
+            from: "Gimme Golf <onboarding@resend.dev>",
+            to: customerEmail,
+            subject: "Booking Conflict — Full Refund Issued",
+            html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px;background:#060A07;color:#F0E8D2;border-radius:8px;">
+              <h2 style="color:#C8973A;">Booking Conflict</h2>
+              <p style="opacity:0.7;">Hi ${customerName},</p>
+              <p style="opacity:0.7;">Unfortunately, the time slot you booked was taken by another customer just moments before your payment was processed. This is extremely rare and we apologize for the inconvenience.</p>
+              <p style="opacity:0.7;"><strong>A full refund has been issued to your card.</strong> It should appear within 5-10 business days.</p>
+              <p style="opacity:0.7;">Please book again at a different time. If you need help, text us at (801) 513-3538.</p>
+              <a href="${req.nextUrl.origin}/book" style="display:inline-block;background:#2D6A47;color:#F0E8D2;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:12px;">Book Again</a>
+            </div>`,
+          });
+        } catch {
+          console.error("[WEBHOOK] Failed to send conflict email");
+        }
+      } catch (refundErr) {
+        console.error("[WEBHOOK] Auto-refund failed:", refundErr);
+      }
+      return NextResponse.json({ received: true });
+    }
+
+    // Create booking(s) — one per hour slot
+    const bookingRows = slotsToBook.map((slotStart) => {
       const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
       return {
         customer_id: customerId,
