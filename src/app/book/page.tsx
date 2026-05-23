@@ -61,6 +61,9 @@ export default function BookPage() {
   const [phone, setPhone] = useState("");
   const [bookingError, setBookingError] = useState("");
 
+  const [waiverAccepted, setWaiverAccepted] = useState(false);
+  const [waiverAlreadySigned, setWaiverAlreadySigned] = useState(false);
+
   // Auth + membership state
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [membership, setMembership] = useState<MembershipInfo | null>(null);
@@ -87,15 +90,19 @@ export default function BookPage() {
       setEmail(session.user.email || "");
       setPhone(session.user.user_metadata?.phone || "");
 
-      // Get customer ID
+      // Get customer ID and waiver status
       const { data: customer } = await supabase
         .from("customers")
-        .select("id")
+        .select("id, waiver_signed_at")
         .eq("email", session.user.email)
         .single();
 
       if (customer) {
         setCustomerId(customer.id);
+        if (customer.waiver_signed_at) {
+          setWaiverAlreadySigned(true);
+          setWaiverAccepted(true);
+        }
 
         // Check for active membership
         const { data: mem } = await supabase
@@ -183,6 +190,12 @@ export default function BookPage() {
     if (!customerId || !locObj) return;
     setLoading(true);
     setBookingError("");
+    // Save waiver to account if first time
+    if (!waiverAlreadySigned && waiverAccepted) {
+      try {
+        await supabase.from("customers").update({ waiver_signed_at: new Date().toISOString() }).eq("id", customerId);
+      } catch { /* non-blocking */ }
+    }
     try {
       const res = await fetch("/api/bookings/member", {
         method: "POST",
@@ -612,6 +625,37 @@ export default function BookPage() {
               </div>
             </div>
 
+            {/* Waiver */}
+            {!waiverAlreadySigned && (
+              <div className="mb-4 rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-4">
+                <h4 className="mb-2 text-sm font-semibold text-[#F0E8D2]">Liability Waiver</h4>
+                <div className="mb-3 max-h-32 overflow-y-auto rounded bg-[#060A07] p-3 text-xs leading-relaxed text-[#F0E8D2]/40">
+                  <p>By booking a session at Gimme Golf, I acknowledge and agree that:</p>
+                  <p className="mt-2">1. I understand that golf simulation involves swinging golf clubs in an enclosed space and carries inherent risks of injury to myself and others.</p>
+                  <p className="mt-1">2. I assume full responsibility for any injury to myself or others in my group during my session.</p>
+                  <p className="mt-1">3. I agree to pay for any damage to equipment, screens, projectors, walls, or other property caused by myself or anyone in my group during the session.</p>
+                  <p className="mt-1">4. I will use the simulator equipment safely and only for its intended purpose.</p>
+                  <p className="mt-1">5. I will not use the facility under the influence of alcohol or drugs.</p>
+                  <p className="mt-1">6. I release Gimme Golf (Deters Birrell Golf LLC), its owners, employees, and agents from any and all claims, damages, or liability arising from my use of the facility.</p>
+                  <p className="mt-1">7. This waiver applies to all current and future visits to any Gimme Golf location.</p>
+                </div>
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={waiverAccepted}
+                    onChange={(e) => setWaiverAccepted(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[#2D6A47]"
+                  />
+                  <span className="text-xs text-[#F0E8D2]/60">
+                    I have read and agree to the liability waiver
+                  </span>
+                </label>
+              </div>
+            )}
+            {waiverAlreadySigned && (
+              <p className="mb-4 text-xs text-[#2D6A47]">✓ Liability waiver signed on file</p>
+            )}
+
             {bookingError && (
               <div className="mb-4 rounded border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
                 {bookingError === "SESSION_EXPIRED" ? (
@@ -631,9 +675,9 @@ export default function BookPage() {
             {canBookFree ? (
               <>
                 <button
-                  disabled={loading}
+                  disabled={loading || !waiverAccepted}
                   onClick={handleMemberBooking}
-                  className="w-full rounded bg-[#2D6A47] px-8 py-4 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:opacity-50"
+                  className="w-full rounded bg-[#2D6A47] px-8 py-4 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? "Confirming..." : "Confirm Booking"}
                 </button>
@@ -646,9 +690,9 @@ export default function BookPage() {
             ) : (
               <>
                 <button
-                  disabled={loading}
+                  disabled={loading || !waiverAccepted}
                   onClick={handleStripeCheckout}
-                  className="w-full rounded bg-[#2D6A47] px-8 py-4 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:opacity-50"
+                  className="w-full rounded bg-[#2D6A47] px-8 py-4 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? "Redirecting to Stripe..." : `Pay with Stripe — $${totalPrice}.00`}
                 </button>

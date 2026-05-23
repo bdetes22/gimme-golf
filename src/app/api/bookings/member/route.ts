@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
 import { dbSelect } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
@@ -200,6 +201,31 @@ export async function POST(req: NextRequest) {
       headers: restHeaders(),
       body: JSON.stringify(updateData),
     });
+
+    // Notify admin
+    try {
+      const custData = await dbSelect("customers", `id=eq.${customerId}&limit=1`);
+      const cust = Array.isArray(custData) && custData.length > 0 ? custData[0] : null;
+      const resend = new Resend(process.env.RESEND_API_KEY!);
+      await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: "info@gimmegolfsimulators.com",
+        subject: `New Member Booking — ${location} on ${dateISO}`,
+        html: `<div style="font-family:sans-serif;padding:20px;max-width:500px;">
+          <h2 style="color:#2D6A47;margin:0 0 16px;">New Member Booking</h2>
+          <table style="width:100%;font-size:14px;">
+            <tr><td style="padding:4px 0;color:#888;">Customer</td><td style="padding:4px 0;"><strong>${cust?.name || "Member"}</strong></td></tr>
+            <tr><td style="padding:4px 0;color:#888;">Email</td><td style="padding:4px 0;">${cust?.email || ""}</td></tr>
+            <tr><td style="padding:4px 0;color:#888;">Location</td><td style="padding:4px 0;">${location}</td></tr>
+            <tr><td style="padding:4px 0;color:#888;">Date</td><td style="padding:4px 0;">${dateISO}</td></tr>
+            <tr><td style="padding:4px 0;color:#888;">Hours</td><td style="padding:4px 0;">${slotCount}</td></tr>
+            <tr><td style="padding:4px 0;color:#888;">Type</td><td style="padding:4px 0;">${membership.type} (member booking)</td></tr>
+          </table>
+        </div>`,
+      });
+    } catch {
+      // Don't fail the booking if notification fails
+    }
 
     return NextResponse.json({ success: true, slotsBooked: slotCount });
   } catch (err) {
