@@ -103,6 +103,131 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // ── Send post-session follow-up emails ──
+  if (action === "send_followups") {
+    const now = new Date().toISOString();
+    // Find bookings that ended, not cancelled, not followup_sent, with customer email
+    const completedBookings = await dbSelect(
+      "bookings",
+      `select=*,customers(id,name,email)&end_time=lt.${now}&status=neq.cancelled&followup_sent=eq.false&order=end_time.desc&limit=50`
+    );
+
+    if (!Array.isArray(completedBookings) || completedBookings.length === 0) {
+      return NextResponse.json({ success: true, sent: 0 });
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY!);
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://gimme-git-main-bridgn.vercel.app";
+    let sent = 0;
+
+    // Group by customer to avoid sending multiple follow-ups
+    const sentCustomers = new Set<string>();
+
+    for (const booking of completedBookings) {
+      const email = booking.customers?.email;
+      const name = booking.customers?.name || "there";
+      const custId = booking.customers?.id;
+
+      if (!email || !custId || sentCustomers.has(custId)) {
+        // Mark as sent even if skipped to avoid re-processing
+        await dbUpdate("bookings", `id=eq.${booking.id}`, { followup_sent: true });
+        continue;
+      }
+      sentCustomers.add(custId);
+
+      // Check if this is their first ever booking
+      const allBookings = await dbSelect(
+        "bookings",
+        `select=id&customer_id=eq.${custId}&status=neq.cancelled`
+      );
+      const isFirstTimer = Array.isArray(allBookings) && allBookings.length <= 1;
+
+      try {
+        if (isFirstTimer) {
+          // First-time customer email — membership upsell
+          await resend.emails.send({
+            from: "Gimme Golf <onboarding@resend.dev>",
+            to: email,
+            subject: "Thanks for Trying Gimme Golf!",
+            html: `
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <img src="${origin}/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+  </div>
+  <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
+    <h2 style="color:#F0E8D2;font-size:22px;margin:0 0 8px;">Thanks for Coming In, ${name}!</h2>
+    <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px;">
+      We hope you had a great time! We'd love to see you back soon.
+    </p>
+
+    <div style="background:#2D6A47;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
+      <p style="color:#F0E8D2;opacity:0.8;font-size:12px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;font-weight:600;">Special First-Timer Offer</p>
+      <p style="color:#F0E8D2;font-size:20px;font-weight:700;margin:0 0 8px;">Get Your $35 Back</p>
+      <p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:0;">
+        Sign up for a Monthly ($179/mo) or Annual ($1,200/yr) membership and we'll credit your walk-in session back — that's $35 off your first month.
+      </p>
+    </div>
+
+    <p style="color:#F0E8D2;opacity:0.5;font-size:14px;line-height:1.6;margin:0 0 20px;">
+      Members get 20 hours per month, priority booking, and member discounts at both our Kaysville and Clearfield locations. 24/7 access.
+    </p>
+
+    <div style="text-align:center;margin-bottom:16px;">
+      <a href="${origin}/memberships" style="display:inline-block;background:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">View Membership Plans</a>
+    </div>
+
+    <div style="text-align:center;">
+      <a href="${origin}/book" style="color:#2D6A47;font-size:13px;text-decoration:underline;">Or just book another walk-in session</a>
+    </div>
+  </div>
+  <div style="text-align:center;padding:16px 0;">
+    <p style="color:#F0E8D2;opacity:0.3;font-size:12px;margin:0 0 4px;">Text us anytime: (801) 513-3538</p>
+    <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
+  </div>
+</div>`,
+          });
+        } else {
+          // Returning customer follow-up — book again
+          await resend.emails.send({
+            from: "Gimme Golf <onboarding@resend.dev>",
+            to: email,
+            subject: "How Was Your Session?",
+            html: `
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <img src="${origin}/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+  </div>
+  <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
+    <h2 style="color:#F0E8D2;font-size:22px;margin:0 0 8px;">How Was Your Session, ${name}?</h2>
+    <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px;">
+      Thanks for playing at Gimme Golf! We hope you had a great time on the course.
+    </p>
+    <p style="color:#F0E8D2;opacity:0.5;font-size:14px;line-height:1.6;margin:0 0 24px;">
+      Ready for another round? Both our Kaysville and Clearfield locations are open 24/7 — book your next session anytime.
+    </p>
+    <div style="text-align:center;margin-bottom:16px;">
+      <a href="${origin}/book" style="display:inline-block;background:#2D6A47;color:#F0E8D2;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Book Your Next Session</a>
+    </div>
+  </div>
+  <div style="text-align:center;padding:16px 0;">
+    <p style="color:#F0E8D2;opacity:0.3;font-size:12px;margin:0 0 4px;">Text us anytime: (801) 513-3538</p>
+    <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
+  </div>
+</div>`,
+          });
+        }
+        sent++;
+      } catch (emailErr) {
+        console.error("[ADMIN] Follow-up email failed for", email, emailErr);
+      }
+
+      // Mark all their bookings as followup_sent
+      await dbUpdate("bookings", `customer_id=eq.${custId}&followup_sent=eq.false&end_time=lt.${now}`, { followup_sent: true });
+    }
+
+    return NextResponse.json({ success: true, sent });
+  }
+
   // ── Resend confirmation email ──
   if (action === "resend_confirmation") {
     const { bookingId } = body;

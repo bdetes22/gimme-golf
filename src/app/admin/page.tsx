@@ -1107,6 +1107,25 @@ export default function AdminPage() {
         {/* ── Dashboard Tab ── */}
         {activeTab === "dashboard" && <>
 
+        {/* ── Quick Actions ── */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={async () => {
+              if (!confirm("Send follow-up emails to customers whose sessions have ended?")) return;
+              const res = await fetch("/api/admin/action", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: storedPassword, action: "send_followups" }),
+              });
+              const data = await res.json();
+              alert(`Done! ${data.sent || 0} follow-up email(s) sent.`);
+            }}
+            className="rounded border border-[#C8973A]/30 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#C8973A]/70 transition-colors hover:bg-[#C8973A]/10 hover:text-[#C8973A]"
+          >
+            Send Follow-up Emails
+          </button>
+        </div>
+
         {/* ── Keybox Codes ── */}
         {data.locations.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
