@@ -350,8 +350,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                       <td className="py-2 pr-2 text-[#F0E8D2]/40 text-xs">{exp.date}</td>
                       <td className="py-2">
                         <div className="flex gap-2">
-                          {exp.receipt_url && <a href={exp.receipt_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#C8973A] hover:underline">Receipt</a>}
-                          <button onClick={() => deleteExpense(exp.id)} className="text-[10px] text-red-400/40 hover:text-red-400">Delete</button>
+                          {exp.receipt_url && <a href={exp.receipt_url} target="_blank" rel="noopener noreferrer" className="px-2 py-1 text-xs border border-[#C8973A]/30 text-[#C8973A] rounded hover:bg-[#C8973A]/10">Receipt</a>}
+                          <button onClick={() => deleteExpense(exp.id)} className="px-2 py-1 text-xs border border-red-500/20 text-red-400/50 rounded hover:bg-red-900/20 hover:text-red-400">Delete</button>
                         </div>
                       </td>
                     </tr>
