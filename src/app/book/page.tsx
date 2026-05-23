@@ -486,7 +486,9 @@ export default function BookPage() {
               {SLOTS.map((slot) => {
                 const isBooked = bookedHours.includes(slot.hour);
                 const canFit = isRangeAvailable(slot.hour, duration);
-                const isUnavailable = isBooked || !canFit;
+                const isToday = selectedDate?.toDateString() === new Date().toDateString();
+                const isPastHour = isToday && slot.hour <= new Date().getHours();
+                const isUnavailable = isBooked || !canFit || isPastHour;
                 const isSelected = selectedStartHour === slot.hour;
                 return (
                   <button
