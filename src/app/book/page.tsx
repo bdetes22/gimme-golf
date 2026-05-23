@@ -144,17 +144,17 @@ export default function BookPage() {
     year: "numeric",
   });
 
-  // Compute selected hours from start + duration
+  // Compute selected hours from start + duration (wraps past midnight)
   const selectedHours = useMemo(() => {
     if (selectedStartHour === null) return [];
-    return Array.from({ length: duration }, (_, i) => selectedStartHour + i);
+    return Array.from({ length: duration }, (_, i) => (selectedStartHour + i) % 24);
   }, [selectedStartHour, duration]);
 
-  // Check if a start time + duration has any conflicts
+  // Check if a start time + duration has any conflicts (allows overnight)
   const isRangeAvailable = useCallback((startHour: number, dur: number) => {
     for (let i = 0; i < dur; i++) {
-      const h = startHour + i;
-      if (h > 23 || bookedHours.includes(h)) return false;
+      const h = (startHour + i) % 24;
+      if (bookedHours.includes(h)) return false;
     }
     return true;
   }, [bookedHours]);
@@ -482,7 +482,7 @@ export default function BookPage() {
 
             {/* Start time picker */}
             <label className="mb-2 block text-sm font-medium text-[#F0E8D2]/70">Start Time</label>
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
               {SLOTS.map((slot) => {
                 const isBooked = bookedHours.includes(slot.hour);
                 const canFit = isRangeAvailable(slot.hour, duration);
@@ -493,7 +493,7 @@ export default function BookPage() {
                     key={slot.hour}
                     disabled={isUnavailable}
                     onClick={() => setSelectedStartHour(isSelected ? null : slot.hour)}
-                    className={`rounded-lg border px-3 py-3 text-center text-sm font-medium transition-colors ${
+                    className={`rounded-lg border px-2 py-2.5 text-center text-xs font-medium transition-colors h-[52px] flex flex-col items-center justify-center ${
                       isUnavailable
                         ? "cursor-not-allowed border-[#F0E8D2]/5 bg-[#F0E8D2]/[0.02] text-[#F0E8D2]/20"
                         : isSelected
