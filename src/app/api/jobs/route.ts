@@ -9,6 +9,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Check if presets only
+  const presetsOnly = req.nextUrl.searchParams.get("presetsOnly");
+  if (presetsOnly) {
+    const presets = await dbSelect("expense_presets", "order=created_at.asc");
+    return NextResponse.json(Array.isArray(presets) ? presets : []);
+  }
+
   // Fetch all jobs
   const jobs = await dbSelect("jobs", "order=created_at.desc");
   if (!Array.isArray(jobs)) {
@@ -268,6 +275,23 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(jobResult);
+  }
+
+  // ── Expense Presets ──
+  if (action === "add_preset") {
+    const result = await dbInsert("expense_presets", {
+      description: body.description,
+      category: body.category || "materials",
+      amount: body.amount || 0,
+      vendor: body.vendor || null,
+      link: body.link || null,
+    });
+    return NextResponse.json(result?.[0] || { success: true });
+  }
+
+  if (action === "delete_preset") {
+    await dbDelete("expense_presets", `id=eq.${body.id}`);
+    return NextResponse.json({ success: true });
   }
 
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });

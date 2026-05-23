@@ -93,21 +93,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [showCopyFrom, setShowCopyFrom] = useState(false);
   const [copying, setCopying] = useState(false);
 
-  // Expense presets
-  const EXPENSE_PRESETS = [
-    { description: "ProTee VX Launch Monitor", category: "equipment", amount: 5200, vendor: "ProTee" },
-    { description: "Impact Screen", category: "materials", amount: 800, vendor: "Carl's Place" },
-    { description: "4K Projector", category: "equipment", amount: 1500, vendor: "" },
-    { description: "Artificial Turf + Padding", category: "materials", amount: 2500, vendor: "" },
-    { description: "Enclosure Materials", category: "materials", amount: 3000, vendor: "" },
-    { description: "PC + Setup", category: "equipment", amount: 1800, vendor: "" },
-    { description: "Wall Padding", category: "materials", amount: 1200, vendor: "" },
-    { description: "Monitor/TV Screen", category: "equipment", amount: 600, vendor: "" },
-    { description: "Miscellaneous Hardware", category: "materials", amount: 500, vendor: "Home Depot" },
-    { description: "Labor (per day)", category: "labor", amount: 500, vendor: "" },
-    { description: "Lunch/Food", category: "food", amount: 30, vendor: "" },
-    { description: "Gas/Travel", category: "travel", amount: 25, vendor: "" },
-  ];
+  // Expense presets from database
+  const [presets, setPresets] = useState<Array<{ id: string; description: string; category: string; amount: number; vendor: string | null; link: string | null }>>([]);
+  const [showAddPreset, setShowAddPreset] = useState(false);
+  const [newPresetDesc, setNewPresetDesc] = useState("");
+  const [newPresetCategory, setNewPresetCategory] = useState("materials");
+  const [newPresetAmount, setNewPresetAmount] = useState("");
+  const [newPresetVendor, setNewPresetVendor] = useState("");
+  const [newPresetLink, setNewPresetLink] = useState("");
 
   useEffect(() => {
     const stored = sessionStorage.getItem("admin_pw");
@@ -193,6 +186,44 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     await fetchJob(password);
   };
 
+  const fetchPresets = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/jobs?password=${encodeURIComponent(password)}&presetsOnly=true`);
+      const data = await res.json();
+      if (Array.isArray(data)) setPresets(data);
+    } catch { /* ignore */ }
+  }, [password]);
+
+  useEffect(() => { if (authenticated && password) fetchPresets(); }, [authenticated, password, fetchPresets]);
+
+  const addPreset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPresetDesc || !newPresetAmount) return;
+    await fetch("/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        password, action: "add_preset",
+        description: newPresetDesc, category: newPresetCategory,
+        amount: Number(newPresetAmount), vendor: newPresetVendor || null,
+        link: newPresetLink || null,
+      }),
+    });
+    setNewPresetDesc(""); setNewPresetAmount(""); setNewPresetVendor(""); setNewPresetLink("");
+    setShowAddPreset(false);
+    await fetchPresets();
+  };
+
+  const deletePreset = async (id: string) => {
+    if (!confirm("Delete this preset?")) return;
+    await fetch("/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password, action: "delete_preset", id }),
+    });
+    await fetchPresets();
+  };
+
   const fetchAllJobs = async () => {
     try {
       const res = await fetch(`/api/jobs?password=${encodeURIComponent(password)}`);
@@ -233,7 +264,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     setShowCopyFrom(false);
   };
 
-  const addPresetExpense = async (preset: typeof EXPENSE_PRESETS[0]) => {
+  const addPresetExpense = async (preset: { description: string; category: string; amount: number; vendor: string | null; link: string | null }) => {
     setSaving(true);
     await fetch("/api/jobs", {
       method: "POST",
@@ -407,19 +438,59 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
           {/* Quick-add presets */}
           <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-wider text-[#F0E8D2]/30 mb-2">Quick Add</p>
-            <div className="flex flex-wrap gap-1.5">
-              {EXPENSE_PRESETS.map((preset) => (
-                <button
-                  key={preset.description}
-                  onClick={() => addPresetExpense(preset)}
-                  disabled={saving}
-                  className="px-2 py-1 text-[10px] border border-[#F0E8D2]/10 text-[#F0E8D2]/40 rounded hover:border-[#F0E8D2]/20 hover:text-[#F0E8D2]/60 disabled:opacity-30 transition-colors"
-                >
-                  {preset.description} <span className="text-[#C8973A]/60">${preset.amount.toLocaleString()}</span>
-                </button>
-              ))}
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] uppercase tracking-wider text-[#F0E8D2]/30">Quick Add</p>
+              <button onClick={() => setShowAddPreset(!showAddPreset)} className="text-[10px] text-[#C8973A]/50 hover:text-[#C8973A]">
+                {showAddPreset ? "Cancel" : "+ New Preset"}
+              </button>
             </div>
+
+            {showAddPreset && (
+              <form onSubmit={addPreset} className="mb-3 p-3 border border-[#C8973A]/15 rounded-lg space-y-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <input type="text" value={newPresetDesc} onChange={(e) => setNewPresetDesc(e.target.value)} required placeholder="Description" className={`${inputClass} text-xs`} />
+                  <input type="number" step="0.01" value={newPresetAmount} onChange={(e) => setNewPresetAmount(e.target.value)} required placeholder="Price" className={`${inputClass} text-xs`} />
+                  <input type="text" value={newPresetVendor} onChange={(e) => setNewPresetVendor(e.target.value)} placeholder="Vendor" className={`${inputClass} text-xs`} />
+                  <select value={newPresetCategory} onChange={(e) => setNewPresetCategory(e.target.value)} className={`${inputClass} text-xs`}>
+                    <option value="materials">Materials</option>
+                    <option value="labor">Labor</option>
+                    <option value="equipment">Equipment</option>
+                    <option value="food">Food</option>
+                    <option value="travel">Travel</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <input type="url" value={newPresetLink} onChange={(e) => setNewPresetLink(e.target.value)} placeholder="Product link (optional)" className={`${inputClass} text-xs flex-1`} />
+                  <button type="submit" className="px-3 py-1 bg-[#C8973A] text-[#060A07] rounded text-xs font-semibold">Save Preset</button>
+                </div>
+              </form>
+            )}
+
+            {presets.length === 0 ? (
+              <p className="text-[10px] text-[#F0E8D2]/20">No presets yet. Click &quot;+ New Preset&quot; to create your first one.</p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {presets.map((preset) => (
+                  <div key={preset.id} className="group relative">
+                    <button
+                      onClick={() => addPresetExpense(preset)}
+                      disabled={saving}
+                      className="px-2.5 py-1.5 text-[11px] border border-[#F0E8D2]/10 text-[#F0E8D2]/50 rounded hover:border-[#F0E8D2]/20 hover:text-[#F0E8D2]/70 disabled:opacity-30 transition-colors"
+                    >
+                      {preset.description} <span className="text-[#C8973A]/60">${Number(preset.amount).toLocaleString()}</span>
+                      {preset.link && <span className="text-[#2D6A47]/50 ml-1">🔗</span>}
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deletePreset(preset.id); }}
+                      className="absolute -top-1.5 -right-1.5 hidden group-hover:flex h-4 w-4 items-center justify-center rounded-full bg-red-500/80 text-[8px] text-white"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {showAddExpense && (
