@@ -152,12 +152,26 @@ export default function AdminPage() {
   const [keyboxValue, setKeyboxValue] = useState("");
 
   const [storedPassword, setStoredPassword] = useState("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "messages" | "quotes">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "messages" | "jobs" | "quotes">("dashboard");
   const [expandedMessage, setExpandedMessage] = useState<string | null>(null);
 
   // Quotes state
   const [quotes, setQuotes] = useState<Array<Record<string, unknown>>>([]);
   const [quotesLoading, setQuotesLoading] = useState(false);
+
+  // Jobs state
+  const [jobs, setJobs] = useState<Array<Record<string, unknown>>>([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
+  const [showNewJob, setShowNewJob] = useState(false);
+  const [showFromQuote, setShowFromQuote] = useState(false);
+  const [newJobTitle, setNewJobTitle] = useState("");
+  const [newJobClientName, setNewJobClientName] = useState("");
+  const [newJobClientEmail, setNewJobClientEmail] = useState("");
+  const [newJobClientPhone, setNewJobClientPhone] = useState("");
+  const [newJobClientAddress, setNewJobClientAddress] = useState("");
+  const [newJobQuotedAmount, setNewJobQuotedAmount] = useState("");
+  const [newJobScheduledStart, setNewJobScheduledStart] = useState("");
+  const [newJobScheduledEnd, setNewJobScheduledEnd] = useState("");
 
   const fetchQuotes = useCallback(async (pw: string) => {
     setQuotesLoading(true);
@@ -169,6 +183,18 @@ export default function AdminPage() {
       }
     } catch { /* ignore */ }
     setQuotesLoading(false);
+  }, []);
+
+  const fetchJobs = useCallback(async (pw: string) => {
+    setJobsLoading(true);
+    try {
+      const res = await fetch(`/api/jobs?password=${encodeURIComponent(pw)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setJobs(Array.isArray(data) ? data : []);
+      }
+    } catch { /* ignore */ }
+    setJobsLoading(false);
   }, []);
 
   // Auto-login from sessionStorage
@@ -462,7 +488,7 @@ export default function AdminPage() {
             ADMIN
           </h1>
           <button
-            onClick={() => { fetchData(storedPassword); if (activeTab === "quotes") fetchQuotes(storedPassword); }}
+            onClick={() => { fetchData(storedPassword); if (activeTab === "quotes") fetchQuotes(storedPassword); if (activeTab === "jobs") fetchJobs(storedPassword); }}
 
             disabled={loading}
             className="px-3 py-1.5 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-xs hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
@@ -509,6 +535,16 @@ export default function AdminPage() {
             )}
           </button>
           <button
+            onClick={() => { setActiveTab("jobs"); fetchJobs(storedPassword); }}
+            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+              activeTab === "jobs"
+                ? "text-[#C8973A] border-b-2 border-[#C8973A]"
+                : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
+            }`}
+          >
+            Jobs
+          </button>
+          <button
             onClick={() => { setActiveTab("quotes"); fetchQuotes(storedPassword); }}
             className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
               activeTab === "quotes"
@@ -519,6 +555,259 @@ export default function AdminPage() {
             Quotes
           </button>
         </div>
+
+        {/* ── Jobs Tab ── */}
+        {activeTab === "jobs" && (() => {
+          const statusOrder = ["lead", "quoted", "scheduled", "in_progress", "complete", "cancelled"] as const;
+          const statusLabels: Record<string, string> = { lead: "Lead", quoted: "Quoted", scheduled: "Scheduled", in_progress: "In Progress", complete: "Complete", cancelled: "Cancelled" };
+          const statusColors: Record<string, string> = {
+            lead: "bg-gray-600/40 text-gray-300",
+            quoted: "bg-blue-900/40 text-blue-300",
+            scheduled: "bg-[#C8973A]/30 text-[#C8973A]",
+            in_progress: "bg-purple-900/40 text-purple-300",
+            complete: "bg-[#2D6A47]/40 text-green-300",
+            cancelled: "bg-red-900/40 text-red-300",
+          };
+          const statusCounts: Record<string, number> = {};
+          for (const s of statusOrder) statusCounts[s] = 0;
+          for (const j of jobs) {
+            const s = j.status as string;
+            if (s in statusCounts) statusCounts[s]++;
+          }
+          const eligibleQuotes = quotes.filter(
+            (q) => q.status === "accepted" || q.status === "deposit-paid"
+          );
+          const handleCreateJob = async (e: React.FormEvent) => {
+            e.preventDefault();
+            setActionLoading("create_job");
+            try {
+              const res = await fetch("/api/jobs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  password: storedPassword,
+                  action: "create_job",
+                  title: newJobTitle,
+                  client_name: newJobClientName,
+                  client_email: newJobClientEmail || null,
+                  client_phone: newJobClientPhone || null,
+                  client_address: newJobClientAddress || null,
+                  quoted_amount: newJobQuotedAmount ? Number(newJobQuotedAmount) : null,
+                  scheduled_start: newJobScheduledStart || null,
+                  scheduled_end: newJobScheduledEnd || null,
+                }),
+              });
+              if (!res.ok) {
+                const json = await res.json();
+                alert(json.error || "Failed to create job");
+              } else {
+                setShowNewJob(false);
+                setNewJobTitle("");
+                setNewJobClientName("");
+                setNewJobClientEmail("");
+                setNewJobClientPhone("");
+                setNewJobClientAddress("");
+                setNewJobQuotedAmount("");
+                setNewJobScheduledStart("");
+                setNewJobScheduledEnd("");
+                await fetchJobs(storedPassword);
+              }
+            } catch { alert("Network error"); }
+            setActionLoading(null);
+          };
+          const handleCreateFromQuote = async (quoteId: string) => {
+            setActionLoading("create_from_quote");
+            try {
+              const res = await fetch("/api/jobs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  password: storedPassword,
+                  action: "create_from_quote",
+                  quote_id: quoteId,
+                }),
+              });
+              if (!res.ok) {
+                const json = await res.json();
+                alert(json.error || "Failed to create job from quote");
+              } else {
+                setShowFromQuote(false);
+                await fetchJobs(storedPassword);
+              }
+            } catch { alert("Network error"); }
+            setActionLoading(null);
+          };
+
+          return (
+            <div className="space-y-6">
+              {/* Pipeline Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                {statusOrder.map((s) => (
+                  <div key={s} className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-4 text-center">
+                    <p className="text-[10px] uppercase tracking-wider text-[#F0E8D2]/40">{statusLabels[s]}</p>
+                    <p className="text-3xl font-bold text-[#C8973A] mt-1" style={{ fontFamily: "var(--font-barlow-condensed)" }}>{statusCounts[s]}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  onClick={() => { setShowNewJob(!showNewJob); setShowFromQuote(false); }}
+                  className="px-4 py-2 bg-[#2D6A47] text-[#F0E8D2] rounded text-xs font-semibold uppercase tracking-wider hover:bg-[#2D6A47]/90 transition-colors"
+                >
+                  {showNewJob ? "Cancel" : "New Job"}
+                </button>
+                <button
+                  onClick={() => { setShowFromQuote(!showFromQuote); setShowNewJob(false); if (!showFromQuote) fetchQuotes(storedPassword); }}
+                  className="px-4 py-2 border border-[#C8973A]/30 text-[#C8973A] rounded text-xs font-semibold uppercase tracking-wider hover:bg-[#C8973A]/10 transition-colors"
+                >
+                  {showFromQuote ? "Cancel" : "Create from Quote"}
+                </button>
+              </div>
+
+              {/* New Job Form */}
+              {showNewJob && (
+                <form onSubmit={handleCreateJob} className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-6 space-y-4">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#F0E8D2]/60" style={{ fontFamily: "var(--font-barlow-condensed)" }}>NEW JOB</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-[#F0E8D2]/50 mb-1 uppercase">Title *</label>
+                      <input type="text" value={newJobTitle} onChange={(e) => setNewJobTitle(e.target.value)} required className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm focus:outline-none focus:border-[#C8973A]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-[#F0E8D2]/50 mb-1 uppercase">Client Name *</label>
+                      <input type="text" value={newJobClientName} onChange={(e) => setNewJobClientName(e.target.value)} required className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm focus:outline-none focus:border-[#C8973A]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-[#F0E8D2]/50 mb-1 uppercase">Email</label>
+                      <input type="email" value={newJobClientEmail} onChange={(e) => setNewJobClientEmail(e.target.value)} className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm focus:outline-none focus:border-[#C8973A]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-[#F0E8D2]/50 mb-1 uppercase">Phone</label>
+                      <input type="tel" value={newJobClientPhone} onChange={(e) => setNewJobClientPhone(e.target.value)} className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm focus:outline-none focus:border-[#C8973A]" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs text-[#F0E8D2]/50 mb-1 uppercase">Address</label>
+                      <input type="text" value={newJobClientAddress} onChange={(e) => setNewJobClientAddress(e.target.value)} className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm focus:outline-none focus:border-[#C8973A]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-[#F0E8D2]/50 mb-1 uppercase">Quoted Amount ($)</label>
+                      <input type="number" step="0.01" value={newJobQuotedAmount} onChange={(e) => setNewJobQuotedAmount(e.target.value)} className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm focus:outline-none focus:border-[#C8973A]" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-[#F0E8D2]/50 mb-1 uppercase">Start Date</label>
+                        <input type="date" value={newJobScheduledStart} onChange={(e) => setNewJobScheduledStart(e.target.value)} className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm focus:outline-none focus:border-[#C8973A]" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-[#F0E8D2]/50 mb-1 uppercase">End Date</label>
+                        <input type="date" value={newJobScheduledEnd} onChange={(e) => setNewJobScheduledEnd(e.target.value)} className="w-full px-3 py-2 rounded bg-[#060A07] border border-[#F0E8D2]/20 text-[#F0E8D2] text-sm focus:outline-none focus:border-[#C8973A]" />
+                      </div>
+                    </div>
+                  </div>
+                  <button type="submit" disabled={actionLoading !== null} className="px-6 py-2 bg-[#C8973A] text-[#060A07] rounded font-semibold text-sm hover:bg-[#C8973A]/90 disabled:opacity-50 transition-colors">
+                    Create Job
+                  </button>
+                </form>
+              )}
+
+              {/* Create from Quote Dropdown */}
+              {showFromQuote && (
+                <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-6 space-y-3">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#F0E8D2]/60" style={{ fontFamily: "var(--font-barlow-condensed)" }}>SELECT A QUOTE</h3>
+                  {quotesLoading ? (
+                    <p className="text-sm text-[#F0E8D2]/40">Loading quotes...</p>
+                  ) : eligibleQuotes.length === 0 ? (
+                    <p className="text-sm text-[#F0E8D2]/40">No accepted or deposit-paid quotes available.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {eligibleQuotes.map((q) => (
+                        <div key={q.id as string} className="flex items-center justify-between bg-[#060A07] border border-[#F0E8D2]/10 rounded p-3">
+                          <div>
+                            <span className="text-sm font-semibold">{q.client_name as string}</span>
+                            <span className="text-[#F0E8D2]/40 text-sm ml-2">#{q.quote_number as string}</span>
+                            <span className="text-[#C8973A] text-sm ml-3">${Number(q.total || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                            <span className={`ml-3 inline-block px-2 py-0.5 rounded text-[10px] font-medium ${q.status === "deposit-paid" ? "bg-[#C8973A]/30 text-[#C8973A]" : "bg-[#2D6A47]/40 text-green-300"}`}>
+                              {q.status as string}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => handleCreateFromQuote(q.id as string)}
+                            disabled={actionLoading !== null}
+                            className="px-3 py-1.5 bg-[#2D6A47] text-[#F0E8D2] rounded text-xs font-semibold hover:bg-[#2D6A47]/80 disabled:opacity-50 transition-colors"
+                          >
+                            Create Job
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Job Cards */}
+              {jobsLoading ? (
+                <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-8 text-center text-[#F0E8D2]/40">
+                  Loading...
+                </div>
+              ) : jobs.length === 0 ? (
+                <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-8 text-center text-[#F0E8D2]/40">
+                  No jobs yet. Create your first job or create one from a quote.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {jobs.map((j) => {
+                    const quoted = Number(j.quoted_amount || 0);
+                    const expenses = Number(j.total_expenses || 0);
+                    const margin = quoted - expenses;
+                    return (
+                      <div
+                        key={j.id as string}
+                        className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg p-4 hover:bg-[#F0E8D2]/[0.05] cursor-pointer transition-colors"
+                        onClick={() => window.location.href = `/admin/jobs/${j.id}`}
+                      >
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-semibold">{j.title as string}</span>
+                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${statusColors[j.status as string] || statusColors.lead}`}>
+                                {statusLabels[j.status as string] || (j.status as string)}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[#F0E8D2]/40 mt-0.5">{j.client_name as string}</p>
+                            {Boolean(j.scheduled_start || j.scheduled_end) && (
+                              <p className="text-xs text-[#F0E8D2]/30 mt-0.5">
+                                {j.scheduled_start ? new Date(j.scheduled_start as string).toLocaleDateString() : ""}
+                                {j.scheduled_start && j.scheduled_end ? " - " : ""}
+                                {j.scheduled_end ? new Date(j.scheduled_end as string).toLocaleDateString() : ""}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            {quoted > 0 && (
+                              <p className="text-sm text-[#C8973A] font-bold">${quoted.toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
+                            )}
+                            {expenses > 0 && (
+                              <p className="text-[10px] text-[#F0E8D2]/30">
+                                expenses: ${expenses.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              </p>
+                            )}
+                            {quoted > 0 && (
+                              <p className={`text-[10px] font-medium ${margin >= 0 ? "text-green-400/60" : "text-red-400/60"}`}>
+                                margin: ${margin.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── Quotes Tab ── */}
         {activeTab === "quotes" && (
