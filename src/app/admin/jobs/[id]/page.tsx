@@ -76,8 +76,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   other: "bg-gray-700/40 text-gray-300",
 };
 
-export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const [jobId, setJobId] = useState<string>("");
+export default function JobDetailPage({ params }: { params: { id: string } }) {
+  const [jobId, setJobId] = useState<string>(params.id);
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [job, setJob] = useState<JobDetail | null>(null);
@@ -110,7 +110,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [expNotes, setExpNotes] = useState("");
 
   useEffect(() => {
-    params.then((p) => setJobId(p.id));
+    setJobId(params.id);
   }, [params]);
 
   useEffect(() => {
