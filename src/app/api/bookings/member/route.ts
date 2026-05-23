@@ -54,6 +54,22 @@ export async function POST(req: NextRequest) {
     // ── Staff/Owner — no limits ──
     // Skip all limit checks for staff type
 
+    // ── Daily 3-hour limit for all non-staff members ──
+    if (membership.type !== "staff") {
+      // Check how many hours already booked today for this date
+      const existingToday = await dbSelect(
+        "bookings",
+        `customer_id=eq.${customerId}&status=neq.cancelled&start_time=gte.${dateISO}T00:00:00&start_time=lte.${dateISO}T23:59:59`
+      );
+      const hoursBookedToday = Array.isArray(existingToday) ? existingToday.length : 0;
+      if (hoursBookedToday + slotCount > 3) {
+        const remaining = 3 - hoursBookedToday;
+        return NextResponse.json({
+          error: `Members can book up to 3 hours per day. You've already booked ${hoursBookedToday} hour${hoursBookedToday === 1 ? "" : "s"} today.${remaining > 0 ? ` You can book ${remaining} more hour${remaining === 1 ? "" : "s"}.` : ""}`,
+        }, { status: 400 });
+      }
+    }
+
     // ── Punch Pass limits ──
     if (membership.type !== "staff" && membership.type === "punchpass") {
       // Check expiry

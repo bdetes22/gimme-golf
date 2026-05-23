@@ -457,7 +457,7 @@ export default function BookPage() {
             <div className="mb-6">
               <label className="mb-2 block text-sm font-medium text-[#F0E8D2]/70">Duration</label>
               <div className="grid grid-cols-4 gap-2">
-                {(canBookFree ? [1, 2, 3, 4] : [1, 2, 3]).map((d) => (
+                {(canBookFree ? [1, 2, 3] : [1, 2, 3, 4]).map((d) => (
                   <button
                     key={d}
                     onClick={() => {
