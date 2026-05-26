@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gimme Golf Door Hanger — Print</title>
+<style>
+  @page { size: 4in 11in; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+  .page {
+    width: 4in;
+    height: 11in;
+    background: #060A07;
+    color: #F0E8D2;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    page-break-after: always;
+    position: relative;
+  }
+
+  /* Die cut hole area */
+  .hole-area {
+    height: 1.6in;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 0.15in;
+    position: relative;
+  }
+  .hole {
+    width: 1.2in;
+    height: 1.2in;
+    border: 2px dashed rgba(240,232,210,0.15);
+    border-radius: 50%;
+    position: absolute;
+    top: 0.15in;
+  }
+  .hole-label {
+    font-size: 5pt;
+    color: rgba(240,232,210,0.15);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Front side */
+  .front-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0.25in 0.35in 0.3in;
+  }
+
+  .logo-area {
+    text-align: center;
+    margin-bottom: 0.2in;
+  }
+  .logo-text {
+    font-size: 18pt;
+    font-weight: 800;
+    color: #2D6A47;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .logo-sub {
+    font-size: 7pt;
+    color: rgba(240,232,210,0.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .hero-text {
+    text-align: center;
+    margin-bottom: 0.25in;
+  }
+  .hero-text h1 {
+    font-size: 22pt;
+    font-weight: 800;
+    line-height: 1.15;
+    color: #F0E8D2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.08in;
+  }
+  .hero-text h1 span { color: #2D6A47; }
+  .hero-text p {
+    font-size: 9pt;
+    color: rgba(240,232,210,0.55);
+    line-height: 1.5;
+  }
+
+  .photo-area {
+    width: 100%;
+    height: 1.8in;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 0.2in;
+    background: #0f1610;
+    border: 1px solid rgba(240,232,210,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .photo-area img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .photo-placeholder {
+    font-size: 8pt;
+    color: rgba(240,232,210,0.2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .features {
+    margin-bottom: 0.2in;
+  }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .feature-check {
+    color: #2D6A47;
+    font-size: 10pt;
+    font-weight: 700;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .feature-text {
+    font-size: 8.5pt;
+    color: rgba(240,232,210,0.7);
+    line-height: 1.4;
+  }
+  .feature-text strong {
+    color: #F0E8D2;
+  }
+
+  .cta-box {
+    background: #2D6A47;
+    border-radius: 8px;
+    padding: 0.15in 0.2in;
+    text-align: center;
+    margin-bottom: 0.15in;
+  }
+  .cta-box p {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #F0E8D2;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 3px;
+  }
+  .cta-box .cta-sub {
+    font-size: 7.5pt;
+    font-weight: 400;
+    color: rgba(240,232,210,0.7);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .contact-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.2in;
+    margin-bottom: 0.08in;
+  }
+  .contact-item {
+    font-size: 7.5pt;
+    color: rgba(240,232,210,0.5);
+  }
+  .contact-item strong {
+    color: #C8973A;
+  }
+
+  .website {
+    text-align: center;
+    font-size: 9pt;
+    font-weight: 700;
+    color: #C8973A;
+    letter-spacing: 1px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #2D6A47, transparent);
+    margin: 0.1in 0;
+  }
+
+  /* Back side */
+  .back-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0.25in 0.35in 0.3in;
+  }
+
+  .back-header {
+    text-align: center;
+    margin-bottom: 0.2in;
+  }
+  .back-header h2 {
+    font-size: 16pt;
+    font-weight: 800;
+    color: #F0E8D2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.05in;
+  }
+  .back-header p {
+    font-size: 8pt;
+    color: rgba(240,232,210,0.45);
+    line-height: 1.5;
+  }
+
+  .process-step {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0.12in;
+  }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(200,151,58,0.15);
+    border: 1px solid rgba(200,151,58,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8pt;
+    font-weight: 700;
+    color: #C8973A;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-content h4 {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #F0E8D2;
+    margin-bottom: 1px;
+  }
+  .step-content p {
+    font-size: 7.5pt;
+    color: rgba(240,232,210,0.45);
+    line-height: 1.4;
+  }
+
+  .brands-section {
+    text-align: center;
+    margin: 0.15in 0;
+    padding: 0.12in;
+    border: 1px solid rgba(240,232,210,0.08);
+    border-radius: 6px;
+  }
+  .brands-label {
+    font-size: 6pt;
+    color: rgba(240,232,210,0.25);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .brands-list {
+    font-size: 9pt;
+    font-weight: 700;
+    color: rgba(240,232,210,0.2);
+    letter-spacing: 1px;
+  }
+
+  .testimonial {
+    background: rgba(240,232,210,0.03);
+    border: 1px solid rgba(240,232,210,0.08);
+    border-radius: 6px;
+    padding: 0.12in;
+    margin-bottom: 0.15in;
+  }
+  .testimonial .quote {
+    font-size: 8pt;
+    font-style: italic;
+    color: rgba(240,232,210,0.5);
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+  .testimonial .author {
+    font-size: 7pt;
+    color: #C8973A;
+    font-weight: 600;
+  }
+
+  .back-cta {
+    background: #C8973A;
+    border-radius: 8px;
+    padding: 0.12in;
+    text-align: center;
+    margin-top: auto;
+  }
+  .back-cta p {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #060A07;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 2px;
+  }
+  .back-cta .sub {
+    font-size: 7pt;
+    color: rgba(6,10,7,0.6);
+    text-transform: none;
+    font-weight: 400;
+  }
+
+  .back-contact {
+    text-align: center;
+    margin-top: 0.1in;
+  }
+  .back-contact p {
+    font-size: 7.5pt;
+    color: rgba(240,232,210,0.4);
+  }
+  .back-contact strong {
+    color: #F0E8D2;
+  }
+
+  /* Print controls — hidden when printing */
+  .controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .controls button {
+    padding: 10px 20px;
+    background: #2D6A47;
+    color: #F0E8D2;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .controls button:hover { background: #245a3b; }
+  .controls .note {
+    font-size: 11px;
+    color: #666;
+    max-width: 200px;
+    line-height: 1.4;
+  }
+  @media print {
+    .controls { display: none; }
+    body { background: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button onclick="window.print()">Print / Save as PDF</button>
+  <p class="note">Use "Save as PDF" in the print dialog. Set paper size to 4×11 or fit to page. Margins: None.</p>
+</div>
+
+<!-- ==================== FRONT SIDE ==================== -->
+<div class="page">
+  <div class="hole-area">
+    <div class="hole"></div>
+    <span class="hole-label">die cut</span>
+  </div>
+
+  <div class="front-content">
+    <div class="logo-area">
+      <div class="logo-text">Gimme Golf</div>
+      <div class="logo-sub">Custom Simulator Installations</div>
+    </div>
+
+    <div class="hero-text">
+      <h1>Your Own<br><span>Golf Simulator</span></h1>
+      <p>Professional design &amp; installation for homes, garages, basements, and commercial spaces in Utah.</p>
+    </div>
+
+    <div class="photo-area">
+      <img src="/images/builds/jeffbuild.jpeg" alt="Custom simulator installation" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=photo-placeholder>Simulator Photo</span>';" />
+    </div>
+
+    <div class="features">
+      <div class="feature-item">
+        <span class="feature-check">✓</span>
+        <span class="feature-text"><strong>Turnkey installation</strong> — we handle everything from design to calibration</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-check">✓</span>
+        <span class="feature-text"><strong>Premium launch monitors</strong> — ProTee VX, Uneekor, Trackman &amp; more</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-check">✓</span>
+        <span class="feature-text"><strong>Commercial-grade screens</strong>, enclosures, turf &amp; wall padding</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-check">✓</span>
+        <span class="feature-text"><strong>200+ courses</strong> including Pebble Beach, St Andrews &amp; more</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-check">✓</span>
+        <span class="feature-text"><strong>1-year warranty</strong> on all installation work</span>
+      </div>
+    </div>
+
+    <div class="cta-box">
+      <p>Free Consultation</p>
+      <span class="cta-sub">We'll design a setup that fits your space and budget</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="contact-row">
+      <span class="contact-item"><strong>Call/Text:</strong> (801) 513-3538</span>
+      <span class="contact-item"><strong>Email:</strong> info@gimmegolfsimulators.com</span>
+    </div>
+    <div class="website">gimmegolfsimulators.com</div>
+  </div>
+</div>
+
+<!-- ==================== BACK SIDE ==================== -->
+<div class="page">
+  <div class="hole-area">
+    <div class="hole"></div>
+    <span class="hole-label">die cut</span>
+  </div>
+
+  <div class="back-content">
+    <div class="logo-area">
+      <div class="logo-text">Gimme Golf</div>
+    </div>
+
+    <div class="back-header">
+      <h2>How It Works</h2>
+      <p>From consultation to playing your first round — we make it easy.</p>
+    </div>
+
+    <div class="process-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4>Free Consultation</h4>
+        <p>We assess your space, discuss your goals, and design the perfect setup.</p>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4>Custom Design &amp; Quote</h4>
+        <p>Detailed quote with equipment selection tailored to your space and budget.</p>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4>Professional Installation</h4>
+        <p>Our team handles everything — wiring, mounting, turf, calibration. Turnkey.</p>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h4>Play at Home</h4>
+        <p>Walk into your own simulator and play 200+ world-class courses anytime.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="brands-section">
+      <div class="brands-label">Trusted Launch Monitor Partners</div>
+      <div class="brands-list">ProTee VX · Uneekor · Trackman · Foresight</div>
+    </div>
+
+    <div class="testimonial">
+      <div class="quote">"Gimme Golf built out my garage with a full simulator setup. Professional installation, great equipment, and they handled everything. Couldn't be happier."</div>
+      <div class="author">— Spencer T., Home Build Client</div>
+    </div>
+
+    <div class="back-cta">
+      <p>Schedule Your Free Consultation</p>
+      <span class="sub">Call, text, or visit our website to get started</span>
+    </div>
+
+    <div class="back-contact">
+      <p><strong>(801) 513-3538</strong> · gimmegolfsimulators.com</p>
+      <p style="margin-top: 3px; font-size: 6.5pt; color: rgba(240,232,210,0.25);">Deters Birrell Golf LLC · 140 N Main St, Kaysville, UT 84037</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
