@@ -504,7 +504,7 @@ export async function POST(req: NextRequest) {
     try {
       const emailResult = await resend.emails.send({
         from: "Gimme Golf <onboarding@resend.dev>",
-        to: customerEmail,
+        to: [customerEmail, "info@gimmegolfsimulators.com"],
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
         html: buildConfirmationEmail({
           customerName,
@@ -519,29 +519,6 @@ export async function POST(req: NextRequest) {
       console.log("[WEBHOOK] Resend response:", JSON.stringify(emailResult));
     } catch (emailErr) {
       console.error("[WEBHOOK] Resend error:", emailErr);
-    }
-
-    // Send admin notification
-    try {
-      await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
-        to: "info@gimmegolfsimulators.com",
-        subject: `New Booking — ${locationName} on ${dateDisplay}`,
-        html: `<div style="font-family:sans-serif;padding:20px;max-width:500px;">
-          <h2 style="color:#2D6A47;margin:0 0 16px;">New Booking</h2>
-          <table style="width:100%;font-size:14px;">
-            <tr><td style="padding:4px 0;color:#888;">Customer</td><td style="padding:4px 0;"><strong>${customerName}</strong></td></tr>
-            <tr><td style="padding:4px 0;color:#888;">Email</td><td style="padding:4px 0;">${customerEmail}</td></tr>
-            <tr><td style="padding:4px 0;color:#888;">Location</td><td style="padding:4px 0;">${locationName}</td></tr>
-            <tr><td style="padding:4px 0;color:#888;">Date</td><td style="padding:4px 0;">${dateDisplay}</td></tr>
-            <tr><td style="padding:4px 0;color:#888;">Time</td><td style="padding:4px 0;">${timeDisplay}</td></tr>
-            <tr><td style="padding:4px 0;color:#888;">Duration</td><td style="padding:4px 0;">${dur} hour${dur > 1 ? "s" : ""}</td></tr>
-            <tr><td style="padding:4px 0;color:#888;">Payment</td><td style="padding:4px 0;">$${(dur * 35).toFixed(2)} (Stripe)</td></tr>
-          </table>
-        </div>`,
-      });
-    } catch {
-      console.error("[WEBHOOK] Failed to send admin notification");
     }
 
     console.log(`[WEBHOOK] Complete: ${locationName} on ${dateISO} at ${hour}:00`);
