@@ -407,16 +407,16 @@ export async function POST(req: NextRequest) {
     console.log("[WEBHOOK] Customer ID:", customerId);
 
     // Check for double-booking before creating
-    // Use Mountain Time (UTC-6 MDT) for all bookings
+    // Store times as UTC-literal (hour maps directly to display time)
     const slotsToBook = Array.from({ length: dur }, (_, i) => {
       const h = (hour + i) % 24;
-      return `${dateISO}T${String(h).padStart(2, "0")}:00:00-06:00`;
+      return `${dateISO}T${String(h).padStart(2, "0")}:00:00+00:00`;
     });
 
     // Check if any slot is already taken
     let slotConflict = false;
     for (const slotISO of slotsToBook) {
-      const slotUTC = new Date(slotISO).toISOString();
+      const slotUTC = slotISO;
       const { data: existing } = await supabaseAdmin
         .from("bookings")
         .select("id")
@@ -465,14 +465,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Create booking(s) — one per hour slot
-    const bookingRows = slotsToBook.map((slotISO) => {
-      const slotStart = new Date(slotISO);
-      const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+    const bookingRows = slotsToBook.map((slotISO, i) => {
+      const endH = (hour + i + 1) % 24;
+      const endISO = `${dateISO}T${String(endH).padStart(2, "0")}:00:00+00:00`;
       return {
         customer_id: customerId,
         location: locationName.toLowerCase(),
         start_time: slotISO,
-        end_time: slotEnd.toISOString(),
+        end_time: endISO,
         duration_hours: 1,
         status: "confirmed",
         payment_status: "paid",

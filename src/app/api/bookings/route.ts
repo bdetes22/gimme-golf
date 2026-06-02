@@ -12,9 +12,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "location and date are required" }, { status: 400 });
   }
 
-  // Use Mountain Time offset for the day boundaries
-  const dayStart = `${date}T00:00:00-06:00`;
-  const dayEnd = `${date}T23:59:59-06:00`;
+  const dayStart = `${date}T00:00:00+00:00`;
+  const dayEnd = `${date}T23:59:59+00:00`;
 
   const { data, error } = await supabaseAdmin
     .from("bookings")
@@ -29,13 +28,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch bookings" }, { status: 500 });
   }
 
-  // Convert UTC times back to Mountain Time hours
-  const bookedHours = (data || []).map((b) => {
-    const utcDate = new Date(b.start_time);
-    // Convert to Mountain Time (UTC-6)
-    const mtHour = (utcDate.getUTCHours() - 6 + 24) % 24;
-    return mtHour;
-  });
+  // Hours are stored as UTC-literal, so getUTCHours gives the correct display hour
+  const bookedHours = (data || []).map((b) => new Date(b.start_time).getUTCHours());
 
   return NextResponse.json({ bookedHours });
 }

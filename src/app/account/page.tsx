@@ -32,6 +32,7 @@ function formatDate(iso: string) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
@@ -40,6 +41,7 @@ function formatTime(iso: string) {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
+    timeZone: "UTC",
   });
 }
 
@@ -102,9 +104,13 @@ export default function AccountPage() {
         .neq("status", "cancelled")
         .order("start_time", { ascending: true });
 
-      const now = new Date().toISOString();
-      const upcoming = (bookings || []).filter((b) => b.start_time > now);
-      const past = (bookings || []).filter((b) => b.start_time <= now).reverse().slice(0, 5);
+      // Times are stored as UTC-literal Mountain Time, so compare using
+      // current Mountain Time expressed as if it were UTC
+      const realNow = new Date();
+      const mtNow = new Date(realNow.getTime() - 6 * 60 * 60 * 1000); // UTC-6 for MDT
+      const nowISO = mtNow.toISOString();
+      const upcoming = (bookings || []).filter((b) => b.start_time > nowISO);
+      const past = (bookings || []).filter((b) => b.start_time <= nowISO).reverse().slice(0, 5);
       setUpcomingBookings(upcoming);
       setPastBookings(past);
       setLoading(false);

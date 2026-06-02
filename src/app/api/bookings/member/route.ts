@@ -140,12 +140,12 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Create booking(s) ──
-    // Store times in Mountain Time (UTC-6 MDT)
+    // Store times as-is (hour number maps directly to the display time)
     const bookings = hourList.map((hour) => {
       const h = String(hour).padStart(2, "0");
       const nextH = String((hour + 1) % 24).padStart(2, "0");
-      const startISO = `${dateISO}T${h}:00:00-06:00`;
-      const endISO = `${dateISO}T${nextH}:00:00-06:00`;
+      const startISO = `${dateISO}T${h}:00:00+00:00`;
+      const endISO = `${dateISO}T${nextH}:00:00+00:00`;
       return {
         customer_id: customerId,
         location: location.toLowerCase(),
