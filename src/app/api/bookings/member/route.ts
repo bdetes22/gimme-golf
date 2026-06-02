@@ -140,14 +140,17 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Create booking(s) ──
+    // Store times in Mountain Time (UTC-6 MDT)
     const bookings = hourList.map((hour) => {
-      const startTime = new Date(`${dateISO}T${String(hour).padStart(2, "0")}:00:00`);
-      const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+      const h = String(hour).padStart(2, "0");
+      const nextH = String((hour + 1) % 24).padStart(2, "0");
+      const startISO = `${dateISO}T${h}:00:00-06:00`;
+      const endISO = `${dateISO}T${nextH}:00:00-06:00`;
       return {
         customer_id: customerId,
         location: location.toLowerCase(),
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
+        start_time: startISO,
+        end_time: endISO,
         duration_hours: 1,
         status: "confirmed",
         payment_status: "membership",
