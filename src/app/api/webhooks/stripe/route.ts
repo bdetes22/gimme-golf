@@ -19,6 +19,7 @@ function buildConfirmationEmail({
   timeDisplay,
   keyboxCode,
   youtubeUrl,
+  customerEmail,
 }: {
   customerName: string;
   locationName: string;
@@ -27,6 +28,7 @@ function buildConfirmationEmail({
   timeDisplay: string;
   keyboxCode: string;
   youtubeUrl: string;
+  customerEmail: string;
 }) {
   return `
 <!DOCTYPE html>
@@ -45,6 +47,7 @@ function buildConfirmationEmail({
 
       <!-- Greeting -->
       <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">You're All Set, ${customerName}!</h2>
+      <p style="color:#F0E8D2;opacity:0.4;font-size:12px;margin:0 0 16px 0;">${customerEmail}</p>
       <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 28px 0;">
         Here's everything you need to get in and start playing. See you on the course!
       </p>
@@ -511,6 +514,7 @@ export async function POST(req: NextRequest) {
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
         html: buildConfirmationEmail({
           customerName,
+          customerEmail,
           locationName,
           address,
           dateDisplay,

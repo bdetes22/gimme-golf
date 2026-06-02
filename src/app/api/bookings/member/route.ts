@@ -240,6 +240,7 @@ export async function POST(req: NextRequest) {
   </div>
   <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
     <h2 style="color:#F0E8D2;font-size:22px;margin:0 0 8px;">You're All Set, ${customerName}!</h2>
+    <p style="color:#F0E8D2;opacity:0.4;font-size:12px;margin:0 0 16px;">${customerEmail}</p>
     <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px;">Here's everything you need to get in and start playing.</p>
     <div style="background:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:20px;margin-bottom:24px;">
       <table style="width:100%;border-collapse:collapse;">

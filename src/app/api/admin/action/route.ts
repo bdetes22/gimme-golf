@@ -22,6 +22,7 @@ function formatTime(hour: number) {
 
 function buildConfirmationEmail({
   customerName,
+  customerEmail,
   locationName,
   address,
   dateDisplay,
@@ -30,6 +31,7 @@ function buildConfirmationEmail({
   youtubeUrl,
 }: {
   customerName: string;
+  customerEmail: string;
   locationName: string;
   address: string;
   dateDisplay: string;
@@ -48,6 +50,7 @@ function buildConfirmationEmail({
     </div>
     <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;margin-bottom:24px;">
       <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">You're All Set, ${customerName}!</h2>
+      <p style="color:#F0E8D2;opacity:0.4;font-size:12px;margin:0 0 16px 0;">${customerEmail}</p>
       <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 28px 0;">
         Here's everything you need to get in and start playing.
       </p>
@@ -286,6 +289,7 @@ export async function POST(req: NextRequest) {
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
         html: buildConfirmationEmail({
           customerName,
+          customerEmail,
           locationName,
           address: loc?.address || "",
           dateDisplay,
@@ -455,6 +459,7 @@ export async function POST(req: NextRequest) {
           subject: `Booking Confirmed — ${loc.name} on ${dateDisplay}`,
           html: buildConfirmationEmail({
             customerName: cust.name || "Guest",
+            customerEmail: cust.email || "",
             locationName: loc.name,
             address: loc.address || "",
             dateDisplay,
