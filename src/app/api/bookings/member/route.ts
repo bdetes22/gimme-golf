@@ -170,6 +170,67 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Send confirmation email (before any early returns) ──
+    const custData = await dbSelect("customers", `id=eq.${customerId}&limit=1`);
+    const cust = Array.isArray(custData) && custData.length > 0 ? custData[0] : null;
+    const locData = await dbSelect("locations", `name=ilike.${encodeURIComponent(location)}&limit=1`);
+    const loc = Array.isArray(locData) && locData.length > 0 ? locData[0] : null;
+
+    const customerName = (cust?.name as string) || "Guest";
+    const customerEmail = (cust?.email as string) || "";
+    const locationName = (loc?.name as string) || location;
+    const address = (loc?.address as string) || "";
+    const keyboxCode = (loc?.keybox_code as string) || "N/A";
+    const youtubeUrl = (loc?.youtube_url as string) || "";
+
+    const startHour = hourList[0];
+    const endHour = (hourList[hourList.length - 1] + 1) % 24;
+    const fmtHour = (h: number) => h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
+    const timeDisplay = `${fmtHour(startHour)} – ${fmtHour(endHour)}`;
+    const dateDisplay = new Date(dateISO + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+
+    const resend = new Resend(process.env.RESEND_API_KEY!);
+    console.log("[MEMBER BOOKING] Sending email. Customer:", customerName, customerEmail, "Location:", locationName);
+    try {
+      const emailResult = await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: "info@gimmegolfsimulators.com",
+        subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
+        html: `
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+  </div>
+  <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
+    <h2 style="color:#F0E8D2;font-size:22px;margin:0 0 8px;">You're All Set, ${customerName}!</h2>
+    <p style="color:#F0E8D2;opacity:0.4;font-size:12px;margin:0 0 16px;">${customerEmail}</p>
+    <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px;">Here's everything you need to get in and start playing.</p>
+    <div style="background:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:20px;margin-bottom:24px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Location</td><td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${locationName}</td></tr>
+        <tr><td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Address</td><td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${address}</td></tr>
+        <tr><td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Date</td><td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${dateDisplay}</td></tr>
+        <tr><td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;">Time</td><td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;">${timeDisplay}</td></tr>
+      </table>
+    </div>
+    <div style="background:#2D6A47;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
+      <p style="color:#F0E8D2;opacity:0.8;font-size:12px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;font-weight:600;">Your Access Code</p>
+      <p style="color:#F0E8D2;font-size:36px;font-weight:700;margin:0;letter-spacing:6px;">${keyboxCode}</p>
+      <p style="color:#F0E8D2;opacity:0.6;font-size:12px;margin:8px 0 0 0;">Enter this code on the keybox at the front door</p>
+    </div>
+    ${youtubeUrl ? `<div style="text-align:center;margin-bottom:24px;"><a href="${youtubeUrl}" target="_blank" style="display:inline-block;background:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Watch Instructions Video</a></div>` : ""}
+    <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:8px;padding:20px;text-align:center;">
+      <p style="color:#F0E8D2;font-size:14px;font-weight:600;margin:0 0 8px;">Need Help?</p>
+      <p style="color:#F0E8D2;opacity:0.5;font-size:13px;margin:0;">Text us: (801) 513-3538 · info@gimmegolfsimulators.com</p>
+    </div>
+  </div>
+</div>`,
+      });
+      console.log("[MEMBER BOOKING] Email result:", JSON.stringify(emailResult));
+    } catch (emailErr) {
+      console.error("[MEMBER BOOKING] Email send failed:", JSON.stringify(emailErr));
+    }
+
     // ── Update membership tracking (skip for staff) ──
     if (membership.type === "staff") {
       return NextResponse.json({ success: true, slotsBooked: slotCount });
@@ -205,73 +266,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(updateData),
     });
 
-    // Fetch customer and location data for emails
-    const custData = await dbSelect("customers", `id=eq.${customerId}&limit=1`);
-    const cust = Array.isArray(custData) && custData.length > 0 ? custData[0] : null;
-    const locData = await dbSelect("locations", `name=ilike.${encodeURIComponent(location)}&limit=1`);
-    const loc = Array.isArray(locData) && locData.length > 0 ? locData[0] : null;
-
-    const customerName = (cust?.name as string) || "Guest";
-    const customerEmail = (cust?.email as string) || "";
-    const locationName = (loc?.name as string) || location;
-    const address = (loc?.address as string) || "";
-    const keyboxCode = (loc?.keybox_code as string) || "N/A";
-    const youtubeUrl = (loc?.youtube_url as string) || "";
-
-    const startHour = hourList[0];
-    const endHour = (hourList[hourList.length - 1] + 1) % 24;
-    const fmtHour = (h: number) => h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
-    const timeDisplay = `${fmtHour(startHour)} – ${fmtHour(endHour)}`;
-    const dateDisplay = new Date(dateISO + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-
-    const resend = new Resend(process.env.RESEND_API_KEY!);
-
-    // Send confirmation email
-    console.log("[MEMBER BOOKING] Sending email to info@gimmegolfsimulators.com for", customerName, customerEmail);
-    try {
-      const emailResult = await resend.emails.send({
-          from: "Gimme Golf <onboarding@resend.dev>",
-          to: "info@gimmegolfsimulators.com",
-          subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
-          html: `
-<div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
-  <div style="text-align:center;margin-bottom:32px;">
-    <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
-  </div>
-  <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
-    <h2 style="color:#F0E8D2;font-size:22px;margin:0 0 8px;">You're All Set, ${customerName}!</h2>
-    <p style="color:#F0E8D2;opacity:0.4;font-size:12px;margin:0 0 16px;">${customerEmail}</p>
-    <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px;">Here's everything you need to get in and start playing.</p>
-    <div style="background:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:20px;margin-bottom:24px;">
-      <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Location</td><td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${locationName}</td></tr>
-        <tr><td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Address</td><td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${address}</td></tr>
-        <tr><td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;border-bottom:1px solid #1a2a1f;">Date</td><td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;border-bottom:1px solid #1a2a1f;">${dateDisplay}</td></tr>
-        <tr><td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:8px 0;">Time</td><td style="color:#F0E8D2;font-size:14px;font-weight:600;text-align:right;padding:8px 0;">${timeDisplay}</td></tr>
-      </table>
-    </div>
-    <div style="background:#2D6A47;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
-      <p style="color:#F0E8D2;opacity:0.8;font-size:12px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;font-weight:600;">Your Access Code</p>
-      <p style="color:#F0E8D2;font-size:36px;font-weight:700;margin:0;letter-spacing:6px;">${keyboxCode}</p>
-      <p style="color:#F0E8D2;opacity:0.6;font-size:12px;margin:8px 0 0 0;">Enter this code on the keybox at the front door</p>
-    </div>
-    <div style="background:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;margin-bottom:24px;">
-      <p style="color:#C8973A;font-size:12px;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin:0 0 8px;">Don't Forget</p>
-      <p style="color:#F0E8D2;opacity:0.6;font-size:13px;line-height:1.8;margin:0;">• Bring your own clubs — we do not provide clubs<br>• Wear comfortable shoes (no hard soles)<br>• Use the balls we provide — clean balls only if using your own<br>• Clean your clubs before hitting to protect the screen</p>
-    </div>
-    ${youtubeUrl ? `<div style="text-align:center;margin-bottom:24px;"><a href="${youtubeUrl}" target="_blank" style="display:inline-block;background:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Watch Instructions Video</a></div>` : ""}
-    <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:8px;padding:20px;text-align:center;">
-      <p style="color:#F0E8D2;font-size:14px;font-weight:600;margin:0 0 8px;">Need Help?</p>
-      <p style="color:#F0E8D2;opacity:0.5;font-size:13px;margin:0;">Text us: (801) 513-3538 · info@gimmegolfsimulators.com</p>
-    </div>
-  </div>
-</div>`,
-        });
-        console.log("[MEMBER BOOKING] Email result:", JSON.stringify(emailResult));
-      } catch (emailErr) {
-        console.error("[MEMBER BOOKING] Email send failed:", JSON.stringify(emailErr));
-      }
-
+    // (Email already sent above before staff early return)
     return NextResponse.json({ success: true, slotsBooked: slotCount });
   } catch (err) {
     console.error("Member booking error:", err);
