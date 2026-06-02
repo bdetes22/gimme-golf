@@ -507,7 +507,7 @@ export async function POST(req: NextRequest) {
     try {
       const emailResult = await resend.emails.send({
         from: "Gimme Golf <onboarding@resend.dev>",
-        to: [customerEmail, "info@gimmegolfsimulators.com"],
+        to: "info@gimmegolfsimulators.com",
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
         html: buildConfirmationEmail({
           customerName,

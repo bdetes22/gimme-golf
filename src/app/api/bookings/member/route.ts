@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
       try {
         await resend.emails.send({
           from: "Gimme Golf <onboarding@resend.dev>",
-          to: [customerEmail, "info@gimmegolfsimulators.com"],
+          to: "info@gimmegolfsimulators.com",
           subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
           html: `
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
