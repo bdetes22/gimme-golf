@@ -226,10 +226,10 @@ export async function POST(req: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY!);
 
-    // Send confirmation email to customer
-    if (customerEmail) {
-      try {
-        await resend.emails.send({
+    // Send confirmation email
+    console.log("[MEMBER BOOKING] Sending email to info@gimmegolfsimulators.com for", customerName, customerEmail);
+    try {
+      const emailResult = await resend.emails.send({
           from: "Gimme Golf <onboarding@resend.dev>",
           to: "info@gimmegolfsimulators.com",
           subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
@@ -267,10 +267,10 @@ export async function POST(req: NextRequest) {
   </div>
 </div>`,
         });
+        console.log("[MEMBER BOOKING] Email result:", JSON.stringify(emailResult));
       } catch (emailErr) {
-        console.error("Failed to send member confirmation email:", emailErr);
+        console.error("[MEMBER BOOKING] Email send failed:", JSON.stringify(emailErr));
       }
-    }
 
     return NextResponse.json({ success: true, slotsBooked: slotCount });
   } catch (err) {
