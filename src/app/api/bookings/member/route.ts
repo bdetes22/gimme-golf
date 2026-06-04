@@ -231,6 +231,28 @@ export async function POST(req: NextRequest) {
       console.error("[MEMBER BOOKING] Email send failed:", JSON.stringify(emailErr));
     }
 
+    // Admin notification — member booking
+    try {
+      const planLabels: Record<string, string> = { punchpass: "Punch Pass", monthly: "Monthly", annual: "Annual", staff: "Staff" };
+      await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: "info@gimmegolfsimulators.com",
+        subject: `🏌️ Member Booking — ${customerName} (${planLabels[membership.type] || membership.type}) — ${locationName}, ${dateDisplay}`,
+        html: `<div style="font-family:sans-serif;padding:24px;max-width:500px;">
+          <h2 style="color:#2D6A47;margin:0 0 16px;">New Member Booking</h2>
+          <table style="width:100%;font-size:14px;">
+            <tr><td style="padding:6px 0;color:#888;">Customer</td><td style="padding:6px 0;"><strong>${customerName}</strong></td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Email</td><td style="padding:6px 0;"><a href="mailto:${customerEmail}">${customerEmail}</a></td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Membership</td><td style="padding:6px 0;">${planLabels[membership.type] || membership.type}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Location</td><td style="padding:6px 0;">${locationName}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Date</td><td style="padding:6px 0;">${dateDisplay}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Time</td><td style="padding:6px 0;">${timeDisplay}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Hours</td><td style="padding:6px 0;">${slotCount} hour${slotCount > 1 ? "s" : ""}</td></tr>
+          </table>
+        </div>`,
+      });
+    } catch { /* non-blocking */ }
+
     // ── Update membership tracking (skip for staff) ──
     if (membership.type === "staff") {
       return NextResponse.json({ success: true, slotsBooked: slotCount });

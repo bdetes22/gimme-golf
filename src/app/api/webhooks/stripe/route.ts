@@ -550,6 +550,28 @@ export async function POST(req: NextRequest) {
       console.error("[WEBHOOK] Resend error:", emailErr);
     }
 
+    // Admin notification — new walk-in booking
+    try {
+      await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: "info@gimmegolfsimulators.com",
+        subject: `🎯 New Walk-In — ${customerName} ($${(dur * 35).toFixed(0)}) — ${locationName}, ${dateDisplay}`,
+        html: `<div style="font-family:sans-serif;padding:24px;max-width:500px;">
+          <h2 style="color:#2D6A47;margin:0 0 16px;">New Walk-In Booking</h2>
+          <table style="width:100%;font-size:14px;">
+            <tr><td style="padding:6px 0;color:#888;">Customer</td><td style="padding:6px 0;"><strong>${customerName}</strong></td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Email</td><td style="padding:6px 0;"><a href="mailto:${customerEmail}">${customerEmail}</a></td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Phone</td><td style="padding:6px 0;">${customerPhone || "—"}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Location</td><td style="padding:6px 0;">${locationName}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Date</td><td style="padding:6px 0;">${dateDisplay}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Time</td><td style="padding:6px 0;">${timeDisplay}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Duration</td><td style="padding:6px 0;">${dur} hour${dur > 1 ? "s" : ""}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;">Amount</td><td style="padding:6px 0;"><strong>$${(dur * 35).toFixed(2)}</strong> (Stripe)</td></tr>
+          </table>
+        </div>`,
+      });
+    } catch { /* non-blocking */ }
+
     console.log(`[WEBHOOK] Complete: ${locationName} on ${dateISO} at ${hour}:00`);
   }
 
