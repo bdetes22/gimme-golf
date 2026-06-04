@@ -286,7 +286,7 @@ export async function POST(req: NextRequest) {
     <div style="background:#2D6A47;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
       <p style="color:#F0E8D2;font-size:24px;font-weight:700;margin:0;">${planLabel}</p>
       ${sessionsRemaining ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">${sessionsRemaining} sessions ready to use</p>` : ""}
-      ${endDate ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">Valid through ${endDate}</p>` : ""}
+      ${mem?.type === "monthly" ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">20 hours per month · Auto-renews monthly</p>` : mem?.type === "annual" ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">20 hours per month · Valid through ${endDate}</p>` : sessionsRemaining ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">${sessionsRemaining} sessions · Expires ${endDate}</p>` : ""}
     </div>
     <div style="margin-bottom:24px;">
       <p style="color:#C8973A;font-size:12px;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin:0 0 12px 0;">Getting Started</p>
