@@ -197,8 +197,19 @@ export default function AdminPage() {
     setJobsLoading(false);
   }, []);
 
-  // Auto-login from sessionStorage
+  // Auto-login from URL param or sessionStorage
   useEffect(() => {
+    // Check URL for password (bookmark-friendly: /admin?pw=xxx)
+    const urlPw = new URLSearchParams(window.location.search).get("pw");
+    if (urlPw) {
+      setPassword(urlPw);
+      setStoredPassword(urlPw);
+      sessionStorage.setItem("admin_pw", urlPw);
+      fetchData(urlPw);
+      // Clean the URL so password isn't visible
+      window.history.replaceState({}, "", "/admin");
+      return;
+    }
     const stored = sessionStorage.getItem("admin_pw");
     if (stored) {
       setPassword(stored);
@@ -1713,6 +1724,15 @@ export default function AdminPage() {
                         >
                           Membership
                         </button>
+                        {c.membership && (
+                          <button
+                            onClick={() => { if (confirm(`Send welcome email for ${c.name}?`)) doAction({ action: "send_welcome_email", customerId: c.id }); }}
+                            disabled={actionLoading !== null}
+                            className="px-2 py-1 border border-[#2D6A47]/30 text-[#2D6A47]/70 rounded text-xs hover:bg-[#2D6A47]/10 hover:text-[#2D6A47] disabled:opacity-50 transition-colors"
+                          >
+                            Welcome Email
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDeleteCustomer(c.id, c.name)}
                           disabled={actionLoading !== null}

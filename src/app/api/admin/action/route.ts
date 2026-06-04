@@ -248,6 +248,71 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Resend confirmation email ──
+  // ── Send membership welcome email ──
+  if (action === "send_welcome_email") {
+    const { customerId } = body;
+    if (!customerId) return NextResponse.json({ error: "customerId required" }, { status: 400 });
+
+    const custArr = await dbSelect("customers", `id=eq.${customerId}&limit=1`);
+    const cust = Array.isArray(custArr) && custArr.length > 0 ? custArr[0] : null;
+    if (!cust) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+
+    const memArr = await dbSelect("memberships", `customer_id=eq.${customerId}&active=eq.true&limit=1`);
+    const mem = Array.isArray(memArr) && memArr.length > 0 ? memArr[0] : null;
+
+    const planLabels: Record<string, string> = { punchpass: "Punch Pass (10 Sessions)", monthly: "Monthly Membership", annual: "Annual Membership", staff: "Staff / Owner" };
+    const planLabel = mem ? (planLabels[mem.type as string] || mem.type) : "Member";
+    const endDate = mem?.end_date || null;
+    const sessionsRemaining = mem?.sessions_remaining || null;
+
+    const locArr = await dbSelect("locations", "select=name,address,keybox_code,youtube_url&order=name.asc");
+    const allLocations = Array.isArray(locArr) ? locArr : [];
+
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY!);
+      await resend.emails.send({
+        from: "Gimme Golf <onboarding@resend.dev>",
+        to: "info@gimmegolfsimulators.com",
+        subject: `Welcome Email — ${cust.name} (${cust.email}) — ${planLabel}`,
+        html: `
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <img src="https://www.gimmegolfsimulators.com/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+  </div>
+  <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
+    <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Welcome to the Club, ${cust.name}!</h2>
+    <p style="color:#F0E8D2;opacity:0.4;font-size:12px;margin:0 0 16px 0;">${cust.email}</p>
+    <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px 0;">Your ${planLabel} is now active. Here's everything you need to get started.</p>
+    <div style="background:#2D6A47;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
+      <p style="color:#F0E8D2;font-size:24px;font-weight:700;margin:0;">${planLabel}</p>
+      ${sessionsRemaining ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">${sessionsRemaining} sessions ready to use</p>` : ""}
+      ${endDate ? `<p style="color:#F0E8D2;opacity:0.8;font-size:14px;margin:8px 0 0 0;">Valid through ${endDate}</p>` : ""}
+    </div>
+    <div style="margin-bottom:24px;">
+      <p style="color:#C8973A;font-size:12px;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin:0 0 12px 0;">Getting Started</p>
+      <table style="width:100%;"><tr><td style="color:#F0E8D2;opacity:0.7;font-size:13px;padding:6px 0;">1. Book your first session online</td></tr><tr><td style="color:#F0E8D2;opacity:0.7;font-size:13px;padding:6px 0;">2. Use the keybox code below to enter the building</td></tr><tr><td style="color:#F0E8D2;opacity:0.7;font-size:13px;padding:6px 0;">3. Watch the walkthrough video for your location</td></tr><tr><td style="color:#F0E8D2;opacity:0.7;font-size:13px;padding:6px 0;">4. Turn on the simulator and play!</td></tr></table>
+    </div>
+    ${allLocations.map((loc: Record<string, string | null>) => `
+    <div style="background:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;margin-bottom:12px;">
+      <table style="width:100%;"><tr><td style="vertical-align:top;"><p style="color:#F0E8D2;font-size:16px;font-weight:700;margin:0 0 4px 0;">${loc.name}</p><p style="color:#F0E8D2;opacity:0.5;font-size:12px;margin:0 0 8px 0;">${loc.address}</p>${loc.youtube_url ? `<a href="${loc.youtube_url}" target="_blank" style="color:#C8973A;font-size:12px;text-decoration:underline;">Watch walkthrough video</a>` : ""}</td><td style="vertical-align:top;text-align:right;width:100px;">${loc.keybox_code ? `<p style="color:#F0E8D2;opacity:0.4;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px 0;">Keybox Code</p><p style="color:#2D6A47;font-size:20px;font-weight:700;margin:0;letter-spacing:3px;">${loc.keybox_code}</p>` : ""}</td></tr></table>
+    </div>`).join("")}
+    <div style="text-align:center;margin:24px 0;">
+      <a href="https://www.gimmegolfsimulators.com/book" style="display:inline-block;background-color:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Book Your First Session</a>
+    </div>
+    <div style="background:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;text-align:center;">
+      <p style="color:#F0E8D2;font-size:13px;font-weight:600;margin:0 0 6px 0;">Need anything? Text us — it's the fastest way to reach us.</p>
+      <p style="color:#F0E8D2;opacity:0.5;font-size:13px;margin:0;">(801) 513-3538 · info@gimmegolfsimulators.com</p>
+    </div>
+  </div>
+</div>`,
+      });
+      return NextResponse.json({ success: true });
+    } catch (err) {
+      console.error("[ADMIN] Welcome email failed:", err);
+      return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+    }
+  }
+
   if (action === "resend_confirmation") {
     const { bookingId } = body;
     if (!bookingId) {
