@@ -278,8 +278,8 @@ export async function POST(req: NextRequest) {
       try {
         await resend.emails.send({
           from: "Gimme Golf <onboarding@resend.dev>",
-          to: customerEmail,
-          subject: `Welcome to Gimme Golf — ${planLabel}`,
+          to: "info@gimmegolfsimulators.com",
+          subject: `New Membership — ${customerName} joined ${planLabel}`,
           html: `
 <!DOCTYPE html>
 <html>
@@ -291,6 +291,7 @@ export async function POST(req: NextRequest) {
     </div>
     <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
       <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Welcome to the Club, ${customerName}!</h2>
+      <p style="color:#F0E8D2;opacity:0.4;font-size:12px;margin:0 0 16px 0;">${customerEmail}</p>
       <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px 0;">
         Your ${planLabel} is now active. Here's everything you need to get started.
       </p>
@@ -447,8 +448,8 @@ export async function POST(req: NextRequest) {
         try {
           await resend.emails.send({
             from: "Gimme Golf <onboarding@resend.dev>",
-            to: customerEmail,
-            subject: "Booking Conflict — Full Refund Issued",
+            to: "info@gimmegolfsimulators.com",
+            subject: `Booking Conflict — Refund for ${customerName} (${customerEmail})`,
             html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px;background:#060A07;color:#F0E8D2;border-radius:8px;">
               <h2 style="color:#C8973A;">Booking Conflict</h2>
               <p style="opacity:0.7;">Hi ${customerName},</p>
