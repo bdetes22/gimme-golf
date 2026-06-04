@@ -358,6 +358,27 @@ export async function POST(req: NextRequest) {
         console.error("[WEBHOOK] Failed to send membership email:", emailErr);
       }
 
+      // Admin notification — new membership purchased
+      try {
+        await resend.emails.send({
+          from: "Gimme Golf <onboarding@resend.dev>",
+          to: "info@gimmegolfsimulators.com",
+          subject: `💰 New ${planLabel} — ${customerName}`,
+          html: `<div style="font-family:sans-serif;padding:24px;max-width:500px;">
+            <h2 style="color:#2D6A47;margin:0 0 16px;">New Membership Purchased!</h2>
+            <table style="width:100%;font-size:14px;">
+              <tr><td style="padding:6px 0;color:#888;">Customer</td><td style="padding:6px 0;"><strong>${customerName}</strong></td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Email</td><td style="padding:6px 0;"><a href="mailto:${customerEmail}">${customerEmail}</a></td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Plan</td><td style="padding:6px 0;"><strong>${planLabel}</strong></td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Amount</td><td style="padding:6px 0;">$${(session.amount_total ? session.amount_total / 100 : 0).toFixed(2)}</td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Date</td><td style="padding:6px 0;">${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</td></tr>
+            </table>
+          </div>`,
+        });
+      } catch {
+        console.error("[WEBHOOK] Failed to send admin membership notification");
+      }
+
       return NextResponse.json({ received: true });
     }
 
