@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
 interface Booking {
   id: string;
@@ -197,25 +198,49 @@ export default function AdminPage() {
     setJobsLoading(false);
   }, []);
 
-  // Auto-login from URL param or sessionStorage
+  // Auto-login: check Supabase auth first, then URL param, then sessionStorage
   useEffect(() => {
-    // Check URL for password (bookmark-friendly: /admin?pw=xxx)
-    const urlPw = new URLSearchParams(window.location.search).get("pw");
-    if (urlPw) {
-      setPassword(urlPw);
-      setStoredPassword(urlPw);
-      sessionStorage.setItem("admin_pw", urlPw);
-      fetchData(urlPw);
-      // Clean the URL so password isn't visible
-      window.history.replaceState({}, "", "/admin");
-      return;
+    async function autoLogin() {
+      // 1. Check if logged in as admin user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        try {
+          const res = await fetch("/api/admin/auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accessToken: session.access_token }),
+          });
+          if (res.ok) {
+            const { pw } = await res.json();
+            setPassword(pw);
+            setStoredPassword(pw);
+            sessionStorage.setItem("admin_pw", pw);
+            fetchData(pw);
+            return;
+          }
+        } catch { /* fall through to other methods */ }
+      }
+
+      // 2. Check URL for password (bookmark-friendly: /admin?pw=xxx)
+      const urlPw = new URLSearchParams(window.location.search).get("pw");
+      if (urlPw) {
+        setPassword(urlPw);
+        setStoredPassword(urlPw);
+        sessionStorage.setItem("admin_pw", urlPw);
+        fetchData(urlPw);
+        window.history.replaceState({}, "", "/admin");
+        return;
+      }
+
+      // 3. Check sessionStorage
+      const stored = sessionStorage.getItem("admin_pw");
+      if (stored) {
+        setPassword(stored);
+        setStoredPassword(stored);
+        fetchData(stored);
+      }
     }
-    const stored = sessionStorage.getItem("admin_pw");
-    if (stored) {
-      setPassword(stored);
-      setStoredPassword(stored);
-      fetchData(stored);
-    }
+    autoLogin();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = useCallback(

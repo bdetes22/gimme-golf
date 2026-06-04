@@ -21,20 +21,33 @@ const mobileLinks = links;
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user?.email) checkAdmin(session.user.email);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user?.email) checkAdmin(session.user.email);
+      else setIsAdmin(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  async function checkAdmin(email: string) {
+    const { data } = await supabase
+      .from("customers")
+      .select("is_admin")
+      .eq("email", email)
+      .single();
+    setIsAdmin(data?.is_admin === true);
+  }
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -65,6 +78,14 @@ export default function Navbar() {
         <div className="hidden items-center gap-4 md:flex">
           {user ? (
             <>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="text-sm font-medium uppercase tracking-wider text-[#2D6A47] transition-colors hover:text-[#2D6A47]/80"
+                >
+                  Admin
+                </Link>
+              )}
               <Link
                 href="/account"
                 className="text-sm font-medium text-[#C8973A] transition-colors hover:text-[#C8973A]/80"
@@ -138,6 +159,15 @@ export default function Navbar() {
           </ul>
           {user ? (
             <div className="mt-4 flex flex-col gap-3 border-t border-[#F0E8D2]/10 pt-4">
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setOpen(false)}
+                  className="text-sm font-semibold uppercase tracking-wider text-[#2D6A47]"
+                >
+                  Admin Dashboard
+                </Link>
+              )}
               <Link
                 href="/account"
                 onClick={() => setOpen(false)}
