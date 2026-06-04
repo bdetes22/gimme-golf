@@ -21,6 +21,9 @@
 }
 
 @layer utilities {
+  .skeleton {
+    @apply animate-pulse rounded bg-[#F0E8D2]/[0.06];
+  }
   .animate-fade-in {
     animation: fadeIn 0.6s ease-out forwards;
     opacity: 0;

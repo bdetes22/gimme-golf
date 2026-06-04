@@ -167,8 +167,44 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-[#F0E8D2]/50">Loading...</p>
+      <div className="min-h-screen pt-24 pb-16">
+        <div className="mx-auto max-w-3xl px-6">
+          {/* Header skeleton */}
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="skeleton mb-2 h-4 w-24" />
+              <div className="skeleton h-9 w-48" />
+            </div>
+            <div className="skeleton h-9 w-20 self-start" />
+          </div>
+
+          {/* Membership card skeleton */}
+          <div className="mb-8 rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-6">
+            <div className="skeleton mb-2 h-3 w-20" />
+            <div className="skeleton mb-2 h-7 w-40" />
+            <div className="skeleton h-4 w-16" />
+          </div>
+
+          {/* Book CTA skeleton */}
+          <div className="skeleton mb-8 h-12 w-full" />
+
+          {/* Upcoming bookings skeleton */}
+          <div className="mb-8">
+            <div className="skeleton mb-4 h-6 w-44" />
+            <div className="skeleton mb-3 h-3 w-72" />
+            <div className="flex flex-col gap-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-5"
+                >
+                  <div className="skeleton mb-2 h-4 w-24" />
+                  <div className="skeleton h-4 w-56" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

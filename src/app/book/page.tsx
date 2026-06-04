@@ -78,6 +78,7 @@ export default function BookPage() {
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [loading, setLoading] = useState(false);
   const [bookedHours, setBookedHours] = useState<number[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   // Check if user is logged in and has a membership
   useEffect(() => {
@@ -130,6 +131,7 @@ export default function BookPage() {
   // Fetch booked slots when location + date are set
   const fetchBookedSlots = useCallback(async () => {
     if (!location || !selectedDate) return;
+    setSlotsLoading(true);
     const dateISO = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
     try {
       const res = await fetch(`/api/bookings?location=${location}&date=${dateISO}`);
@@ -137,6 +139,8 @@ export default function BookPage() {
       setBookedHours(data.bookedHours || []);
     } catch {
       setBookedHours([]);
+    } finally {
+      setSlotsLoading(false);
     }
   }, [location, selectedDate]);
 
@@ -495,6 +499,13 @@ export default function BookPage() {
 
             {/* Start time picker */}
             <label className="mb-2 block text-sm font-medium text-[#F0E8D2]/70">Start Time</label>
+            {slotsLoading ? (
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
+                {Array.from({ length: 24 }, (_, i) => (
+                  <div key={i} className="skeleton h-[52px] w-full rounded-lg" />
+                ))}
+              </div>
+            ) : (
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
               {SLOTS.map((slot) => {
                 const isBooked = bookedHours.includes(slot.hour);
@@ -523,6 +534,7 @@ export default function BookPage() {
                 );
               })}
             </div>
+            )}
             {selectedStartHour !== null && (
               <p className="mt-3 text-sm text-[#F0E8D2]/50">
                 Selected: {timeDisplay} ({totalHours} hour{totalHours > 1 ? "s" : ""} — {canBookFree ? "included" : `$${totalPrice}`})
