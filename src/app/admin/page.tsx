@@ -99,6 +99,7 @@ interface AdminData {
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [error, setError] = useState("");
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -238,7 +239,9 @@ export default function AdminPage() {
         setPassword(stored);
         setStoredPassword(stored);
         fetchData(stored);
+        return;
       }
+      setCheckingAuth(false);
     }
     autoLogin();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -471,6 +474,17 @@ export default function AdminPage() {
   };
 
   // Password gate
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-[#060A07] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[#2D6A47] border-t-transparent" />
+          <p className="mt-3 text-sm text-[#F0E8D2]/30">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-[#060A07] flex items-center justify-center px-4">
