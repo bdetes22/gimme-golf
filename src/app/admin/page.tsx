@@ -103,6 +103,7 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dashSection, setDashSection] = useState<"overview" | "bookings" | "customers">("overview");
   const [showCreateBooking, setShowCreateBooking] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -548,10 +549,10 @@ export default function AdminPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-[#F0E8D2]/10">
+        <div className="flex gap-1 border-b border-[#F0E8D2]/10 overflow-x-auto -mx-4 px-4">
           <button
             onClick={() => setActiveTab("dashboard")}
-            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+            className={`shrink-0 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors whitespace-nowrap ${
               activeTab === "dashboard"
                 ? "text-[#C8973A] border-b-2 border-[#C8973A]"
                 : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
@@ -561,7 +562,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+            className={`shrink-0 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors whitespace-nowrap ${
               activeTab === "analytics"
                 ? "text-[#C8973A] border-b-2 border-[#C8973A]"
                 : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
@@ -571,7 +572,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("messages")}
-            className={`relative px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+            className={`relative shrink-0 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors whitespace-nowrap ${
               activeTab === "messages"
                 ? "text-[#C8973A] border-b-2 border-[#C8973A]"
                 : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
@@ -586,7 +587,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => { setActiveTab("jobs"); fetchJobs(storedPassword); }}
-            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+            className={`shrink-0 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors whitespace-nowrap ${
               activeTab === "jobs"
                 ? "text-[#C8973A] border-b-2 border-[#C8973A]"
                 : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
@@ -596,7 +597,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => { setActiveTab("quotes"); fetchQuotes(storedPassword); }}
-            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+            className={`shrink-0 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors whitespace-nowrap ${
               activeTab === "quotes"
                 ? "text-[#C8973A] border-b-2 border-[#C8973A]"
                 : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
@@ -1157,6 +1158,26 @@ export default function AdminPage() {
         {/* ── Dashboard Tab ── */}
         {activeTab === "dashboard" && <>
 
+        {/* Dashboard sub-navigation */}
+        <div className="flex gap-1 rounded-lg bg-[#F0E8D2]/[0.03] p-1">
+          {(["overview", "bookings", "customers"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setDashSection(s)}
+              className={`flex-1 rounded px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                dashSection === s
+                  ? "bg-[#2D6A47] text-[#F0E8D2]"
+                  : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Overview Section ── */}
+        {dashSection === "overview" && <>
+
         {/* ── Quick Actions ── */}
         <div className="flex flex-wrap gap-2">
           <button
@@ -1339,8 +1360,10 @@ export default function AdminPage() {
           </section>
         )}
 
+        </>}
+
         {/* ── Bookings Section ── */}
-        <section>
+        {dashSection === "bookings" && <section>
           <div className="flex items-center justify-between mb-4">
             <h2
               className="text-2xl font-bold text-[#F0E8D2]"
@@ -1594,10 +1617,10 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
-        </section>
+        </section>}
 
         {/* ── Customers Section ── */}
-        <section>
+        {dashSection === "customers" && <section>
           <div className="flex items-center justify-between mb-4">
             <h2
               className="text-2xl font-bold text-[#F0E8D2]"
@@ -1793,7 +1816,7 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
-        </section>
+        </section>}
 
         </>}
       </div>
