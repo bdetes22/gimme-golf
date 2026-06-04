@@ -217,6 +217,7 @@ export default function AdminPage() {
             setPassword(pw);
             setStoredPassword(pw);
             sessionStorage.setItem("admin_pw", pw);
+            setCheckingAuth(false);
             fetchData(pw);
             return;
           }
@@ -229,6 +230,7 @@ export default function AdminPage() {
         setPassword(urlPw);
         setStoredPassword(urlPw);
         sessionStorage.setItem("admin_pw", urlPw);
+        setCheckingAuth(false);
         fetchData(urlPw);
         window.history.replaceState({}, "", "/admin");
         return;
@@ -239,6 +241,7 @@ export default function AdminPage() {
       if (stored) {
         setPassword(stored);
         setStoredPassword(stored);
+        setCheckingAuth(false);
         fetchData(stored);
         return;
       }
