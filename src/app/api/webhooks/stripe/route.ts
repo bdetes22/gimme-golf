@@ -235,9 +235,9 @@ export async function POST(req: NextRequest) {
         end.setFullYear(end.getFullYear() + 1);
         endDate = end.toISOString().split("T")[0];
       } else if (plan === "monthly") {
-        const end = new Date(now);
-        end.setMonth(end.getMonth() + 1);
-        endDate = end.toISOString().split("T")[0];
+        // No end_date for monthly — Stripe subscription manages lifecycle
+        // End date will be set/extended by each successful renewal webhook
+        endDate = null;
       } else if (plan === "annual") {
         const end = new Date(now);
         end.setFullYear(end.getFullYear() + 1);
@@ -605,6 +605,7 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             hours_used_this_month: 0,
+            end_date: nextReset.toISOString().split("T")[0],
             hours_reset_date: nextReset.toISOString().split("T")[0],
           }),
         });
