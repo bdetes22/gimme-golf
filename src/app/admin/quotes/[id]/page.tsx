@@ -229,14 +229,8 @@ export default function EditQuotePage({
         return;
       }
 
-      // DEBUG: verify save went through — remove after confirming
-      const verify = await fetch(`/api/quotes/${id}?_t=${Date.now()}`, { cache: "no-store" });
-      const verifyData = await verify.json();
-      const savedTotal = verifyData?.total;
-      const expectedTotal = total;
-      if (savedTotal !== expectedTotal) {
-        alert(`SAVE MISMATCH! DB has $${savedTotal} but expected $${expectedTotal}. Response was: ${JSON.stringify(data).slice(0, 200)}`);
-      }
+      // DEBUG: show what was sent and received
+      alert(`SENT total=$${total}, items=${lineItems.length}, first_price=$${lineItems[0]?.unit_price}\n\nGOT total=$${data.total}, items=${data.line_items?.length}, first_price=$${data.line_items?.[0]?.unit_price}\n\nID sent: ${id}\nID got: ${data.id}`);
 
       // Update local quote state with saved values (no re-fetch needed)
       setQuote((prev) => prev ? { ...prev, line_items: lineItems, subtotal, total, deposit_amount: deposit, client_name: clientName, client_address: clientAddress, client_phone: clientPhone, client_email: clientEmail, quote_date: quoteDate, notes, internal_notes: internalNotes } : prev);
