@@ -278,7 +278,7 @@ export async function POST(req: NextRequest) {
       try {
         await resend.emails.send({
           from: "Gimme Golf <hello@gimmegolfsimulators.com>",
-          to: customerEmail ? [customerEmail, "info@gimmegolfsimulators.com"] : "info@gimmegolfsimulators.com",
+          to: customerEmail || "info@gimmegolfsimulators.com",
           subject: `Welcome to Gimme Golf — ${planLabel}`,
           html: `
 <!DOCTYPE html>
@@ -532,7 +532,7 @@ export async function POST(req: NextRequest) {
     try {
       const emailResult = await resend.emails.send({
         from: "Gimme Golf <hello@gimmegolfsimulators.com>",
-        to: customerEmail ? [customerEmail, "info@gimmegolfsimulators.com"] : "info@gimmegolfsimulators.com",
+        to: customerEmail || "info@gimmegolfsimulators.com",
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
         html: buildConfirmationEmail({
           customerName,
