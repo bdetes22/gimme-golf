@@ -227,19 +227,6 @@ export default function EditQuotePage({
         return;
       }
 
-      // Use the returned updated data directly instead of re-fetching
-      if (data.id) {
-        setQuote(data);
-        setClientName(data.client_name || "");
-        setClientAddress(data.client_address || "");
-        setClientPhone(data.client_phone || "");
-        setClientEmail(data.client_email || "");
-        setQuoteDate(data.quote_date || "");
-        setLineItems(data.line_items || []);
-        setNotes(data.notes || "");
-        setInternalNotes(data.internal_notes || "");
-      }
-
       if (sendToClient) {
         await fetch("/api/quotes", {
           method: "POST",
@@ -252,6 +239,7 @@ export default function EditQuotePage({
         });
       }
 
+      await fetchQuote(password);
       if (!sendToClient) {
         setError("");
       }
