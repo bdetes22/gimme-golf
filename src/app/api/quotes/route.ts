@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
           subject: `Your Quote #${quote.quote_number} from Gimme Golf`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #060A07; color: #F0E8D2; padding: 40px; border-radius: 8px;">
-              <img src="${origin}/logos/logo-main.png" alt="Gimme Golf" style="height: 50px; margin-bottom: 24px;" />
+              <img src="${origin}/logos/logo-main.png" alt="Gimme Golf" style="height: 80px; margin-bottom: 24px;" />
               <h1 style="color: #C8973A; font-size: 24px; margin: 0 0 16px;">Your Quote is Ready</h1>
               <p style="color: #F0E8D2; opacity: 0.8; line-height: 1.6;">
                 Hi ${quote.client_name},<br><br>
