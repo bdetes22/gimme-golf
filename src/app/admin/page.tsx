@@ -107,6 +107,18 @@ export default function AdminPage() {
   const [showCreateBooking, setShowCreateBooking] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
+  // Calendar view state
+  const [calendarView, setCalendarView] = useState(true);
+  const [calendarWeekStart, setCalendarWeekStart] = useState<Date>(() => {
+    const now = new Date();
+    const day = now.getUTCDay();
+    const diff = day === 0 ? -6 : 1 - day; // Monday
+    const mon = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + diff));
+    return mon;
+  });
+  const [calendarLocation, setCalendarLocation] = useState<"kaysville" | "clearfield" | "both">("kaysville");
+  const [selectedCalendarBooking, setSelectedCalendarBooking] = useState<Booking | null>(null);
+
   // Create booking form state
   const [newBookingCustomerId, setNewBookingCustomerId] = useState("");
   const [newBookingLocation, setNewBookingLocation] = useState("kaysville");
@@ -1367,14 +1379,37 @@ export default function AdminPage() {
 
         {/* ── Bookings Section ── */}
         {dashSection === "bookings" && <section>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <h2
               className="text-2xl font-bold text-[#F0E8D2]"
               style={{ fontFamily: "var(--font-barlow-condensed)" }}
             >
               BOOKINGS
             </h2>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              {/* Calendar / Table Toggle */}
+              <div className="flex border border-[#F0E8D2]/20 rounded overflow-hidden">
+                <button
+                  onClick={() => setCalendarView(true)}
+                  className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                    calendarView
+                      ? "bg-[#C8973A]/20 text-[#C8973A] border-r border-[#F0E8D2]/20"
+                      : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60 border-r border-[#F0E8D2]/20"
+                  }`}
+                >
+                  Calendar
+                </button>
+                <button
+                  onClick={() => setCalendarView(false)}
+                  className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                    !calendarView
+                      ? "bg-[#C8973A]/20 text-[#C8973A]"
+                      : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
+                  }`}
+                >
+                  Table
+                </button>
+              </div>
               <button
                 onClick={() => setShowBlockSlot(!showBlockSlot)}
                 className="px-4 py-2 border border-red-500/30 text-red-400/70 rounded font-semibold hover:bg-red-900/20 hover:text-red-400 transition-colors text-sm"
@@ -1516,7 +1551,312 @@ export default function AdminPage() {
             </form>
           )}
 
-          {/* Bookings Table */}
+          {/* ── Calendar View ── */}
+          {calendarView && (() => {
+            // Week helpers
+            const weekDays: Date[] = [];
+            for (let i = 0; i < 7; i++) {
+              const d = new Date(calendarWeekStart);
+              d.setUTCDate(d.getUTCDate() + i);
+              weekDays.push(d);
+            }
+            const weekEndDate = weekDays[6];
+            const weekLabel = `${weekDays[0].toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })} – ${weekEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}`;
+
+            const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+            const hours = Array.from({ length: 18 }, (_, i) => i + 6); // 6 AM - 11 PM
+
+            // Format date strings for comparison
+            const weekDateStrings = weekDays.map((d) => d.toISOString().split("T")[0]);
+
+            // Current time for highlight
+            const nowUTC = new Date();
+            const todayUTCStr = nowUTC.toISOString().split("T")[0];
+            const currentUTCHour = nowUTC.getUTCHours();
+
+            // Filter bookings for selected week and location
+            const filteredBookings = data.bookings.filter((b) => {
+              const bDate = new Date(b.start_time).toISOString().split("T")[0];
+              if (!weekDateStrings.includes(bDate)) return false;
+              if (calendarLocation !== "both" && b.location.toLowerCase() !== calendarLocation) return false;
+              return true;
+            });
+
+            // Build lookup: "YYYY-MM-DD|HH" -> Booking[]
+            const bookingMap = new Map<string, Booking[]>();
+            for (const b of filteredBookings) {
+              const bDate = new Date(b.start_time).toISOString().split("T")[0];
+              const bHour = new Date(b.start_time).getUTCHours();
+              const key = `${bDate}|${bHour}`;
+              if (!bookingMap.has(key)) bookingMap.set(key, []);
+              bookingMap.get(key)!.push(b);
+            }
+
+            const navigateWeek = (delta: number) => {
+              const next = new Date(calendarWeekStart);
+              next.setUTCDate(next.getUTCDate() + delta * 7);
+              setCalendarWeekStart(next);
+            };
+
+            const goToToday = () => {
+              const now = new Date();
+              const day = now.getUTCDay();
+              const diff = day === 0 ? -6 : 1 - day;
+              const mon = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + diff));
+              setCalendarWeekStart(mon);
+            };
+
+            return (
+              <div className="space-y-3">
+                {/* Week Navigation + Location Toggle */}
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => navigateWeek(-1)}
+                      className="px-2.5 py-1.5 border border-[#F0E8D2]/20 rounded text-[#F0E8D2]/60 hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 transition-colors text-sm"
+                    >
+                      &larr;
+                    </button>
+                    <span className="text-sm font-semibold text-[#F0E8D2] min-w-[180px] text-center">{weekLabel}</span>
+                    <button
+                      onClick={() => navigateWeek(1)}
+                      className="px-2.5 py-1.5 border border-[#F0E8D2]/20 rounded text-[#F0E8D2]/60 hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 transition-colors text-sm"
+                    >
+                      &rarr;
+                    </button>
+                    <button
+                      onClick={goToToday}
+                      className="px-3 py-1.5 border border-[#C8973A]/30 text-[#C8973A]/70 rounded text-xs font-semibold hover:bg-[#C8973A]/10 hover:text-[#C8973A] transition-colors ml-1"
+                    >
+                      Today
+                    </button>
+                  </div>
+
+                  {/* Location Toggle */}
+                  <div className="flex border border-[#F0E8D2]/20 rounded overflow-hidden">
+                    {(["kaysville", "clearfield", "both"] as const).map((loc) => (
+                      <button
+                        key={loc}
+                        onClick={() => setCalendarLocation(loc)}
+                        className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors border-r border-[#F0E8D2]/10 last:border-r-0 ${
+                          calendarLocation === loc
+                            ? "bg-[#2D6A47]/30 text-[#2D6A47]"
+                            : "text-[#F0E8D2]/40 hover:text-[#F0E8D2]/60"
+                        }`}
+                      >
+                        {loc === "both" ? "Both" : loc.charAt(0).toUpperCase() + loc.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Calendar Grid */}
+                <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.02] rounded-lg overflow-x-auto">
+                  <div className="min-w-[640px]" style={{ display: "grid", gridTemplateColumns: "60px repeat(7, 1fr)" }}>
+                    {/* Header row: empty corner + day labels */}
+                    <div className="sticky left-0 bg-[#060A07] z-10 border-b border-r border-[#F0E8D2]/10 p-1" />
+                    {weekDays.map((d, i) => {
+                      const dateStr = d.toISOString().split("T")[0];
+                      const isToday = dateStr === todayUTCStr;
+                      return (
+                        <div
+                          key={i}
+                          className={`text-center py-2 border-b border-[#F0E8D2]/10 text-xs font-semibold uppercase tracking-wider ${
+                            isToday ? "text-[#C8973A] bg-[#C8973A]/[0.06]" : "text-[#F0E8D2]/50"
+                          }`}
+                        >
+                          {dayNames[i]} {d.getUTCMonth() + 1}/{d.getUTCDate()}
+                        </div>
+                      );
+                    })}
+
+                    {/* Hour rows */}
+                    {hours.map((hour) => (
+                      <>
+                        {/* Hour label */}
+                        <div
+                          key={`label-${hour}`}
+                          className="sticky left-0 bg-[#060A07] z-10 border-r border-b border-[#F0E8D2]/10 flex items-center justify-end pr-2 text-[10px] text-[#F0E8D2]/40 font-mono"
+                          style={{ height: 40 }}
+                        >
+                          {hour > 12 ? `${hour - 12}PM` : hour === 12 ? "12PM" : `${hour}AM`}
+                        </div>
+
+                        {/* Day cells for this hour */}
+                        {weekDays.map((d, dayIdx) => {
+                          const dateStr = d.toISOString().split("T")[0];
+                          const key = `${dateStr}|${hour}`;
+                          const cellBookings = bookingMap.get(key) || [];
+                          const isToday = dateStr === todayUTCStr;
+                          const isCurrentHour = isToday && hour === currentUTCHour;
+
+                          return (
+                            <div
+                              key={`cell-${hour}-${dayIdx}`}
+                              className={`border-b border-r border-[#F0E8D2]/5 relative ${
+                                isToday ? "bg-[#C8973A]/[0.03]" : "bg-transparent"
+                              }`}
+                              style={{ height: 40 }}
+                            >
+                              {/* Current hour line */}
+                              {isCurrentHour && (
+                                <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#C8973A]/60 z-[5]" />
+                              )}
+
+                              {cellBookings.map((b, bIdx) => {
+                                const isConfirmed = b.status === "confirmed";
+                                const isCancelled = b.status === "cancelled";
+                                const isBlocked = b.status === "blocked";
+                                const firstName = b.status === "blocked"
+                                  ? "BLK"
+                                  : (b.customers?.name || "?").split(" ")[0];
+
+                                return (
+                                  <button
+                                    key={b.id}
+                                    onClick={() => setSelectedCalendarBooking(b)}
+                                    className={`absolute left-0.5 right-0.5 rounded text-[10px] leading-tight px-1 py-0.5 text-left truncate cursor-pointer transition-colors border-l-2 ${
+                                      isBlocked
+                                        ? "bg-red-900/30 border-red-500/60 text-red-300/80 hover:bg-red-900/50"
+                                        : isCancelled
+                                        ? "bg-gray-800/40 border-gray-500/40 text-gray-400/80 hover:bg-gray-800/60 line-through"
+                                        : isConfirmed
+                                        ? "bg-[#2D6A47]/30 border-[#2D6A47] text-green-200/90 hover:bg-[#2D6A47]/50"
+                                        : "bg-[#C8973A]/20 border-[#C8973A]/60 text-[#C8973A]/90 hover:bg-[#C8973A]/30"
+                                    }`}
+                                    style={{
+                                      top: `${bIdx * 18 + 2}px`,
+                                      height: 16,
+                                    }}
+                                    title={`${b.customers?.name || b.status} - ${b.location}`}
+                                  >
+                                    {firstName}
+                                    {calendarLocation === "both" && (
+                                      <span className="ml-0.5 opacity-50">{b.location === "kaysville" ? "K" : "C"}</span>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          );
+                        })}
+                      </>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Booking Detail Modal */}
+                {selectedCalendarBooking && (
+                  <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setSelectedCalendarBooking(null)}>
+                    <div className="bg-[#060A07] border border-[#F0E8D2]/20 rounded-lg p-6 max-w-sm w-full space-y-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                          BOOKING DETAILS
+                        </h3>
+                        <button onClick={() => setSelectedCalendarBooking(null)} className="text-[#F0E8D2]/40 hover:text-[#F0E8D2] text-lg">&times;</button>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-[#F0E8D2]/50">Customer</span>
+                          <span>{selectedCalendarBooking.status === "blocked" ? "BLOCKED SLOT" : (selectedCalendarBooking.customers?.name || "Unknown")}</span>
+                        </div>
+                        {selectedCalendarBooking.status !== "blocked" && selectedCalendarBooking.customers?.email && (
+                          <div className="flex justify-between">
+                            <span className="text-[#F0E8D2]/50">Email</span>
+                            <span className="text-[#F0E8D2]/70">{selectedCalendarBooking.customers.email}</span>
+                          </div>
+                        )}
+                        {selectedCalendarBooking.status !== "blocked" && selectedCalendarBooking.customers?.phone && (
+                          <div className="flex justify-between">
+                            <span className="text-[#F0E8D2]/50">Phone</span>
+                            <span className="text-[#F0E8D2]/70">{selectedCalendarBooking.customers.phone}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span className="text-[#F0E8D2]/50">Date</span>
+                          <span>{formatDateTime(selectedCalendarBooking.start_time)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#F0E8D2]/50">Time</span>
+                          <span>{new Date(selectedCalendarBooking.start_time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "UTC" })}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#F0E8D2]/50">Location</span>
+                          <span className="capitalize">{selectedCalendarBooking.location}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#F0E8D2]/50">Status</span>
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                            selectedCalendarBooking.status === "cancelled"
+                              ? "bg-red-900/40 text-red-300"
+                              : selectedCalendarBooking.status === "blocked"
+                              ? "bg-red-900/30 text-red-400"
+                              : selectedCalendarBooking.status === "confirmed"
+                              ? "bg-[#2D6A47]/40 text-green-300"
+                              : "bg-[#C8973A]/20 text-[#C8973A]"
+                          }`}>
+                            {selectedCalendarBooking.status}
+                          </span>
+                        </div>
+                        {selectedCalendarBooking.status !== "blocked" && (
+                          <div className="flex justify-between">
+                            <span className="text-[#F0E8D2]/50">Payment</span>
+                            <span className="text-[#F0E8D2]/70">{selectedCalendarBooking.payment_status}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action buttons in modal */}
+                      <div className="flex items-center gap-2 pt-2 border-t border-[#F0E8D2]/10 flex-wrap">
+                        {selectedCalendarBooking.status === "blocked" ? (
+                          <button
+                            onClick={() => { handleUnblockSlot(selectedCalendarBooking.id); setSelectedCalendarBooking(null); }}
+                            disabled={actionLoading !== null}
+                            className="px-3 py-1.5 bg-[#2D6A47]/40 text-green-300 rounded text-xs hover:bg-[#2D6A47]/60 disabled:opacity-50 transition-colors"
+                          >
+                            Unblock
+                          </button>
+                        ) : (
+                          <>
+                            {selectedCalendarBooking.status === "confirmed" && (
+                              <button
+                                onClick={() => { handleResendConfirmation(selectedCalendarBooking.id); setSelectedCalendarBooking(null); }}
+                                disabled={actionLoading !== null}
+                                className="px-3 py-1.5 bg-[#2D6A47]/20 text-green-300/70 rounded text-xs hover:bg-[#2D6A47]/40 hover:text-green-300 disabled:opacity-50 transition-colors"
+                              >
+                                Resend Email
+                              </button>
+                            )}
+                            {selectedCalendarBooking.status !== "cancelled" && (
+                              <button
+                                onClick={() => { handleCancelBooking(selectedCalendarBooking.id); setSelectedCalendarBooking(null); }}
+                                disabled={actionLoading !== null}
+                                className="px-3 py-1.5 bg-red-900/40 text-red-300 rounded text-xs hover:bg-red-900/60 disabled:opacity-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            {selectedCalendarBooking.stripe_payment_id && selectedCalendarBooking.payment_status !== "refunded" && (
+                              <button
+                                onClick={() => { handleRefundBooking(selectedCalendarBooking.id, selectedCalendarBooking.stripe_payment_id); setSelectedCalendarBooking(null); }}
+                                disabled={actionLoading !== null}
+                                className="px-3 py-1.5 border border-[#C8973A]/30 text-[#C8973A]/70 rounded text-xs hover:bg-[#C8973A]/10 hover:text-[#C8973A] disabled:opacity-50 transition-colors"
+                              >
+                                Refund
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── Table View ── */}
+          {!calendarView && (
           <div className="border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] rounded-lg overflow-x-auto">
             <table className="w-full min-w-[700px] text-sm">
               <thead>
@@ -1620,6 +1960,7 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
+          )}
         </section>}
 
         {/* ── Customers Section ── */}
