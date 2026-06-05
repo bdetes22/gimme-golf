@@ -57,9 +57,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const resend = new Resend(process.env.RESEND_API_KEY!);
+
+    // Welcome email to customer
+    try {
+      await resend.emails.send({
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
+        to: email,
+        subject: "Welcome to Gimme Golf!",
+        html: `
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <img src="https://www.gimmegolfsimulators.com/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+  </div>
+  <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
+    <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px;">Welcome, ${name}!</h2>
+    <p style="color:#F0E8D2;opacity:0.6;font-size:15px;line-height:1.6;margin:0 0 24px;">
+      Your Gimme Golf account is all set up. You're ready to book sessions at our 24/7 simulator locations in Kaysville and Clearfield.
+    </p>
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="https://www.gimmegolfsimulators.com/book" style="display:inline-block;background:#2D6A47;color:#F0E8D2;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Book Your First Session</a>
+    </div>
+    <p style="color:#F0E8D2;opacity:0.5;font-size:13px;line-height:1.6;margin:0 0 16px;">
+      Want unlimited access? Check out our <a href="https://www.gimmegolfsimulators.com/memberships" style="color:#C8973A;text-decoration:underline;">membership plans</a> starting at $179/mo with 20 hours per month.
+    </p>
+    <div style="background:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;text-align:center;">
+      <p style="color:#F0E8D2;font-size:13px;font-weight:600;margin:0 0 6px;">Questions? Text us — it's the fastest way to reach us.</p>
+      <p style="color:#F0E8D2;opacity:0.5;font-size:13px;margin:0;">(801) 513-3538 · info@gimmegolfsimulators.com</p>
+    </div>
+  </div>
+  <div style="text-align:center;padding:16px 0;">
+    <p style="color:#F0E8D2;opacity:0.2;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Gimme Golf. All rights reserved.</p>
+  </div>
+</div>`,
+      });
+    } catch { /* non-blocking */ }
+
     // Admin notification — new account created
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY!);
       await resend.emails.send({
         from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: "info@gimmegolfsimulators.com",
