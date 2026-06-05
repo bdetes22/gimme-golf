@@ -85,6 +85,7 @@ export default function EditQuotePage({
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [error, setError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -227,6 +228,9 @@ export default function EditQuotePage({
         return;
       }
 
+      // Update local quote state with saved values (no re-fetch needed)
+      setQuote((prev) => prev ? { ...prev, line_items: lineItems, subtotal, total, deposit_amount: deposit, client_name: clientName, client_address: clientAddress, client_phone: clientPhone, client_email: clientEmail, quote_date: quoteDate, notes, internal_notes: internalNotes } : prev);
+
       if (sendToClient) {
         await fetch("/api/quotes", {
           method: "POST",
@@ -237,11 +241,12 @@ export default function EditQuotePage({
             id,
           }),
         });
-      }
-
-      await fetchQuote(password);
-      if (!sendToClient) {
+        // Re-fetch to get updated sent_at/status
+        await fetchQuote(password);
+      } else {
         setError("");
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
       }
     } catch {
       setError("Failed to save quote");
@@ -962,7 +967,7 @@ export default function EditQuotePage({
             disabled={saving}
             className="px-6 py-3 border border-[#F0E8D2]/20 text-[#F0E8D2]/60 rounded text-sm font-semibold hover:text-[#F0E8D2] hover:border-[#F0E8D2]/40 disabled:opacity-50 transition-colors"
           >
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? "Saving..." : saveSuccess ? "Saved!" : "Save Changes"}
           </button>
           {quote.status === "draft" && (
             <button
