@@ -322,7 +322,7 @@ export default function EditQuotePage({
       if (data.error) {
         setError(data.error);
       } else if (data.id) {
-        router.push(`/admin/quotes/${data.id}`);
+        window.location.href = `/admin/quotes/${data.id}`;
       }
     } catch {
       setError("Failed to duplicate quote");
