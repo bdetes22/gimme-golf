@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY!);
 
     await resend.emails.send({
-      from: "Gimme Golf <onboarding@resend.dev>",
+      from: "Gimme Golf <hello@gimmegolfsimulators.com>",
       to: "info@gimmegolfsimulators.com",
       replyTo: email,
       subject: `New Build Inquiry from ${name}`,

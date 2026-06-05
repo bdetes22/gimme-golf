@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
         // Notify admin
         try {
           await resend.emails.send({
-            from: "Gimme Golf <onboarding@resend.dev>",
+            from: "Gimme Golf <hello@gimmegolfsimulators.com>",
             to: "info@gimmegolfsimulators.com",
             subject: `Deposit Received — Quote #${meta.quoteNumber || quoteId}`,
             html: `<div style="font-family:sans-serif;padding:24px;">
@@ -277,9 +277,9 @@ export async function POST(req: NextRequest) {
 
       try {
         await resend.emails.send({
-          from: "Gimme Golf <onboarding@resend.dev>",
-          to: "info@gimmegolfsimulators.com",
-          subject: `New Membership — ${customerName} joined ${planLabel}`,
+          from: "Gimme Golf <hello@gimmegolfsimulators.com>",
+          to: customerEmail ? [customerEmail, "info@gimmegolfsimulators.com"] : "info@gimmegolfsimulators.com",
+          subject: `Welcome to Gimme Golf — ${planLabel}`,
           html: `
 <!DOCTYPE html>
 <html>
@@ -361,7 +361,7 @@ export async function POST(req: NextRequest) {
       // Admin notification — new membership purchased
       try {
         await resend.emails.send({
-          from: "Gimme Golf <onboarding@resend.dev>",
+          from: "Gimme Golf <hello@gimmegolfsimulators.com>",
           to: "info@gimmegolfsimulators.com",
           subject: `💰 New ${planLabel} — ${customerName}`,
           html: `<div style="font-family:sans-serif;padding:24px;max-width:500px;">
@@ -468,7 +468,7 @@ export async function POST(req: NextRequest) {
         // Send apology email
         try {
           await resend.emails.send({
-            from: "Gimme Golf <onboarding@resend.dev>",
+            from: "Gimme Golf <hello@gimmegolfsimulators.com>",
             to: "info@gimmegolfsimulators.com",
             subject: `Booking Conflict — Refund for ${customerName} (${customerEmail})`,
             html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px;background:#060A07;color:#F0E8D2;border-radius:8px;">
@@ -531,8 +531,8 @@ export async function POST(req: NextRequest) {
     // Send confirmation email
     try {
       const emailResult = await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
-        to: "info@gimmegolfsimulators.com",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
+        to: customerEmail ? [customerEmail, "info@gimmegolfsimulators.com"] : "info@gimmegolfsimulators.com",
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
         html: buildConfirmationEmail({
           customerName,
@@ -553,7 +553,7 @@ export async function POST(req: NextRequest) {
     // Admin notification — new walk-in booking
     try {
       await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: "info@gimmegolfsimulators.com",
         subject: `🎯 New Walk-In — ${customerName} ($${(dur * 35).toFixed(0)}) — ${locationName}, ${dateDisplay}`,
         html: `<div style="font-family:sans-serif;padding:24px;max-width:500px;">

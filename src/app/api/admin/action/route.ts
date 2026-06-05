@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
 
           // First-time customer email — membership upsell with promo code
           await resend.emails.send({
-            from: "Gimme Golf <onboarding@resend.dev>",
+            from: "Gimme Golf <hello@gimmegolfsimulators.com>",
             to: email,
             subject: "Thanks for Trying Gimme Golf — Here's $35 Off",
             html: `
@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
         } else {
           // Returning customer follow-up — book again
           await resend.emails.send({
-            from: "Gimme Golf <onboarding@resend.dev>",
+            from: "Gimme Golf <hello@gimmegolfsimulators.com>",
             to: email,
             subject: "How Was Your Session?",
             html: `
@@ -271,7 +271,7 @@ export async function POST(req: NextRequest) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY!);
       await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: "info@gimmegolfsimulators.com",
         subject: `Welcome Email — ${cust.name} (${cust.email}) — ${planLabel}`,
         html: `
@@ -349,7 +349,7 @@ export async function POST(req: NextRequest) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY!);
       await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: customerEmail,
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
         html: buildConfirmationEmail({
@@ -443,7 +443,7 @@ export async function POST(req: NextRequest) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY!);
       await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: customerEmail,
         subject: "Your Gimme Golf Membership is Expiring Soon",
         html: `
@@ -519,7 +519,7 @@ export async function POST(req: NextRequest) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY!);
         await resend.emails.send({
-          from: "Gimme Golf <onboarding@resend.dev>",
+          from: "Gimme Golf <hello@gimmegolfsimulators.com>",
           to: cust.email,
           subject: `Booking Confirmed — ${loc.name} on ${dateDisplay}`,
           html: buildConfirmationEmail({
@@ -653,7 +653,7 @@ export async function POST(req: NextRequest) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY!);
       await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: email,
         subject: "Welcome to Gimme Golf — Set Up Your Account",
         html: `

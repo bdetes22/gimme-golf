@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY!);
         await resend.emails.send({
-          from: "Gimme Golf <onboarding@resend.dev>",
-          to: "info@gimmegolfsimulators.com",
+          from: "Gimme Golf <hello@gimmegolfsimulators.com>",
+          to: customerEmail ? [customerEmail, "info@gimmegolfsimulators.com"] : "info@gimmegolfsimulators.com",
           subject: `❌ Booking Cancelled — ${bookingDetails.location} on ${bookingDetails.date} at ${bookingDetails.time}`,
           html: `
             <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">

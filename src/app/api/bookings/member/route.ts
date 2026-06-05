@@ -193,8 +193,8 @@ export async function POST(req: NextRequest) {
     console.log("[MEMBER BOOKING] Sending email. Customer:", customerName, customerEmail, "Location:", locationName);
     try {
       const emailResult = await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
-        to: "info@gimmegolfsimulators.com",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
+        to: customerEmail ? [customerEmail, "info@gimmegolfsimulators.com"] : "info@gimmegolfsimulators.com",
         subject: `Booking Confirmed — ${locationName} on ${dateDisplay}`,
         html: `
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
     try {
       const planLabels: Record<string, string> = { punchpass: "Punch Pass", monthly: "Monthly", annual: "Annual", staff: "Staff" };
       await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: "info@gimmegolfsimulators.com",
         subject: `🏌️ Member Booking — ${customerName} (${planLabels[membership.type] || membership.type}) — ${locationName}, ${dateDisplay}`,
         html: `<div style="font-family:sans-serif;padding:24px;max-width:500px;">

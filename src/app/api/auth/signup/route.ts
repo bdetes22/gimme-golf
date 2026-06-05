@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY!);
       await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: "info@gimmegolfsimulators.com",
         subject: `👤 New Account — ${name} (${email})`,
         html: `<div style="font-family:sans-serif;padding:24px;max-width:500px;">

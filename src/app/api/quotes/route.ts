@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       const finalAmount = Number(quote.deposit_amount);
 
       await resend.emails.send({
-        from: "Gimme Golf <onboarding@resend.dev>",
+        from: "Gimme Golf <hello@gimmegolfsimulators.com>",
         to: quote.client_email,
         subject: `Final Payment Due — Quote #${quote.quote_number}`,
         html: `
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
 
         console.log("[QUOTES] Sending quote email to:", quote.client_email);
         const emailResult = await resend.emails.send({
-          from: "Gimme Golf <onboarding@resend.dev>",
+          from: "Gimme Golf <hello@gimmegolfsimulators.com>",
           to: quote.client_email,
           subject: `Your Quote #${quote.quote_number} from Gimme Golf`,
           html: `
