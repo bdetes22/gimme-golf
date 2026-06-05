@@ -132,21 +132,24 @@ export async function POST(req: NextRequest) {
     // Update existing quote
     if (body.id) {
       const updateData: Record<string, unknown> = {};
-      if (body.clientName !== undefined || body.client_name !== undefined) updateData.client_name = body.clientName || body.client_name;
-      if (body.clientEmail !== undefined || body.client_email !== undefined) updateData.client_email = body.clientEmail || body.client_email;
-      if (body.clientPhone !== undefined || body.client_phone !== undefined) updateData.client_phone = body.clientPhone || body.client_phone;
-      if (body.clientAddress !== undefined || body.client_address !== undefined) updateData.client_address = body.clientAddress || body.client_address;
-      if (body.lineItems !== undefined || body.line_items !== undefined) updateData.line_items = body.lineItems || body.line_items;
+      const f = (snake: string, camel?: string) => body[snake] ?? (camel ? body[camel] : undefined);
+      if (f("client_name", "clientName") !== undefined) updateData.client_name = f("client_name", "clientName");
+      if (f("client_email", "clientEmail") !== undefined) updateData.client_email = f("client_email", "clientEmail");
+      if (f("client_phone", "clientPhone") !== undefined) updateData.client_phone = f("client_phone", "clientPhone");
+      if (f("client_address", "clientAddress") !== undefined) updateData.client_address = f("client_address", "clientAddress");
+      if (f("line_items", "lineItems") !== undefined) updateData.line_items = f("line_items", "lineItems");
       if (body.subtotal !== undefined) updateData.subtotal = body.subtotal;
       if (body.total !== undefined) updateData.total = body.total;
-      if (body.depositAmount !== undefined || body.deposit_amount !== undefined) updateData.deposit_amount = body.depositAmount || body.deposit_amount;
+      if (f("deposit_amount", "depositAmount") !== undefined) updateData.deposit_amount = f("deposit_amount", "depositAmount");
       if (body.quote_date !== undefined) updateData.quote_date = body.quote_date;
       if (body.notes !== undefined) updateData.notes = body.notes;
       if (body.internal_notes !== undefined) updateData.internal_notes = body.internal_notes;
       if (body.status !== undefined) updateData.status = body.status;
       if (body.payment_method !== undefined) updateData.payment_method = body.payment_method;
       if (body.paid_at !== undefined) updateData.paid_at = body.paid_at;
-      await dbUpdate("quotes", `id=eq.${body.id}`, updateData);
+      console.log("[QUOTE UPDATE] id:", body.id, "data:", JSON.stringify(updateData).slice(0, 500));
+      const updateResult = await dbUpdate("quotes", `id=eq.${body.id}`, updateData);
+      console.log("[QUOTE UPDATE] result:", JSON.stringify(updateResult).slice(0, 300));
       const updated = await dbSelect("quotes", `id=eq.${body.id}`);
       return NextResponse.json(updated?.[0] || {});
     }

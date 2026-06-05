@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   // Fetch bookings with customer info
   const bookings = await dbSelect(
     "bookings",
-    "select=*,customers(name,email)&order=start_time.desc&limit=100"
+    "select=*,customers(name,email)&order=start_time.desc&limit=1000"
   );
 
   // Fetch locations

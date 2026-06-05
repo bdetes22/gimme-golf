@@ -116,7 +116,8 @@ export default function EditQuotePage({
     try {
       // Verify password first
       const authRes = await fetch(
-        `/api/quotes?password=${encodeURIComponent(pw)}`
+        `/api/quotes?password=${encodeURIComponent(pw)}`,
+        { cache: "no-store" }
       );
       if (authRes.status === 401) {
         setError("Invalid password");
@@ -125,7 +126,7 @@ export default function EditQuotePage({
         return;
       }
 
-      const res = await fetch(`/api/quotes/${id}`);
+      const res = await fetch(`/api/quotes/${id}`, { cache: "no-store" });
       const data = await res.json();
       if (data.error) {
         setError(data.error);
@@ -192,24 +193,25 @@ export default function EditQuotePage({
     setError("");
 
     try {
+      const saveBody = {
+        password,
+        id,
+        client_name: clientName,
+        client_address: clientAddress,
+        client_phone: clientPhone,
+        client_email: clientEmail,
+        quote_date: quoteDate,
+        line_items: lineItems,
+        subtotal,
+        total,
+        deposit_amount: deposit,
+        notes,
+        internal_notes: internalNotes,
+      };
       const res = await fetch("/api/quotes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          password,
-          id,
-          client_name: clientName,
-          client_address: clientAddress,
-          client_phone: clientPhone,
-          client_email: clientEmail,
-          quote_date: quoteDate,
-          line_items: lineItems,
-          subtotal,
-          total,
-          deposit_amount: deposit,
-          notes,
-          internal_notes: internalNotes,
-        }),
+        body: JSON.stringify(saveBody),
       });
 
       if (res.status === 401) {
@@ -225,6 +227,19 @@ export default function EditQuotePage({
         return;
       }
 
+      // Use the returned updated data directly instead of re-fetching
+      if (data.id) {
+        setQuote(data);
+        setClientName(data.client_name || "");
+        setClientAddress(data.client_address || "");
+        setClientPhone(data.client_phone || "");
+        setClientEmail(data.client_email || "");
+        setQuoteDate(data.quote_date || "");
+        setLineItems(data.line_items || []);
+        setNotes(data.notes || "");
+        setInternalNotes(data.internal_notes || "");
+      }
+
       if (sendToClient) {
         await fetch("/api/quotes", {
           method: "POST",
@@ -237,7 +252,6 @@ export default function EditQuotePage({
         });
       }
 
-      await fetchQuote(password);
       if (!sendToClient) {
         setError("");
       }
