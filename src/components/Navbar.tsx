@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
-const links = [
+const allLinks = [
   { href: "/", label: "Home" },
   { href: "/locations", label: "Locations" },
   { href: "/book", label: "Book" },
@@ -16,7 +16,9 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-const mobileLinks = links;
+// Desktop: fewer links, logo is home
+const desktopLinks = allLinks.filter(l => !["Home", "Shop", "FAQ"].includes(l.label));
+const mobileLinks = allLinks;
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -62,8 +64,8 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <ul className="hidden gap-8 md:flex">
-          {links.map((link) => (
+        <ul className="hidden gap-5 lg:gap-7 md:flex">
+          {desktopLinks.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
@@ -75,7 +77,7 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <div className="hidden items-center gap-4 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <>
               {isAdmin && (
@@ -88,13 +90,13 @@ export default function Navbar() {
               )}
               <Link
                 href="/account"
-                className="text-sm font-medium text-[#C8973A] transition-colors hover:text-[#C8973A]/80"
+                className="text-xs font-medium text-[#C8973A] transition-colors hover:text-[#C8973A]/80 whitespace-nowrap"
               >
-                {user.user_metadata?.name || user.email}
+                {(user.user_metadata?.name || user.email || "").split(" ")[0]}
               </Link>
               <button
                 onClick={handleSignOut}
-                className="text-sm font-medium uppercase tracking-wider text-[#F0E8D2]/50 transition-colors hover:text-[#F0E8D2]"
+                className="text-xs font-medium uppercase tracking-wider text-[#F0E8D2]/40 transition-colors hover:text-[#F0E8D2]"
               >
                 Sign Out
               </button>

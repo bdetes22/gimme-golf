@@ -762,6 +762,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "bookingId is required" }, { status: 400 });
     }
 
+    // Fetch booking details before cancelling
+    const bookingArr = await dbSelect("bookings", `select=*,customers(name,email)&id=eq.${bookingId}&limit=1`);
+    const booking = Array.isArray(bookingArr) && bookingArr.length > 0 ? bookingArr[0] : null;
+
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     await fetch(`${url}/rest/v1/bookings?id=eq.${bookingId}`, {
@@ -774,6 +778,32 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({ status: "cancelled" }),
     });
+
+    // Send cancellation email to customer
+    if (booking?.customers?.email) {
+      try {
+        const startDate = new Date(booking.start_time);
+        const fmtH = (h: number) => h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
+        const dateStr = startDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+        const timeStr = fmtH(startDate.getUTCHours());
+
+        const resend = new Resend(process.env.RESEND_API_KEY!);
+        await resend.emails.send({
+          from: "Gimme Golf <hello@gimmegolfsimulators.com>",
+          to: booking.customers.email,
+          subject: `Booking Cancelled — ${booking.location} on ${dateStr}`,
+          html: `<div style="max-width:500px;margin:0 auto;padding:24px;background:#060A07;font-family:-apple-system,sans-serif;border-radius:8px;">
+            <img src="https://www.gimmegolfsimulators.com/logos/logo-trimmed.png" alt="Gimme Golf" width="160" style="display:block;margin:0 auto 24px" />
+            <h2 style="color:#F0E8D2;font-size:20px;margin:0 0 12px;text-align:center;">Booking Cancelled</h2>
+            <p style="color:#F0E8D2;opacity:0.6;font-size:14px;text-align:center;margin:0 0 20px;">Your booking has been cancelled.</p>
+            <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:8px;padding:16px;margin-bottom:20px;">
+              <table style="width:100%;font-size:13px;"><tr><td style="color:#F0E8D2;opacity:0.5;padding:4px 0;">Location</td><td style="color:#F0E8D2;text-align:right;padding:4px 0;">${booking.location}</td></tr><tr><td style="color:#F0E8D2;opacity:0.5;padding:4px 0;">Date</td><td style="color:#F0E8D2;text-align:right;padding:4px 0;">${dateStr}</td></tr><tr><td style="color:#F0E8D2;opacity:0.5;padding:4px 0;">Time</td><td style="color:#F0E8D2;text-align:right;padding:4px 0;">${timeStr}</td></tr></table>
+            </div>
+            <p style="color:#F0E8D2;opacity:0.4;font-size:12px;text-align:center;">Questions? Text us at (801) 513-3538</p>
+          </div>`,
+        });
+      } catch { /* non-blocking */ }
+    }
 
     return NextResponse.json({ success: true });
   }
