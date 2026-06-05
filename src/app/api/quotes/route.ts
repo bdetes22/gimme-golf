@@ -147,11 +147,15 @@ export async function POST(req: NextRequest) {
       if (body.status !== undefined) updateData.status = body.status;
       if (body.payment_method !== undefined) updateData.payment_method = body.payment_method;
       if (body.paid_at !== undefined) updateData.paid_at = body.paid_at;
-      console.log("[QUOTE UPDATE] id:", body.id, "data:", JSON.stringify(updateData).slice(0, 500));
       const updateResult = await dbUpdate("quotes", `id=eq.${body.id}`, updateData);
-      console.log("[QUOTE UPDATE] result:", JSON.stringify(updateResult).slice(0, 300));
       const updated = await dbSelect("quotes", `id=eq.${body.id}`);
-      return NextResponse.json(updated?.[0] || {});
+      // DEBUG: return what was sent to Supabase and what came back
+      const result = updated?.[0] || {};
+      result._debug = {
+        updateDataSent: { total: updateData.total, line_items_count: (updateData.line_items as unknown[])?.length, first_price: (updateData.line_items as {unit_price: number}[])?.[0]?.unit_price },
+        patchResult: JSON.stringify(updateResult).slice(0, 300),
+      };
+      return NextResponse.json(result);
     }
 
     // Create new quote — auto-generate quote_number
