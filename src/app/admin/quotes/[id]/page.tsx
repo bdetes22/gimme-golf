@@ -202,7 +202,6 @@ export default function EditQuotePage({
         client_address: clientAddress,
         client_phone: clientPhone,
         client_email: clientEmail,
-        quote_date: quoteDate,
         line_items: lineItems,
         subtotal,
         total,
@@ -229,8 +228,7 @@ export default function EditQuotePage({
         return;
       }
 
-      // DEBUG: show what was sent and received
-      alert(`SENT total=$${total}, first_price=$${lineItems[0]?.unit_price}\n\nGOT total=$${data.total}, first_price=$${data.line_items?.[0]?.unit_price}\n\nAPI DEBUG: ${JSON.stringify(data._debug)}`);
+      // Save succeeded
 
       // Update local quote state with saved values (no re-fetch needed)
       setQuote((prev) => prev ? { ...prev, line_items: lineItems, subtotal, total, deposit_amount: deposit, client_name: clientName, client_address: clientAddress, client_phone: clientPhone, client_email: clientEmail, quote_date: quoteDate, notes, internal_notes: internalNotes } : prev);

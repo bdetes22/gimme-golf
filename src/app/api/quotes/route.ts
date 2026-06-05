@@ -141,21 +141,14 @@ export async function POST(req: NextRequest) {
       if (body.subtotal !== undefined) updateData.subtotal = body.subtotal;
       if (body.total !== undefined) updateData.total = body.total;
       if (f("deposit_amount", "depositAmount") !== undefined) updateData.deposit_amount = f("deposit_amount", "depositAmount");
-      if (body.quote_date !== undefined) updateData.quote_date = body.quote_date;
       if (body.notes !== undefined) updateData.notes = body.notes;
       if (body.internal_notes !== undefined) updateData.internal_notes = body.internal_notes;
       if (body.status !== undefined) updateData.status = body.status;
       if (body.payment_method !== undefined) updateData.payment_method = body.payment_method;
       if (body.paid_at !== undefined) updateData.paid_at = body.paid_at;
-      const updateResult = await dbUpdate("quotes", `id=eq.${body.id}`, updateData);
+      await dbUpdate("quotes", `id=eq.${body.id}`, updateData);
       const updated = await dbSelect("quotes", `id=eq.${body.id}`);
-      // DEBUG: return what was sent to Supabase and what came back
-      const result = updated?.[0] || {};
-      result._debug = {
-        updateDataSent: { total: updateData.total, line_items_count: (updateData.line_items as unknown[])?.length, first_price: (updateData.line_items as {unit_price: number}[])?.[0]?.unit_price },
-        patchResult: JSON.stringify(updateResult).slice(0, 300),
-      };
-      return NextResponse.json(result);
+      return NextResponse.json(updated?.[0] || {});
     }
 
     // Create new quote — auto-generate quote_number
