@@ -116,8 +116,9 @@ export default function EditQuotePage({
     setLoading(true);
     try {
       // Verify password first
+      const cacheBust = `_t=${Date.now()}`;
       const authRes = await fetch(
-        `/api/quotes?password=${encodeURIComponent(pw)}`,
+        `/api/quotes?password=${encodeURIComponent(pw)}&${cacheBust}`,
         { cache: "no-store" }
       );
       if (authRes.status === 401) {
@@ -127,7 +128,7 @@ export default function EditQuotePage({
         return;
       }
 
-      const res = await fetch(`/api/quotes/${id}`, { cache: "no-store" });
+      const res = await fetch(`/api/quotes/${id}?${cacheBust}`, { cache: "no-store" });
       const data = await res.json();
       if (data.error) {
         setError(data.error);
@@ -226,6 +227,15 @@ export default function EditQuotePage({
         setError(data.error);
         setSaving(false);
         return;
+      }
+
+      // DEBUG: verify save went through — remove after confirming
+      const verify = await fetch(`/api/quotes/${id}?_t=${Date.now()}`, { cache: "no-store" });
+      const verifyData = await verify.json();
+      const savedTotal = verifyData?.total;
+      const expectedTotal = total;
+      if (savedTotal !== expectedTotal) {
+        alert(`SAVE MISMATCH! DB has $${savedTotal} but expected $${expectedTotal}. Response was: ${JSON.stringify(data).slice(0, 200)}`);
       }
 
       // Update local quote state with saved values (no re-fetch needed)
