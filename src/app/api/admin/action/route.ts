@@ -402,14 +402,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const startTime = new Date(`${dateISO}T${String(blockHour).padStart(2, "0")}:00:00`);
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    const hourStr = String(blockHour).padStart(2, "0");
+    const nextHour = String((Number(blockHour) + 1) % 24).padStart(2, "0");
+    const startISO = `${dateISO}T${hourStr}:00:00+00:00`;
+    const endISO = `${dateISO}T${nextHour}:00:00+00:00`;
 
     await dbInsert("bookings", {
       customer_id: systemCustomerId,
       location: location.toLowerCase(),
-      start_time: startTime.toISOString(),
-      end_time: endTime.toISOString(),
+      start_time: startISO,
+      end_time: endISO,
       duration_hours: 1,
       status: "blocked",
       payment_status: "blocked",
@@ -491,14 +493,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "customerId, location, dateISO, and hour are required" }, { status: 400 });
     }
 
-    const startTime = new Date(`${dateISO}T${String(compHour).padStart(2, "0")}:00:00`);
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    const compHourStr = String(compHour).padStart(2, "0");
+    const compNextHour = String((Number(compHour) + 1) % 24).padStart(2, "0");
+    const compStartISO = `${dateISO}T${compHourStr}:00:00+00:00`;
+    const compEndISO = `${dateISO}T${compNextHour}:00:00+00:00`;
 
     await dbInsert("bookings", {
       customer_id: customerId,
       location: location.toLowerCase(),
-      start_time: startTime.toISOString(),
-      end_time: endTime.toISOString(),
+      start_time: compStartISO,
+      end_time: compEndISO,
       duration_hours: 1,
       status: "confirmed",
       payment_status: "comp",
@@ -514,7 +518,8 @@ export async function POST(req: NextRequest) {
     const loc = Array.isArray(locArr) && locArr.length > 0 ? locArr[0] : null;
 
     if (cust?.email && loc) {
-      const dateDisplay = startTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+      const startTime = new Date(compStartISO);
+      const dateDisplay = startTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
       const timeDisplay = `${formatTime(compHour)} - ${formatTime(compHour + 1)}`;
       try {
         const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -817,14 +822,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const startTime = new Date(`${dateISO}T${String(hour).padStart(2, "0")}:00:00`);
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    const createHourStr = String(hour).padStart(2, "0");
+    const createNextHour = String((Number(hour) + 1) % 24).padStart(2, "0");
+    const createStartISO = `${dateISO}T${createHourStr}:00:00+00:00`;
+    const createEndISO = `${dateISO}T${createNextHour}:00:00+00:00`;
 
     await dbInsert("bookings", {
       customer_id: customerId,
       location: location.toLowerCase(),
-      start_time: startTime.toISOString(),
-      end_time: endTime.toISOString(),
+      start_time: createStartISO,
+      end_time: createEndISO,
       duration_hours: 1,
       status: "confirmed",
       payment_status: "admin_created",
