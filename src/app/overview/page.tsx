@@ -306,7 +306,7 @@ export default function OverviewPage() {
         {/* Footer */}
         <div className="mt-12 text-center">
           <div className="mb-4 h-px bg-gradient-to-r from-transparent via-[#2D6A47] to-transparent" />
-          <p className="text-xs text-[#F0E8D2]/20">Gimme Golf — Deters Birrell Golf LLC — Built May 2026</p>
+          <p className="text-xs text-[#F0E8D2]/20">Gimme Golf — Built May 2026</p>
           <Link href="/" className="mt-2 inline-block text-xs text-[#2D6A47] hover:underline">← Back to Website</Link>
         </div>
       </div>

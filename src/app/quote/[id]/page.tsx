@@ -288,15 +288,15 @@ export default function PublicQuotePage({
         {/* Company Header */}
         <div className="text-center space-y-3">
           <Image
-            src="/logos/logo-main.png"
+            src="/logos/logo-trimmed.png"
             alt="Gimme Golf"
-            width={200}
-            height={60}
+            width={260}
+            height={36}
             className="mx-auto"
           />
           <div className="text-sm text-[#F0E8D2]/60 space-y-0.5">
             <p className="font-semibold text-[#F0E8D2]/80">
-              Deters Birrell Golf LLC
+              Gimme Golf
             </p>
             <p>(801) 513-3538</p>
             <p>info@gimmegolfsimulators.com</p>
@@ -637,7 +637,7 @@ export default function PublicQuotePage({
 
         {/* Footer */}
         <div className="text-center text-xs text-[#F0E8D2]/30 pb-8 space-y-1">
-          <p>Deters Birrell Golf LLC | Gimme Golf</p>
+          <p>Gimme Golf</p>
           <p>140 N Main St, Kaysville, UT 84037 | (801) 513-3538</p>
           <p>gimmegolfsimulators.com</p>
         </div>
