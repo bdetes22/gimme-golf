@@ -234,7 +234,7 @@ export default function EditQuotePage({
       setQuote((prev) => prev ? { ...prev, line_items: lineItems, subtotal, total, deposit_amount: deposit, client_name: clientName, client_address: clientAddress, client_phone: clientPhone, client_email: clientEmail, quote_date: quoteDate, notes, internal_notes: internalNotes } : prev);
 
       if (sendToClient) {
-        await fetch("/api/quotes", {
+        const sendRes = await fetch("/api/quotes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -243,8 +243,16 @@ export default function EditQuotePage({
             id,
           }),
         });
+        const sendData = await sendRes.json();
+        if (!sendRes.ok || sendData.error) {
+          setError(sendData.error || "Failed to send quote email");
+          setSaving(false);
+          return;
+        }
         // Re-fetch to get updated sent_at/status
         await fetchQuote(password);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
       } else {
         setError("");
         setSaveSuccess(true);

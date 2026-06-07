@@ -75,17 +75,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Send action: update status and send email
+    // Send action: send email, then update status
     if (body.action === "send") {
-      const now = new Date().toISOString();
-      await dbUpdate("quotes", `id=eq.${body.id}`, {
-        status: "sent",
-        sent_at: now,
-      });
-
       const quotes = await dbSelect("quotes", `id=eq.${body.id}`);
       const quote = quotes?.[0];
-      if (quote && quote.client_email) {
+      if (!quote) {
+        return NextResponse.json({ error: "Quote not found" }, { status: 404 });
+      }
+      if (!quote.client_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(quote.client_email)) {
+        return NextResponse.json(
+          { error: `Invalid client email: "${quote.client_email || "(empty)"}" — fix the email on the quote and try again.` },
+          { status: 400 }
+        );
+      }
+
+      {
         const resend = new Resend(process.env.RESEND_API_KEY);
         const origin = req.nextUrl.origin;
         const quoteUrl = `${origin}/quote/${quote.id}`;
@@ -122,9 +126,19 @@ export async function POST(req: NextRequest) {
           `,
         });
         console.log("[QUOTES] Resend result:", JSON.stringify(emailResult));
-      } else {
-        console.log("[QUOTES] No client email found, skipping email send");
+        if (emailResult.error) {
+          return NextResponse.json(
+            { error: `Email failed to send: ${emailResult.error.message}` },
+            { status: 502 }
+          );
+        }
       }
+
+      // Only mark as sent after the email actually went out
+      await dbUpdate("quotes", `id=eq.${body.id}`, {
+        status: "sent",
+        sent_at: new Date().toISOString(),
+      });
 
       return NextResponse.json({ success: true });
     }

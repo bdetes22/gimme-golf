@@ -98,6 +98,10 @@ export default function NewQuotePage() {
       setError("Client name and email are required");
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
+      setError(`"${clientEmail}" is not a valid email address`);
+      return;
+    }
     setSaving(true);
     setError("");
 
