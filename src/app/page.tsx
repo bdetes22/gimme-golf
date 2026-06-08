@@ -143,7 +143,7 @@ export default function HomePage() {
         className="relative flex min-h-[60vh] items-center justify-center overflow-hidden pt-20 sm:min-h-[70vh]"
         style={{ backgroundImage: "url('/images/Clearfield/clearfieldphoto1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/85 via-[#060A07]/80 to-[#060A07]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/55 via-[#060A07]/50 to-[#060A07]/85" />
         <div className="absolute left-1/2 top-1/3 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2D6A47]/5 blur-3xl" />
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
@@ -206,7 +206,7 @@ export default function HomePage() {
               className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all duration-300 hover:border-[#2D6A47]/30 hover:scale-[1.01]"
               style={{ backgroundImage: "url('/images/kaysille/Kaysvillephoto1.JPG')", backgroundSize: "cover", backgroundPosition: "center" }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/80 via-[#060A07]/75 to-[#060A07]/90" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/65 via-[#060A07]/60 to-[#060A07]/80" />
               <div className="relative z-10">
                 <div className="absolute right-0 top-0 sm:right-0 sm:top-0 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
@@ -237,7 +237,7 @@ export default function HomePage() {
               className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all duration-300 hover:border-[#2D6A47]/30 hover:scale-[1.01]"
               style={{ backgroundImage: "url('/images/Clearfield/clearfieldphoto1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/80 via-[#060A07]/75 to-[#060A07]/90" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/65 via-[#060A07]/60 to-[#060A07]/80" />
               <div className="relative z-10">
                 <div className="absolute right-0 top-0 sm:right-0 sm:top-0 rounded-full border border-[#2D6A47] bg-[#2D6A47]/10 px-3 py-1">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#2D6A47]">24/7 Access</span>
