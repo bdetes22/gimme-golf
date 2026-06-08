@@ -213,7 +213,7 @@ export default function HomePage() {
                 </div>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
                 <h3 className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>Kaysville</h3>
-                <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our flagship location featuring premium simulator bays and a comfortable lounge area.</p>
+                <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our flagship location featuring a premium simulator bay and a comfortable lounge area.</p>
                 <div className="mb-4 flex items-start gap-2.5">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
                   <span className="text-sm text-[#F0E8D2]/70">140 N Main Street, Kaysville, UT 84037</span>
@@ -244,7 +244,7 @@ export default function HomePage() {
                 </div>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8973A]">From $35/hr</p>
                 <h3 className="mb-4 text-3xl font-bold uppercase text-[#F0E8D2]" style={{ fontFamily: "var(--font-barlow-condensed)" }}>Clearfield</h3>
-                <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our newest location with state-of-the-art simulators, event space, and a laid-back atmosphere.</p>
+                <p className="mb-5 text-sm leading-relaxed text-[#F0E8D2]/50">Our newest location with a state-of-the-art simulator, a cozy event space, and a laid-back atmosphere.</p>
                 <div className="mb-4 flex items-start gap-2.5">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="mt-0.5 h-4 w-4 shrink-0 text-[#2D6A47]"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
                   <span className="text-sm text-[#F0E8D2]/70">293 State St, Clearfield, UT 84015</span>
