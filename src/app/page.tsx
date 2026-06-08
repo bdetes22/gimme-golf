@@ -153,7 +153,7 @@ export default function HomePage() {
           <div className="mb-6 flex items-center justify-center gap-4">
             <div className="h-px w-8 bg-[#2D6A47]/30" />
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#3d8a5f]" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.8)" }}>
-              Play at Our Locations &nbsp;·&nbsp; Build Your Own at Home
+              Custom Builds &nbsp;·&nbsp; 24/7 Locations &nbsp;·&nbsp; Service
             </p>
             <div className="h-px w-8 bg-[#2D6A47]/30" />
           </div>
@@ -161,9 +161,9 @@ export default function HomePage() {
             className="mb-6 text-4xl font-bold uppercase leading-[1.1] tracking-tight text-[#F0E8D2] sm:text-7xl lg:text-8xl"
             style={{ fontFamily: "var(--font-barlow-condensed)", textShadow: "0 2px 24px rgba(0,0,0,0.65)" }}
           >
-            Play Golf
+            Utah&apos;s Golf
             <br />
-            <span className="text-[#3d8a5f]">Year Round</span>
+            <span className="text-[#3d8a5f]">Simulator Experts</span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-[#F0E8D2]/60">
             Book a bay at our 24/7 simulator locations in Kaysville and
