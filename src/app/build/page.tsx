@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 
 const buildPhotos = [
+  { src: "/images/Clearfield/clearfieldphoto1.jpg", alt: "Gimme Golf Clearfield simulator build" },
   { src: "/images/builds/joshbuild.JPG", alt: "Custom installation by Josh" },
   { src: "/images/builds/jeffbuild.jpeg", alt: "Custom installation by Jeff" },
   { src: "/images/builds/spencerbuild.JPG", alt: "Custom installation by Spencer" },
