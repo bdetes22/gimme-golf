@@ -58,6 +58,34 @@ const includes = [
   },
 ];
 
+const serviceItems = [
+  {
+    title: "Screen & Enclosure Replacement",
+    description: "Worn or torn impact screen? We replace screens and enclosures and re-tension everything so it looks and plays like new.",
+  },
+  {
+    title: "Launch Monitor Upgrades",
+    description: "Ready to move up to Uneekor, Trackman, Foresight, or ProTee VX? We'll swap your system and dial in the new setup.",
+  },
+  {
+    title: "Software Setup & Updates",
+    description: "GSPro, E6, TGC, and more — installation, updates, course packs, and getting your platform running right.",
+  },
+  {
+    title: "Recalibration & Tuning",
+    description: "Numbers feeling off? We recalibrate your launch monitor and projector alignment for accurate, true-to-life data.",
+  },
+  {
+    title: "Troubleshooting & Repairs",
+    description: "PC issues, projector problems, wiring gremlins — we diagnose and fix simulator setups, even ones we didn't build.",
+  },
+  {
+    title: "Relocation & Reinstallation",
+    description: "Moving or redoing a room? We carefully uninstall, move, and reinstall your simulator in its new home.",
+  },
+];
+
+const inquiryTypeOptions = ["New Custom Build", "Upgrade", "Service / Repair", "Maintenance", "Not sure yet"];
 const budgetOptions = ["Under $10,000", "$10,000 – $20,000", "$20,000 – $30,000", "$30,000+"];
 const timelineOptions = ["ASAP", "1–3 months", "3–6 months", "Just exploring"];
 
@@ -65,6 +93,7 @@ export default function BuildPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [inquiryType, setInquiryType] = useState("");
   const [width, setWidth] = useState("");
   const [length, setLength] = useState("");
   const [height, setHeight] = useState("");
@@ -84,7 +113,7 @@ export default function BuildPage() {
       const res = await fetch("/api/build-inquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, width, length, height, budget, timeline, message }),
+        body: JSON.stringify({ name, email, phone, inquiryType, width, length, height, budget, timeline, message }),
       });
 
       if (!res.ok) {
@@ -109,7 +138,7 @@ export default function BuildPage() {
       <section className="relative py-16">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
-            Premium Simulator Installations
+            Custom Builds &middot; Upgrades &middot; Service
           </p>
           <h1
             className="mb-6 text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl lg:text-6xl"
@@ -123,6 +152,11 @@ export default function BuildPage() {
             We design and build world-class simulator rooms for serious golfers
             and commercial spaces. Every build is custom — from budget-friendly
             setups to premium installations.
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#F0E8D2]/50">
+            Already have a setup? We also handle <span className="text-[#F0E8D2]/80">upgrades, repairs,
+            and maintenance</span> — new screens, launch-monitor upgrades, software, recalibration,
+            and troubleshooting.
           </p>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#F0E8D2]/35">
             We specialize in premium builds only — if you&apos;re looking for a budget
@@ -211,6 +245,52 @@ export default function BuildPage() {
         </div>
       </section>
 
+      {/* ── Service & Upgrades ── */}
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-12 text-center">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
+              Already Have a Simulator?
+            </p>
+            <h2
+              className="text-3xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-4xl"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              Service &amp; Upgrades
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-[#F0E8D2]/50">
+              We don&apos;t just build new rooms — we keep existing setups running their
+              best, even ones we didn&apos;t install.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {serviceItems.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-7 transition-colors hover:border-[#F0E8D2]/20"
+              >
+                <h3 className="mb-2 text-lg font-semibold text-[#F0E8D2]">
+                  {item.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-[#F0E8D2]/50">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <a
+              href="#consultation"
+              className="inline-block rounded bg-[#2D6A47] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+            >
+              Request Service or an Upgrade
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ── Trusted Partners ── */}
       <section className="py-12">
         <div className="mx-auto max-w-4xl px-6 text-center">
@@ -232,7 +312,7 @@ export default function BuildPage() {
       </section>
 
       {/* ── Consultation Form ── */}
-      <section className="py-16">
+      <section id="consultation" className="scroll-mt-24 py-16">
         <div className="mx-auto max-w-2xl px-6">
           <div className="mb-10 text-center">
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
@@ -245,7 +325,8 @@ export default function BuildPage() {
               Schedule a Free Consultation
             </h2>
             <p className="text-[#F0E8D2]/50">
-              Tell us about your space and we&apos;ll put together a custom quote.
+              New build, upgrade, or repair — tell us what you need and we&apos;ll put
+              together a custom quote.
             </p>
           </div>
 
@@ -290,6 +371,17 @@ export default function BuildPage() {
               <div>
                 <label className="mb-1 block text-sm font-medium text-[#F0E8D2]/70">Phone</label>
                 <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(801) 555-1234" className={inputClass} />
+              </div>
+
+              {/* What can we help with */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-[#F0E8D2]/70">What can we help with?</label>
+                <select value={inquiryType} onChange={(e) => setInquiryType(e.target.value)} className={selectClass}>
+                  <option value="">Select an option</option>
+                  {inquiryTypeOptions.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Room Dimensions */}

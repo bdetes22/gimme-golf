@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, phone, width, length, height, budget, timeline, message } = body;
+    const { name, email, phone, inquiryType, width, length, height, budget, timeline, message } = body;
 
     if (!name || !email) {
       return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       from: "Gimme Golf <hello@gimmegolfsimulators.com>",
       to: "info@gimmegolfsimulators.com",
       replyTo: email,
-      subject: `New Build Inquiry from ${name}`,
+      subject: `New ${inquiryType || "Build"} Inquiry from ${name}`,
       html: `
 <!DOCTYPE html>
 <html>
@@ -42,6 +42,10 @@ export async function POST(req: NextRequest) {
         <tr>
           <td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:10px 0;border-bottom:1px solid #1a2a1f;">Phone</td>
           <td style="color:#F0E8D2;font-size:14px;font-weight:600;padding:10px 0;border-bottom:1px solid #1a2a1f;">${phone || "Not provided"}</td>
+        </tr>
+        <tr>
+          <td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:10px 0;border-bottom:1px solid #1a2a1f;">Inquiry Type</td>
+          <td style="color:#C8973A;font-size:14px;font-weight:600;padding:10px 0;border-bottom:1px solid #1a2a1f;">${inquiryType || "Not specified"}</td>
         </tr>
         <tr>
           <td style="color:#F0E8D2;opacity:0.5;font-size:13px;padding:10px 0;border-bottom:1px solid #1a2a1f;">Room Size</td>
@@ -78,7 +82,7 @@ export async function POST(req: NextRequest) {
         email,
         phone: phone || null,
         message: message || null,
-        metadata: { width, length, height, budget, timeline },
+        metadata: { inquiryType, width, length, height, budget, timeline },
       });
     } catch (dbErr) {
       console.error("Failed to save build inquiry to DB:", dbErr);

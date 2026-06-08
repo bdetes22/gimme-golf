@@ -171,16 +171,16 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/book"
-              className="rounded bg-[#2D6A47] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
-            >
-              Book a Bay
-            </Link>
-            <Link
               href="/build"
               className="rounded bg-[#C8973A] px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
             >
               Get a Custom Build Quote
+            </Link>
+            <Link
+              href="/book"
+              className="rounded border border-[#2D6A47] bg-[#2D6A47]/10 px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/20"
+            >
+              Book a Bay
             </Link>
           </div>
         </div>
@@ -290,6 +290,10 @@ export default function HomePage() {
                 Want a golf simulator in your home, garage, or office? We handle
                 everything — from room design and equipment selection to full
                 installation. Every build is custom — schedule a free consultation for a quote.
+              </p>
+              <p className="mb-8 max-w-lg text-sm leading-relaxed text-[#F0E8D2]/50">
+                Already have a setup? We also do <span className="text-[#F0E8D2]/80">upgrades, repairs,
+                and maintenance</span> — even on simulators we didn&apos;t build.
               </p>
 
               {/* Benefits grid */}
@@ -538,10 +542,10 @@ export default function HomePage() {
                 className="text-2xl font-bold uppercase text-[#F0E8D2] sm:text-3xl"
                 style={{ fontFamily: "var(--font-barlow-condensed)" }}
               >
-                Ready to Build Your Own Simulator?
+                Ready to Build, Upgrade, or Service Your Simulator?
               </h3>
               <p className="mt-1 text-sm text-[#F0E8D2]/50">
-                Free consultation · Custom design · Professional installation
+                Free consultation · Custom builds · Upgrades · Repairs &amp; maintenance
               </p>
             </div>
             <Link

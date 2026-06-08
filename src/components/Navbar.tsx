@@ -11,7 +11,7 @@ const allLinks = [
   { href: "/book", label: "Book" },
   { href: "/memberships", label: "Memberships" },
   { href: "/shop", label: "Shop" },
-  { href: "/build", label: "Build" },
+  { href: "/build", label: "Builds & Service" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
@@ -118,8 +118,14 @@ export default function Navbar() {
             </>
           )}
           <Link
+            href="/build"
+            className="rounded bg-[#C8973A] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#060A07] transition-colors hover:bg-[#C8973A]/90"
+          >
+            Build Quote
+          </Link>
+          <Link
             href="/book"
-            className="rounded bg-[#2D6A47] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/90"
+            className="rounded border border-[#2D6A47] bg-[#2D6A47]/10 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#F0E8D2] transition-colors hover:bg-[#2D6A47]/20"
           >
             Book Now
           </Link>
@@ -203,9 +209,16 @@ export default function Navbar() {
             </div>
           )}
           <Link
+            href="/build"
+            onClick={() => setOpen(false)}
+            className="mt-4 block rounded bg-[#C8973A] px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider text-[#060A07]"
+          >
+            Build Quote
+          </Link>
+          <Link
             href="/book"
             onClick={() => setOpen(false)}
-            className="mt-4 block rounded bg-[#2D6A47] px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider text-[#F0E8D2]"
+            className="mt-2 block rounded border border-[#2D6A47] bg-[#2D6A47]/10 px-5 py-2.5 text-center text-sm font-semibold uppercase tracking-wider text-[#F0E8D2]"
           >
             Book Now
           </Link>
