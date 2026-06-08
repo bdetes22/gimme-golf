@@ -160,11 +160,6 @@ export default function BuildPage() {
             and maintenance</span> — new screens, launch-monitor upgrades, software, recalibration,
             and troubleshooting.
           </p>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#F0E8D2]/35">
-            We specialize in premium builds only — if you&apos;re looking for a budget
-            setup, we recommend checking out Carl&apos;s Place or Rain or Shine Golf
-            for DIY options.
-          </p>
         </div>
       </section>
 
