@@ -410,62 +410,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
-      <section className="relative py-12 sm:py-20">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-8 text-center sm:mb-14">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-[#C8973A]">
-              What People Are Saying
-            </p>
-            <h2
-              className="text-4xl font-bold uppercase tracking-tight text-[#F0E8D2] sm:text-5xl"
-              style={{ fontFamily: "var(--font-barlow-condensed)" }}
-            >
-              Don&apos;t Take Our Word for It
-            </h2>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                name: "Jake R.",
-                label: "Monthly Member",
-                quote:
-                  "Best golf simulator experience in Utah. The 24/7 access is a game changer — I play at 6am before work every morning.",
-              },
-              {
-                name: "Spencer T.",
-                label: "Home Build Client",
-                quote:
-                  "Gimme Golf built out my garage with a full simulator setup. Professional installation, great equipment, and they handled everything. Couldn't be happier.",
-              },
-              {
-                name: "Mike & Sarah D.",
-                label: "Event Host",
-                quote:
-                  "We hosted our company holiday party here and it was a huge hit. Easy booking, great space, and everyone had a blast.",
-              },
-            ].map((testimonial) => (
-              <div
-                key={testimonial.name}
-                className="rounded-lg border border-[#F0E8D2]/10 bg-[#F0E8D2]/[0.03] p-7"
-              >
-                <span className="text-4xl font-bold leading-none text-[#2D6A47]">
-                  &ldquo;
-                </span>
-                <p className="mb-6 text-sm italic leading-relaxed text-[#F0E8D2]/50">
-                  {testimonial.quote}
-                </p>
-                <p className="font-semibold text-[#F0E8D2]">
-                  {testimonial.name}
-                </p>
-                <p className="text-sm text-[#C8973A]">{testimonial.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Membership / Pricing ── */}
       <section className="relative py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-6">
