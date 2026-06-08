@@ -203,7 +203,7 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-2">
             {/* ── Kaysville ── */}
             <div
-              className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all duration-300 hover:border-[#2D6A47]/30 hover:scale-[1.01]"
+              className="group relative overflow-hidden rounded-lg p-6 sm:p-8 transition-all duration-300 hover:scale-[1.01]"
               style={{ backgroundImage: "url('/images/kaysille/Kaysvillephoto1.JPG')", backgroundSize: "cover", backgroundPosition: "center" }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/65 via-[#060A07]/60 to-[#060A07]/80" />
@@ -234,7 +234,7 @@ export default function HomePage() {
 
             {/* ── Clearfield ── */}
             <div
-              className="group relative overflow-hidden rounded-lg border border-[#F0E8D2]/10 p-6 sm:p-8 transition-all duration-300 hover:border-[#2D6A47]/30 hover:scale-[1.01]"
+              className="group relative overflow-hidden rounded-lg p-6 sm:p-8 transition-all duration-300 hover:scale-[1.01]"
               style={{ backgroundImage: "url('/images/Clearfield/clearfieldphoto1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/65 via-[#060A07]/60 to-[#060A07]/80" />
