@@ -144,23 +144,26 @@ export default function HomePage() {
         style={{ backgroundImage: "url('/images/Clearfield/clearfieldphoto1.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-[#060A07]/55 via-[#060A07]/50 to-[#060A07]/85" />
-        <div className="absolute left-1/2 top-1/3 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2D6A47]/5 blur-3xl" />
+        <div
+          className="absolute inset-0"
+          style={{ background: "radial-gradient(ellipse 65% 55% at 50% 45%, rgba(6,10,7,0.72) 0%, rgba(6,10,7,0) 72%)" }}
+        />
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
           <div className="mb-6 flex items-center justify-center gap-4">
             <div className="h-px w-8 bg-[#2D6A47]/30" />
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#2D6A47]">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#3d8a5f]" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.8)" }}>
               Play at Our Locations &nbsp;·&nbsp; Build Your Own at Home
             </p>
             <div className="h-px w-8 bg-[#2D6A47]/30" />
           </div>
           <h1
             className="mb-6 text-4xl font-bold uppercase leading-[1.1] tracking-tight text-[#F0E8D2] sm:text-7xl lg:text-8xl"
-            style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            style={{ fontFamily: "var(--font-barlow-condensed)", textShadow: "0 2px 24px rgba(0,0,0,0.65)" }}
           >
             Play Golf
             <br />
-            <span className="text-[#2D6A47]">Year Round</span>
+            <span className="text-[#3d8a5f]">Year Round</span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-[#F0E8D2]/60">
             Book a bay at our 24/7 simulator locations in Kaysville and
