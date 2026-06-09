@@ -110,10 +110,12 @@ export default function AdminPage() {
   // Calendar view state
   const [calendarView, setCalendarView] = useState(true);
   const [calendarWeekStart, setCalendarWeekStart] = useState<Date>(() => {
+    // Use the LOCAL date (not UTC) so "this week" matches the user's actual day,
+    // even in the evening when UTC has already rolled to tomorrow.
     const now = new Date();
-    const day = now.getUTCDay();
+    const day = now.getDay();
     const diff = day === 0 ? -6 : 1 - day; // Monday
-    const mon = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + diff));
+    const mon = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + diff));
     return mon;
   });
   const [calendarLocation, setCalendarLocation] = useState<"kaysville" | "clearfield" | "both">("kaysville");
@@ -536,9 +538,12 @@ export default function AdminPage() {
 
   if (!data) return null;
 
-  // Group upcoming bookings by date then location
-  const todayStr = new Date().toISOString().split("T")[0];
-  const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+  // Group upcoming bookings by date then location — use LOCAL date so "Today"
+  // doesn't roll to tomorrow in the evening when UTC is already the next day.
+  const localDateStr = (dt: Date) =>
+    `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+  const todayStr = localDateStr(new Date());
+  const tomorrowStr = localDateStr(new Date(Date.now() + 86400000));
   const todayUpcoming = data.upcomingBookings.filter(b => b.start_time.startsWith(todayStr));
   const tomorrowUpcoming = data.upcomingBookings.filter(b => b.start_time.startsWith(tomorrowStr));
 
@@ -1569,10 +1574,11 @@ export default function AdminPage() {
             // Format date strings for comparison
             const weekDateStrings = weekDays.map((d) => d.toISOString().split("T")[0]);
 
-            // Current time for highlight
-            const nowUTC = new Date();
-            const todayUTCStr = nowUTC.toISOString().split("T")[0];
-            const currentUTCHour = nowUTC.getUTCHours();
+            // Current time for highlight — use the LOCAL date/hour so "today" and
+            // the current-hour line match the user's actual clock, not UTC.
+            const now = new Date();
+            const todayCalStr = localDateStr(now);
+            const currentHour = now.getHours();
 
             // Filter bookings for selected week and location
             const filteredBookings = data.bookings.filter((b) => {
@@ -1600,9 +1606,9 @@ export default function AdminPage() {
 
             const goToToday = () => {
               const now = new Date();
-              const day = now.getUTCDay();
+              const day = now.getDay();
               const diff = day === 0 ? -6 : 1 - day;
-              const mon = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + diff));
+              const mon = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + diff));
               setCalendarWeekStart(mon);
             };
 
@@ -1657,7 +1663,7 @@ export default function AdminPage() {
                     <div className="sticky left-0 bg-[#060A07] z-10 border-b border-r border-[#F0E8D2]/10 p-1" />
                     {weekDays.map((d, i) => {
                       const dateStr = d.toISOString().split("T")[0];
-                      const isToday = dateStr === todayUTCStr;
+                      const isToday = dateStr === todayCalStr;
                       return (
                         <div
                           key={i}
@@ -1687,8 +1693,8 @@ export default function AdminPage() {
                           const dateStr = d.toISOString().split("T")[0];
                           const key = `${dateStr}|${hour}`;
                           const cellBookings = bookingMap.get(key) || [];
-                          const isToday = dateStr === todayUTCStr;
-                          const isCurrentHour = isToday && hour === currentUTCHour;
+                          const isToday = dateStr === todayCalStr;
+                          const isCurrentHour = isToday && hour === currentHour;
 
                           return (
                             <div
