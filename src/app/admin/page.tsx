@@ -1717,22 +1717,42 @@ export default function AdminPage() {
                                   ? "BLK"
                                   : (b.customers?.name || "?").split(" ")[0];
 
+                                // Size the block to the real session length. Times are
+                                // stored UTC-literal, so use getUTC* to read the intended
+                                // local minutes/duration. 40px = one hour row.
+                                const HOUR_H = 40;
+                                const start = new Date(b.start_time);
+                                const durH = b.duration_hours && b.duration_hours > 0
+                                  ? b.duration_hours
+                                  : b.end_time
+                                  ? (new Date(b.end_time).getTime() - start.getTime()) / 3600000
+                                  : 1;
+                                const startMin = start.getUTCMinutes();
+                                const top = (startMin / 60) * HOUR_H + 1;
+                                const height = Math.max(14, durH * HOUR_H - 2);
+
+                                // Lay multiple bookings in the same hour side by side.
+                                const n = cellBookings.length;
+                                const wPct = 100 / n;
+
                                 return (
                                   <button
                                     key={b.id}
                                     onClick={() => setSelectedCalendarBooking(b)}
-                                    className={`absolute left-0.5 right-0.5 rounded text-[10px] leading-tight px-1 py-0.5 text-left truncate cursor-pointer transition-colors border-l-2 ${
+                                    className={`absolute z-[6] rounded text-[10px] leading-tight px-1 py-0.5 text-left truncate cursor-pointer transition-colors border-l-2 ${
                                       isBlocked
-                                        ? "bg-red-900/30 border-red-500/60 text-red-300/80 hover:bg-red-900/50"
+                                        ? "bg-red-900/40 border-red-500/60 text-red-300/80 hover:bg-red-900/60"
                                         : isCancelled
-                                        ? "bg-gray-800/40 border-gray-500/40 text-gray-400/80 hover:bg-gray-800/60 line-through"
+                                        ? "bg-gray-800/50 border-gray-500/40 text-gray-400/80 hover:bg-gray-800/70 line-through"
                                         : isConfirmed
-                                        ? "bg-[#2D6A47]/30 border-[#2D6A47] text-green-200/90 hover:bg-[#2D6A47]/50"
-                                        : "bg-[#C8973A]/20 border-[#C8973A]/60 text-[#C8973A]/90 hover:bg-[#C8973A]/30"
+                                        ? "bg-[#2D6A47]/40 border-[#2D6A47] text-green-200/90 hover:bg-[#2D6A47]/60"
+                                        : "bg-[#C8973A]/30 border-[#C8973A]/60 text-[#C8973A]/90 hover:bg-[#C8973A]/40"
                                     }`}
                                     style={{
-                                      top: `${bIdx * 18 + 2}px`,
-                                      height: 16,
+                                      top: `${top}px`,
+                                      height,
+                                      left: `calc(${bIdx * wPct}% + 2px)`,
+                                      width: `calc(${wPct}% - 4px)`,
                                     }}
                                     title={`${b.customers?.name || b.status} - ${b.location}`}
                                   >
