@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { Resend } from "resend";
+import { denverDateStr } from "@/lib/date";
 import { dbDelete, dbInsert, dbSelect, dbUpdate } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
@@ -638,11 +639,11 @@ export async function POST(req: NextRequest) {
           customer_id: authData.user.id,
           type: membershipType,
           active: true,
-          start_date: startDate || now.toISOString().split("T")[0],
+          start_date: startDate || denverDateStr(now),
           end_date: endDate || null,
           sessions_remaining: membershipType === "punchpass" ? (sessionsRemaining || 10) : null,
           hours_used_this_month: membershipType === "staff" ? 0 : (20 - (hoursRemaining || 20)),
-          hours_reset_date: membershipType === "staff" ? null : nextReset.toISOString().split("T")[0],
+          hours_reset_date: membershipType === "staff" ? null : denverDateStr(nextReset),
         }),
       });
     }
@@ -876,7 +877,7 @@ export async function POST(req: NextRequest) {
         type: "punchpass",
         sessions_remaining: sessions,
         active: true,
-        start_date: new Date().toISOString().split("T")[0],
+        start_date: denverDateStr(),
       });
     }
 
@@ -947,14 +948,14 @@ export async function POST(req: NextRequest) {
         customer_id: customerId,
         type,
         active: true,
-        start_date: startDate || new Date().toISOString().split("T")[0],
+        start_date: startDate || denverDateStr(),
         end_date: endDate || null,
         sessions_remaining: type === "punchpass" ? (sessionsRemaining || 10) : null,
         hours_used_this_month: 0,
         hours_reset_date: type === "staff" ? null : (() => {
           const d = new Date();
           d.setMonth(d.getMonth() + 1);
-          return d.toISOString().split("T")[0];
+          return denverDateStr(d);
         })(),
       };
 

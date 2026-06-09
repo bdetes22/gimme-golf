@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { dbSelect } from "@/lib/supabase-rest";
+import { denverDateStr } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     const membership = memberships[0];
-    const today = new Date().toISOString().split("T")[0];
+    const today = denverDateStr();
 
     // ── Staff/Owner — no limits ──
     // Skip all limit checks for staff type
@@ -278,7 +279,7 @@ export async function POST(req: NextRequest) {
         // Set initial reset date to 1 month from now
         const nextReset = new Date();
         nextReset.setMonth(nextReset.getMonth() + 1);
-        updateData.hours_reset_date = nextReset.toISOString().split("T")[0];
+        updateData.hours_reset_date = denverDateStr(nextReset);
       }
     }
 

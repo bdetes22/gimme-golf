@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { denverDateStr } from "@/lib/date";
 
 interface Booking {
   id: string;
@@ -410,7 +411,7 @@ export default function AdminPage() {
     setCmEmail("");
     setCmPhone("");
     setCmType("monthly");
-    setCmStartDate(new Date().toISOString().split("T")[0]);
+    setCmStartDate(denverDateStr());
     setCmEndDate("");
     setCmNoExpiry(false);
     setCmHours(20);
@@ -453,7 +454,7 @@ export default function AdminPage() {
   const openMemModal = (customer: Customer) => {
     setMemModalCustomer(customer);
     setMemType(customer.membership?.type || "monthly");
-    setMemStartDate(new Date().toISOString().split("T")[0]);
+    setMemStartDate(denverDateStr());
     setMemEndDate("");
     setMemNoExpiry(false);
     setMemSessions(10);
@@ -538,12 +539,11 @@ export default function AdminPage() {
 
   if (!data) return null;
 
-  // Group upcoming bookings by date then location — use LOCAL date so "Today"
-  // doesn't roll to tomorrow in the evening when UTC is already the next day.
-  const localDateStr = (dt: Date) =>
-    `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
-  const todayStr = localDateStr(new Date());
-  const tomorrowStr = localDateStr(new Date(Date.now() + 86400000));
+  // Group upcoming bookings by date then location — use the Utah (Denver) date
+  // so "Today" doesn't roll to tomorrow in the evening when UTC is already the
+  // next day.
+  const todayStr = denverDateStr(new Date());
+  const tomorrowStr = denverDateStr(new Date(Date.now() + 86400000));
   const todayUpcoming = data.upcomingBookings.filter(b => b.start_time.startsWith(todayStr));
   const tomorrowUpcoming = data.upcomingBookings.filter(b => b.start_time.startsWith(tomorrowStr));
 
@@ -1577,7 +1577,7 @@ export default function AdminPage() {
             // Current time for highlight — use the LOCAL date/hour so "today" and
             // the current-hour line match the user's actual clock, not UTC.
             const now = new Date();
-            const todayCalStr = localDateStr(now);
+            const todayCalStr = denverDateStr(now);
             const currentHour = now.getHours();
 
             // Filter bookings for selected week and location
@@ -1996,7 +1996,7 @@ export default function AdminPage() {
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = `gimme-golf-customers-${new Date().toISOString().split("T")[0]}.csv`;
+                  a.download = `gimme-golf-customers-${denverDateStr()}.csv`;
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
@@ -2117,7 +2117,7 @@ export default function AdminPage() {
                           onClick={() => {
                             setCompModalCustomer(c);
                             setCompLocation("kaysville");
-                            setCompDate(new Date().toISOString().split("T")[0]);
+                            setCompDate(denverDateStr());
                             setCompHour(9);
                           }}
                           disabled={actionLoading !== null}

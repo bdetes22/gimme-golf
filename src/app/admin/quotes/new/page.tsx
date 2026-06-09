@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { denverDateStr } from "@/lib/date";
 
 interface LineItem {
   description: string;
@@ -45,7 +46,7 @@ export default function NewQuotePage() {
   const [clientPhone, setClientPhone] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [quoteDate, setQuoteDate] = useState(
-    new Date().toISOString().split("T")[0]
+    denverDateStr()
   );
   const [lineItems, setLineItems] = useState<LineItem[]>(DEFAULT_LINE_ITEMS);
   const [notes, setNotes] = useState("");

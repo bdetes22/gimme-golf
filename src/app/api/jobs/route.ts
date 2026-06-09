@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbSelect, dbInsert, dbUpdate, dbDelete } from "@/lib/supabase-rest";
+import { denverDateStr } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -173,7 +174,7 @@ export async function POST(req: NextRequest) {
       amount: Number(amount),
       receipt_url: receipt_url || null,
       vendor: vendor || null,
-      date: date || new Date().toISOString().split("T")[0],
+      date: date || denverDateStr(),
       notes: expNotes || null,
     });
 

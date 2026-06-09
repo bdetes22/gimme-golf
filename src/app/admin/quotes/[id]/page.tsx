@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { denverDateStr } from "@/lib/date";
 
 interface LineItem {
   description: string;
@@ -325,7 +326,7 @@ export default function EditQuotePage({
           client_address: clientAddress,
           client_phone: clientPhone,
           client_email: clientEmail,
-          quote_date: new Date().toISOString().split("T")[0],
+          quote_date: denverDateStr(),
           line_items: lineItems,
           subtotal,
           total,

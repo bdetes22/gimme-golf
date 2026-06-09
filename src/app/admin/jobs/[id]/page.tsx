@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { denverDateStr } from "@/lib/date";
 
 interface Expense {
   id: string;
@@ -83,7 +84,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [expCategory, setExpCategory] = useState("materials");
   const [expAmount, setExpAmount] = useState("");
   const [expVendor, setExpVendor] = useState("");
-  const [expDate, setExpDate] = useState(new Date().toISOString().split("T")[0]);
+  const [expDate, setExpDate] = useState(denverDateStr());
   const [expReceiptUrl, setExpReceiptUrl] = useState("");
   const [expNotes, setExpNotes] = useState("");
   const [showAddExpense, setShowAddExpense] = useState(false);
@@ -244,7 +245,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       const res = await fetch(`/api/jobs/${sourceJobId}?password=${encodeURIComponent(password)}`);
       const sourceJob = await res.json();
       if (sourceJob.expenses && Array.isArray(sourceJob.expenses)) {
-        const today = new Date().toISOString().split("T")[0];
+        const today = denverDateStr();
         for (const exp of sourceJob.expenses) {
           await fetch("/api/jobs", {
             method: "POST",
@@ -273,7 +274,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         password, action: "add_expense", job_id: jobId,
         description: preset.description, category: preset.category,
         amount: preset.amount, vendor: preset.vendor || null,
-        date: new Date().toISOString().split("T")[0],
+        date: denverDateStr(),
       }),
     });
     await fetchJob(password);

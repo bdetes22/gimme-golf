@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { Resend } from "resend";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
+import { denverDateStr } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -225,7 +226,7 @@ export async function POST(req: NextRequest) {
 
       // Calculate dates and sessions
       const now = new Date();
-      const startDate = now.toISOString().split("T")[0];
+      const startDate = denverDateStr(now);
       let endDate: string | null = null;
       let sessionsRemaining: number | null = null;
 
@@ -233,7 +234,7 @@ export async function POST(req: NextRequest) {
         sessionsRemaining = 10;
         const end = new Date(now);
         end.setFullYear(end.getFullYear() + 1);
-        endDate = end.toISOString().split("T")[0];
+        endDate = denverDateStr(end);
       } else if (plan === "monthly") {
         // No end_date for monthly — Stripe subscription manages lifecycle
         // End date will be set/extended by each successful renewal webhook
@@ -241,7 +242,7 @@ export async function POST(req: NextRequest) {
       } else if (plan === "annual") {
         const end = new Date(now);
         end.setFullYear(end.getFullYear() + 1);
-        endDate = end.toISOString().split("T")[0];
+        endDate = denverDateStr(end);
       }
 
       // Create membership
@@ -637,6 +638,7 @@ export async function POST(req: NextRequest) {
         const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
         const nextReset = new Date();
         nextReset.setMonth(nextReset.getMonth() + 1);
+        const nextResetStr = denverDateStr(nextReset);
 
         await fetch(`${url}/rest/v1/memberships?customer_id=eq.${custId}&type=eq.monthly&active=eq.true`, {
           method: "PATCH",
@@ -648,8 +650,8 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             hours_used_this_month: 0,
-            end_date: nextReset.toISOString().split("T")[0],
-            hours_reset_date: nextReset.toISOString().split("T")[0],
+            end_date: nextResetStr,
+            hours_reset_date: nextResetStr,
           }),
         });
         console.log("[WEBHOOK] Monthly hours reset for renewal");

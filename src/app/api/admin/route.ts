@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbSelect } from "@/lib/supabase-rest";
+import { denverDateStr } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -96,8 +97,8 @@ export async function GET(req: NextRequest) {
   };
 
   // Expiring memberships (end_date within 30 days)
-  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-  const todayDate = now.toISOString().split("T")[0];
+  const thirtyDaysFromNow = denverDateStr(new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000));
+  const todayDate = denverDateStr(now);
   const expiringMemberships = await dbSelect(
     "memberships",
     `select=*,customers(name,email)&active=eq.true&end_date=gte.${todayDate}&end_date=lte.${thirtyDaysFromNow}&order=end_date.asc`
@@ -114,7 +115,7 @@ export async function GET(req: NextRequest) {
   const bookingsPerDay: Record<string, number> = {};
   for (let i = 13; i >= 0; i--) {
     const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    bookingsPerDay[d.toISOString().split("T")[0]] = 0;
+    bookingsPerDay[denverDateStr(d)] = 0;
   }
 
   // Bookings by hour
