@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import { denverDateStr } from "@/lib/date";
 import { dbDelete, dbInsert, dbSelect, dbUpdate } from "@/lib/supabase-rest";
+import { EMAIL_LOGO_URL } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,7 @@ function buildConfirmationEmail({
 <body style="margin:0;padding:0;background-color:#060A07;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+      <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
     </div>
     <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;margin-bottom:24px;">
       <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">You're All Set, ${customerName}!</h2>
@@ -167,7 +168,7 @@ export async function POST(req: NextRequest) {
             html: `
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
   <div style="text-align:center;margin-bottom:32px;">
-    <img src="${origin}/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+    <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
   </div>
   <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
     <h2 style="color:#F0E8D2;font-size:22px;margin:0 0 8px;">Thanks for Coming In, ${name}!</h2>
@@ -215,7 +216,7 @@ export async function POST(req: NextRequest) {
             html: `
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
   <div style="text-align:center;margin-bottom:32px;">
-    <img src="${origin}/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+    <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
   </div>
   <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
     <h2 style="color:#F0E8D2;font-size:22px;margin:0 0 8px;">How Was Your Session, ${name}?</h2>
@@ -278,7 +279,7 @@ export async function POST(req: NextRequest) {
         html: `
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
   <div style="text-align:center;margin-bottom:32px;">
-    <img src="https://www.gimmegolfsimulators.com/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+    <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
   </div>
   <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
     <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Welcome to the Club, ${cust.name}!</h2>
@@ -456,7 +457,7 @@ export async function POST(req: NextRequest) {
 <body style="margin:0;padding:0;background-color:#060A07;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+      <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
     </div>
     <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
       <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Hey ${customerName},</h2>
@@ -669,7 +670,7 @@ export async function POST(req: NextRequest) {
 <body style="margin:0;padding:0;background-color:#060A07;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+      <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
     </div>
     <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
       <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Welcome to Gimme Golf, ${name}!</h2>
@@ -799,7 +800,7 @@ export async function POST(req: NextRequest) {
           to: booking.customers.email,
           subject: `Booking Cancelled — ${booking.location} on ${dateStr}`,
           html: `<div style="max-width:500px;margin:0 auto;padding:24px;background:#060A07;font-family:-apple-system,sans-serif;border-radius:8px;">
-            <img src="https://www.gimmegolfsimulators.com/logos/logo-trimmed.png" alt="Gimme Golf" width="160" style="display:block;margin:0 auto 24px" />
+            <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="160" style="display:block;margin:0 auto 24px" />
             <h2 style="color:#F0E8D2;font-size:20px;margin:0 0 12px;text-align:center;">Booking Cancelled</h2>
             <p style="color:#F0E8D2;opacity:0.6;font-size:14px;text-align:center;margin:0 0 20px;">Your booking has been cancelled.</p>
             <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:8px;padding:16px;margin-bottom:20px;">

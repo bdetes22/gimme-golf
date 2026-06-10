@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
+import { EMAIL_LOGO_URL } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
         html: `
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
   <div style="text-align:center;margin-bottom:32px;">
-    <img src="https://www.gimmegolfsimulators.com/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+    <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
   </div>
   <div style="background:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
     <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px;">Welcome, ${name}!</h2>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbSelect, dbInsert, dbUpdate } from "@/lib/supabase-rest";
 import { Resend } from "resend";
+import { EMAIL_LOGO_URL } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
         subject: `Final Payment Due — Quote #${quote.quote_number}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #060A07; color: #F0E8D2; padding: 40px; border-radius: 8px;">
-            <img src="${origin}/logos/logo-trimmed.png" alt="Gimme Golf" style="height: 60px; margin-bottom: 24px;" />
+            <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" style="height: 60px; margin-bottom: 24px;" />
             <h1 style="color: #C8973A; font-size: 24px; margin: 0 0 16px;">Final Payment Due</h1>
             <p style="color: #F0E8D2; opacity: 0.8; line-height: 1.6;">
               Hi ${quote.client_name},<br><br>
@@ -101,7 +102,7 @@ export async function POST(req: NextRequest) {
           subject: `Your Quote #${quote.quote_number} from Gimme Golf`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #060A07; color: #F0E8D2; padding: 40px; border-radius: 8px;">
-              <img src="${origin}/logos/logo-trimmed.png" alt="Gimme Golf" style="height: 60px; margin-bottom: 24px;" />
+              <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" style="height: 60px; margin-bottom: 24px;" />
               <h1 style="color: #C8973A; font-size: 24px; margin: 0 0 16px;">Your Quote is Ready</h1>
               <p style="color: #F0E8D2; opacity: 0.8; line-height: 1.6;">
                 Hi ${quote.client_name},<br><br>
