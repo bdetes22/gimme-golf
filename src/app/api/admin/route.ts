@@ -96,12 +96,14 @@ export async function GET(req: NextRequest) {
     thisYearBookings: Array.isArray(thisYearPaid) ? thisYearPaid.length : 0,
   };
 
-  // Expiring memberships (end_date within 30 days)
+  // Expiring memberships (end_date within 30 days).
+  // Annual only: monthly memberships auto-renew, so they don't need a renewal
+  // reminder and shouldn't appear here.
   const thirtyDaysFromNow = denverDateStr(new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000));
   const todayDate = denverDateStr(now);
   const expiringMemberships = await dbSelect(
     "memberships",
-    `select=*,customers(name,email)&active=eq.true&end_date=gte.${todayDate}&end_date=lte.${thirtyDaysFromNow}&order=end_date.asc`
+    `select=*,customers(name,email)&active=eq.true&type=eq.annual&end_date=gte.${todayDate}&end_date=lte.${thirtyDaysFromNow}&order=end_date.asc`
   );
 
   // ── Analytics data ──

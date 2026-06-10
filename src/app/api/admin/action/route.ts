@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import { denverDateStr } from "@/lib/date";
 import { dbDelete, dbInsert, dbSelect, dbUpdate } from "@/lib/supabase-rest";
-import { EMAIL_LOGO_URL } from "@/lib/email";
+import { EMAIL_LOGO_URL, EMAIL_SITE_URL } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY!);
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://gimme-git-main-bridgn.vercel.app";
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || EMAIL_SITE_URL;
     let sent = 0;
 
     // Group by customer to avoid sending multiple follow-ups
@@ -465,7 +465,7 @@ export async function POST(req: NextRequest) {
         Your ${membershipType || "membership"} is set to expire on <strong style="color:#C8973A;">${endDate || "soon"}</strong>. Renew now to keep your access and booking privileges.
       </p>
       <div style="text-align:center;margin-bottom:24px;">
-        <a href="https://gimme-git-main-bridgn.vercel.app/membership" style="display:inline-block;background-color:#2D6A47;color:#F0E8D2;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Renew Membership</a>
+        <a href="${EMAIL_SITE_URL}/memberships" style="display:inline-block;background-color:#2D6A47;color:#F0E8D2;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Renew Membership</a>
       </div>
       <div style="background-color:#060A07;border:1px solid #1a2a1f;border-radius:8px;padding:16px;text-align:center;">
         <p style="color:#F0E8D2;font-size:13px;font-weight:600;margin:0 0 6px 0;">Questions? Text us!</p>
