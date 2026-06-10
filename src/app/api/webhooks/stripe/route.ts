@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { denverDateStr } from "@/lib/date";
+import { EMAIL_LOGO_URL } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ function buildConfirmationEmail({
 
     <!-- Header -->
     <div style="text-align:center;margin-bottom:32px;">
-      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+      <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
     </div>
 
     <!-- Main Card -->
@@ -288,7 +289,7 @@ export async function POST(req: NextRequest) {
 <body style="margin:0;padding:0;background-color:#060A07;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <img src="https://gimme-git-main-bridgn.vercel.app/logos/logo-trimmed.png" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
+      <img src="${EMAIL_LOGO_URL}" alt="Gimme Golf" width="200" style="display:block;margin:0 auto" />
     </div>
     <div style="background-color:#0f1610;border:1px solid #1a2a1f;border-radius:12px;padding:32px;">
       <h2 style="color:#F0E8D2;font-size:22px;font-weight:700;margin:0 0 8px 0;">Welcome to the Club, ${customerName}!</h2>
