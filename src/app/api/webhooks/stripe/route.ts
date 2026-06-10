@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { denverDateStr } from "@/lib/date";
-import { EMAIL_LOGO_URL } from "@/lib/email";
+import { EMAIL_LOGO_URL, EMAIL_SITE_URL } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -339,7 +339,7 @@ export async function POST(req: NextRequest) {
 
       <!-- Book Button -->
       <div style="text-align:center;margin:24px 0;">
-        <a href="https://gimme-git-main-bridgn.vercel.app/book" style="display:inline-block;background-color:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Book Your First Session</a>
+        <a href="${EMAIL_SITE_URL}/book" style="display:inline-block;background-color:#C8973A;color:#060A07;text-decoration:none;padding:14px 28px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Book Your First Session</a>
       </div>
 
       <!-- Contact -->
