@@ -274,8 +274,10 @@ export async function POST(req: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY!);
       await resend.emails.send({
         from: "Gimme Golf <hello@gimmegolfsimulators.com>",
-        to: "info@gimmegolfsimulators.com",
-        subject: `Welcome Email — ${cust.name} (${cust.email}) — ${planLabel}`,
+        to: cust.email,
+        bcc: "info@gimmegolfsimulators.com",
+        replyTo: "info@gimmegolfsimulators.com",
+        subject: `Welcome to Gimme Golf — Your ${planLabel} is Active`,
         html: `
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;background:#060A07;font-family:-apple-system,sans-serif;">
   <div style="text-align:center;margin-bottom:32px;">
