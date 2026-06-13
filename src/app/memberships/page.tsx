@@ -105,9 +105,7 @@ function MembershipsContent() {
   const autoPlan = searchParams.get("plan");
 
   const [loading, setLoading] = useState<string | null>(null);
-  const [customerId, setCustomerId] = useState<string | null>(null);
-  const [customerEmail, setCustomerEmail] = useState<string | null>(null);
-  const [customerName, setCustomerName] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
   const [agreedToRules, setAgreedToRules] = useState(false);
   const [autoCheckoutDone, setAutoCheckoutDone] = useState(false);
@@ -116,18 +114,26 @@ function MembershipsContent() {
   const [promoError, setPromoError] = useState("");
   const [promoChecking, setPromoChecking] = useState(false);
 
-  const goToStripe = useCallback(async (planId: string, custId: string, email: string, name: string | null, promo?: string) => {
+  const goToStripe = useCallback(async (planId: string, promo?: string) => {
     setLoading(planId);
     try {
+      // Send the logged-in user's session token; the server verifies it and
+      // derives identity from it (no plan checkout without an account).
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) {
+        window.location.href = `/login?redirect=/memberships?plan=${planId}`;
+        return;
+      }
       const res = await fetch("/api/checkout/membership", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           plan: planId,
-          customerId: custId,
-          customerEmail: email,
           promoCode: promo || undefined,
-          customerName: name,
         }),
       });
       const data = await res.json();
@@ -147,28 +153,16 @@ function MembershipsContent() {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
+      setIsLoggedIn(true);
 
-      const email = session.user.email || "";
-      const name = session.user.user_metadata?.name || null;
-      setCustomerEmail(email);
-      setCustomerName(name);
-
-      const { data: customer } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("email", email)
-        .single();
-
-      if (customer) {
-        setCustomerId(customer.id);
-
-        // Auto-checkout if coming back from login/signup with a plan
-        if (autoPlan && !autoCheckoutDone) {
-          setAutoCheckoutDone(true);
-          const validPlans = ["punchpass", "monthly", "annual"];
-          if (validPlans.includes(autoPlan)) {
-            goToStripe(autoPlan, customer.id, email, name);
-          }
+      // Auto-checkout if coming back from login/signup with a plan. The server
+      // derives identity from the session token and ensures a customer record,
+      // so we no longer need to look one up here.
+      if (autoPlan && !autoCheckoutDone) {
+        setAutoCheckoutDone(true);
+        const validPlans = ["punchpass", "monthly", "annual"];
+        if (validPlans.includes(autoPlan)) {
+          goToStripe(autoPlan);
         }
       }
     }
@@ -183,12 +177,12 @@ function MembershipsContent() {
   async function handleCheckout() {
     if (!selectedPlan) return;
 
-    if (!customerId || !customerEmail) {
+    if (!isLoggedIn) {
       window.location.href = `/login?redirect=/memberships?plan=${selectedPlan.id}`;
       return;
     }
 
-    goToStripe(selectedPlan.id, customerId, customerEmail, customerName, promoApplied?.code);
+    goToStripe(selectedPlan.id, promoApplied?.code);
   }
 
   return (

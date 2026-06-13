@@ -4,6 +4,7 @@ import { Resend } from "resend";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { denverDateStr } from "@/lib/date";
 import { EMAIL_LOGO_URL, EMAIL_SITE_URL } from "@/lib/email";
+import { ensureMemberLogin } from "@/lib/ensure-login";
 
 export const dynamic = "force-dynamic";
 
@@ -259,6 +260,10 @@ export async function POST(req: NextRequest) {
           active: true,
         }),
       });
+
+      // Safety net: a member must be able to log in to use their plan. Checkout
+      // already requires a logged-in account, but make doubly sure here.
+      await ensureMemberLogin(customerId);
 
       // Fetch both locations for the welcome email
       const locUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { dbSelect, dbUpdate } from "@/lib/supabase-rest";
+import { dbSelect, dbInsert, dbUpdate } from "@/lib/supabase-rest";
+import { getSupabaseAdmin } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
@@ -40,15 +41,46 @@ export async function POST(req: NextRequest) {
       apiVersion: "2026-04-22.dahlia",
     });
 
-    const { plan, customerId, customerEmail, customerName, promoCode } = await req.json();
+    const { plan, promoCode } = await req.json();
 
     const planInfo = PLANS[plan];
     if (!planInfo) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    if (!customerId || !customerEmail) {
-      return NextResponse.json({ error: "Must be logged in to purchase a membership" }, { status: 400 });
+    // Require a real logged-in account. Validate the caller's Supabase session
+    // token instead of trusting client-supplied identity — a plan can't be
+    // purchased without an account, and identity comes from the verified user.
+    const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!token) {
+      return NextResponse.json({ error: "Please log in or create an account to purchase a plan." }, { status: 401 });
+    }
+
+    const admin = getSupabaseAdmin();
+    const { data: { user }, error: userErr } = await admin.auth.getUser(token);
+    if (userErr || !user?.email) {
+      return NextResponse.json({ error: "Your session has expired. Please log in again." }, { status: 401 });
+    }
+
+    const customerEmail = user.email;
+    const customerName = (user.user_metadata?.name as string) || customerEmail;
+
+    // Guarantee a customer record exists for this account (matched by email),
+    // so the purchaser always has a login paired with their membership.
+    let customerId: string;
+    const existing = await dbSelect(
+      "customers",
+      `email=eq.${encodeURIComponent(customerEmail)}&select=id&limit=1`
+    );
+    if (Array.isArray(existing) && existing.length > 0) {
+      customerId = existing[0].id;
+    } else {
+      await dbInsert("customers", {
+        id: user.id,
+        email: customerEmail,
+        name: customerName,
+      });
+      customerId = user.id;
     }
 
     // Validate and apply promo code
