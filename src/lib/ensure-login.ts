@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { dbSelect } from "@/lib/supabase-rest";
-import { EMAIL_LOGO_URL } from "@/lib/email";
+import { EMAIL_LOGO_URL, EMAIL_SITE_URL } from "@/lib/email";
 
 // Ensure a customer actually has a login account. Walk-in customers (and anyone
 // added without going through signup) get a customer record but no auth user —
@@ -27,6 +27,7 @@ export async function ensureMemberLogin(customerId: string) {
     const { data: resetData } = await admin.auth.admin.generateLink({
       type: "recovery",
       email: cust.email,
+      options: { redirectTo: `${EMAIL_SITE_URL}/update-password` },
     });
     const resetLink = resetData?.properties?.action_link || "";
     if (!resetLink) return;

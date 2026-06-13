@@ -656,6 +656,7 @@ export async function POST(req: NextRequest) {
     const { data: resetData } = await admin.auth.admin.generateLink({
       type: "recovery",
       email,
+      options: { redirectTo: `${EMAIL_SITE_URL}/update-password` },
     });
 
     const resetLink = resetData?.properties?.action_link || "";
