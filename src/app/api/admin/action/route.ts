@@ -132,7 +132,6 @@ async function ensureMemberLogin(customerId: string) {
     await resend.emails.send({
       from: "Gimme Golf <hello@gimmegolfsimulators.com>",
       to: cust.email,
-      bcc: "info@gimmegolfsimulators.com",
       replyTo: "info@gimmegolfsimulators.com",
       subject: "Welcome to Gimme Golf — Set Up Your Account",
       html: `

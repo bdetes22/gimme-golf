@@ -42,13 +42,20 @@ function LoginForm() {
     }
     setResetLoading(true);
     setError("");
-    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/account`,
-    });
-    if (resetErr) {
-      setError(resetErr.message);
-    } else {
-      setResetSent(true);
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Something went wrong. Please try again.");
+      } else {
+        setResetSent(true);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
     }
     setResetLoading(false);
   }
